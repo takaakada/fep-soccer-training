@@ -16,3 +16,6 @@ git remote add origin https://github.com/takaakada/fep-soccer-training.git
 git add .
 git commit -m "initial commit: FEP Soccer Training App"
 git push -u origin main
+
+heroku create fep-soccer-training
+git push heroku main
