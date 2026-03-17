@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FEP Soccer Training</title>
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- React + Babel (for 課題チャレンジ tab) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-ball">⚽</div>
+    <span>FEP Soccer<br>Training</span>
+  </div>
+  <div class="sidebar-auth" id="sidebar-auth-area"></div>
+  <nav class="sidebar-nav">
+    <button class="sidebar-nav-btn active" data-page="home" onclick="showPage('home',this)">🏠 ホーム</button>
+    <button class="sidebar-nav-btn" data-page="menu" onclick="showPage('menu',this)">📋 レベル別メニュー</button>
+    <button class="sidebar-nav-btn" data-page="position" onclick="showPage('position',this)">⚽ ポジション別</button>
+    <button class="sidebar-nav-btn" data-page="eval" onclick="showPage('eval',this)">📊 評価シート</button>
+    <button class="sidebar-nav-btn" data-page="about" onclick="showPage('about',this)">📚 指導理論</button>
+    <button class="sidebar-nav-btn sidebar-nav-kadai" data-page="kadai" onclick="showPage('kadai',this)">🎯 課題チャレンジ</button>
+  </nav>
+</div>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── LOGIN MODAL ── -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal-box">
+    <div class="modal-logo">⚽</div>
+    <div class="modal-title">FEP Soccer Training</div>
+    <div class="modal-sub">
+      ログインすると評価データをクラウドに保存し、<br>
+      <strong>Inflexion Index</strong> の結果ページと統合表示できます。
+    </div>
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/><path fill="#FBBC05" d="M24 45c5.8 0 10.7-1.9 14.3-5.2l-6.6-5.4C29.8 36.1 27 37 24 37c-6.1 0-10.7-3.1-11.8-7.5l-7 5.4C8.5 41.1 15.6 45 24 45z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-1 2.8-3 5-5.8 6.3l6.6 5.4C41 36.3 45 30.7 45 24c0-1.3-.2-2.7-.5-4z"/></svg>
+      Google でログイン
+    </button>
+    <div class="modal-divider">または</div>
+    <button class="btn-guest" onclick="closeLoginModal()">
+      ゲストとして使う（ローカル保存のみ）
+    </button>
+    <div class="modal-note">
+      ※ ログインすると、Inflexion Index アカウントと同じ Google アカウントで認証されます。<br>
+      データは Supabase に暗号化されて保存されます。
+    </div>
+  </div>
+</div>
+
+<!-- ── USER MENU ── -->
+<div class="user-menu" id="user-menu">
+  <div class="user-menu-header">
+    <div class="user-menu-name" id="menu-display-name">―</div>
+    <div class="user-menu-email" id="menu-email">―</div>
+  </div>
+  <button class="user-menu-item" onclick="showPage('eval', document.querySelector('.sidebar-nav-btn[data-page=\'eval\']')); closeUserMenu()">
+    📁 記録・履歴を見る
+  </button>
+  <div class="user-menu-divider"></div>
+  <div class="sync-status-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-status-text">Supabase 接続済み</span>
+  </div>
+  <button class="user-menu-item danger" onclick="logout()">
+    🚪 ログアウト
+  </button>
+</div>
+
+<!-- ── APP LAYOUT ── -->
+<div class="app-layout">
+  <!-- Mobile top bar -->
+  <header class="top-bar">
+    <button id="hamburger-btn" class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+    <span class="mobile-header-logo">⚽ FEP Soccer Training</span>
+    <div id="auth-area" class="mobile-header-auth"></div>
+  </header>
+
+  <!-- Dynamic page content (fetched via JS) -->
+  <main id="page-container" style="padding: 28px 20px 80px; max-width: 1100px; margin: 0 auto;">
+    <div style="text-align:center; padding:60px 20px; color:#888;">
+      <div style="font-size:2rem;">⚽</div>
+      <p>読み込み中...</p>
+    </div>
+  </main>
+
+  <!-- Kadai page: React app (always in DOM, hidden/shown by JS) -->
+  <div id="page-kadai" style="display:none; min-height:calc(100vh - 52px);">
+    <div id="kadai-root"></div>
+  </div>
+</div>
+
+<!-- Core scripts (load order matters) -->
+<script src="js/core.js"></script>
+<script src="js/api-client.js"></script>
+<script src="js/drill-library.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/position.js"></script>
+<script src="js/eval.js"></script>
+<!-- React app (Babel compiles JSX) -->
+<script type="text/babel" src="js/kadai.js"></script>
+
+</body>
+</html>
