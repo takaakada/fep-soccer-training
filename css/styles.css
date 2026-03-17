@@ -1652,3 +1652,14 @@
   box-shadow: 0 2px 8px rgba(0,100,200,0.18);
   text-decoration: none;
 }
+
+/* ── RESPONSIVE: iPad (721〜1024px) ── */
+@media (min-width: 721px) and (max-width: 1024px) {
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .fep-loop { flex-wrap: wrap; gap: 6px 4px; justify-content: center; }
+  .fep-arrow { display: none; }
+  .fep-step { font-size: 0.82rem; padding: 7px 14px; }
+  .hero h1 { font-size: 1.6rem; }
+  .hero { padding: 36px 24px 30px; }
+  .concept-card { font-size: 0.9rem; }
+}
