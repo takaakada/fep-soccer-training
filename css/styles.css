@@ -1663,3 +1663,79 @@
   .hero { padding: 36px 24px 30px; }
   .concept-card { font-size: 0.9rem; }
 }
+
+/* ══════════════════════════════════════════════════════
+   LOGIN SCREEN（フルスクリーン・ログイン必須）
+══════════════════════════════════════════════════════ */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #0f1e3d 0%, #1a3a6e 50%, #0d2b55 100%);
+  padding: 20px;
+}
+
+.login-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 48px 40px 44px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+}
+
+.login-logo {
+  font-size: 3.2rem;
+  margin-bottom: 14px;
+}
+
+.login-app-name {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.login-tagline {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.login-desc {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.86rem;
+  line-height: 1.65;
+  margin-bottom: 32px;
+}
+
+.login-card .btn-google {
+  width: 100%;
+  justify-content: center;
+  padding: 14px 20px;
+  font-size: 0.97rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+.login-note {
+  margin-top: 20px;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.38);
+  line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 36px 24px 32px;
+  }
+  .login-app-name { font-size: 1.3rem; }
+}

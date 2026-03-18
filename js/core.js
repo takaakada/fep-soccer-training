@@ -10,26 +10,49 @@ const REDIRECT_URL  = window.location.origin + window.location.pathname;
 let sb = null;
 let currentUser = null;
 
-function initSupabase() {
-    if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-      console.warn('[FEP] Supabase 未設定 — ローカルモードで動作します');
-      renderAuthBadge(null);
-      return;
-    }
+function showLoginScreen() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-wrapper').style.display  = 'none';
+  }
+
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-wrapper').style.display  = 'block';
+  }
+
+  function initSupabase() {
     try {
       sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-      // OAuth コールバック処理
+
+      // 初回セッション確認（ちらつき防止）
+      sb.auth.getSession().then(({ data: { session } }) => {
+        currentUser = session ? session.user : null;
+        if (currentUser) {
+          showApp();
+          renderAuthBadge(currentUser);
+          const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+          if (homeBtn) showPage('home', homeBtn);
+        } else {
+          showLoginScreen();
+        }
+      });
+
+      // 以降の状態変化を監視
       sb.auth.onAuthStateChange(async (event, session) => {
         currentUser = session ? session.user : null;
-        renderAuthBadge(currentUser);
-        if (event === 'SIGNED_IN') {
-          closeLoginModal();
-          document.getElementById('login-modal').classList.remove('open');
+        if (event === 'SIGNED_IN' && currentUser) {
+          showApp();
+          renderAuthBadge(currentUser);
+          const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+          if (homeBtn) showPage('home', homeBtn);
+        } else if (event === 'SIGNED_OUT') {
+          showLoginScreen();
+          renderAuthBadge(null);
         }
       });
     } catch(e) {
       console.error('[FEP] Supabase 初期化エラー:', e);
-      renderAuthBadge(null);
+      showLoginScreen();
     }
   }
 
@@ -52,18 +75,13 @@ function renderAuthBadge(user) {
           <span class="auth-sync-badge">☁ 同期中</span>
         </div>`;
     } else {
-      area.innerHTML = `
-        <div class="auth-badge" onclick="openLoginModal()">
-          <div class="auth-avatar">👤</div>
-          <span>ログイン</span>
-          <span class="auth-sync-badge offline">ローカル</span>
-        </div>`;
+      area.innerHTML = '';
     }
   }
 
-function openLoginModal()  { document.getElementById('login-modal').classList.add('open'); }
+function openLoginModal()  { /* login is required — handled by login screen */ }
 
-function closeLoginModal() { document.getElementById('login-modal').classList.remove('open'); }
+function closeLoginModal() { /* no-op: cannot dismiss login */ }
 
 function toggleUserMenu()  {
     document.getElementById('user-menu').classList.toggle('open');
@@ -317,7 +335,6 @@ async function removeWeekly(id) {
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
+  // ログイン確認後に showApp() + showPage() を呼ぶため、ここでは initSupabase のみ
   initSupabase();
-  const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
-  if (homeBtn) showPage('home', homeBtn);
 });
