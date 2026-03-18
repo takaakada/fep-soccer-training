@@ -1,6 +1,6 @@
 <div class="section-header">
       <h2>評価シート</h2>
-      <p>セッション評価の記録・週間まとめ・履歴管理</p>
+      <p>セッション評価の記録・まとめ・履歴管理</p>
     </div>
 
     <div class="eval-sub-tabs" id="eval-sub-tabs">
@@ -106,7 +106,7 @@
     <!-- ─── Player / Pro ─── -->
     <div id="sheet-player-pro" class="eval-sheet" style="display:none">
       <div class="eval-form">
-        <div class="eval-form-title">📊 セッション自己評価シート（大学生・社会人・選手用）</div>
+        <div class="eval-form-title">📊 セッション自己評価シート（大学生・社会人）</div>
         <div class="eval-form-sub">1 = できなかった ／ 3 = どちらともいえない ／ 5 = よくできた</div>
         <div class="eval-meta">
           <div class="meta-field"><label>選手名</label><input type="text" placeholder="選手名"></div>
@@ -265,8 +265,8 @@
     <!-- ─── Weekly Summary Sub-page ─── -->
     <div id="eval-sub-weekly" class="eval-sub-content">
       <div class="weekly-form">
-        <div class="weekly-form-title">📊 週間まとめシート</div>
-        <div class="weekly-form-sub">1週間のFEP学習サイクルを5つの軸で振り返り、成長の傾向を記録します。</div>
+        <div class="weekly-form-title">📊 コーチ評価シート</div>
+        <div class="weekly-form-sub">コーチからの視点を5つの軸で振り返り、選手の状態を評価します</div>
 
         <div class="weekly-meta-grid">
           <div class="meta-field"><label>名前 / チーム</label><input type="text" id="w-name" placeholder="名前またはチーム名"></div>
@@ -278,10 +278,10 @@
               <option value="pro">大学生・社会人</option>
             </select>
           </div>
-          <div class="meta-field"><label>今週のメインテーマ</label><input type="text" id="w-theme" placeholder="例: ファーストタッチ前の宣言"></div>
+          <div class="meta-field"><label>今週のメインテーマ</label><input type="text" id="w-theme" placeholder="例: ファーストタッチの動きだし"></div>
         </div>
 
-        <div class="rating-section-label">FEP 5軸評価（週平均）</div>
+        <div class="rating-section-label">5軸評価（週平均）</div>
         <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px">各軸について今週の全体的な達成度をスライダーで評価してください（1〜5）</p>
 
         <div class="weekly-axis-grid">
@@ -291,7 +291,7 @@
               <input type="range" id="w-jikoYosoku" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-jikoYosoku').textContent=this.value">
               <span class="axis-val" id="v-jikoYosoku">3</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">動く前に自分の行動結果を予測できたか</p>
+            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">自分の動きを予測できたか</p>
           </div>
           <div class="weekly-axis-item">
             <label>⚡ 誤差の認識速度</label>
@@ -299,7 +299,7 @@
               <input type="range" id="w-gosaNinshiki" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-gosaNinshiki').textContent=this.value">
               <span class="axis-val" id="v-gosaNinshiki">3</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">予測と結果のズレを素早く捉えられたか</p>
+            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">予測と結果のズレを捉えられたか</p>
           </div>
           <div class="weekly-axis-item">
             <label>🔧 修正力</label>
@@ -307,7 +307,7 @@
               <input type="range" id="w-shuseiryoku" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-shuseiryoku').textContent=this.value">
               <span class="axis-val" id="v-shuseiryoku">3</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">ズレを次のプレーで修正できたか</p>
+            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">ズレを修正できたか</p>
           </div>
           <div class="weekly-axis-item">
             <label>🌊 適応力</label>
@@ -315,7 +315,7 @@
               <input type="range" id="w-tekioryoku" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-tekioryoku').textContent=this.value">
               <span class="axis-val" id="v-tekioryoku">3</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">条件変化・不確実な状況に対応できたか</p>
+            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">予測が外れた状況でも柔軟に対応できたか</p>
           </div>
           <div class="weekly-axis-item">
             <label>🤝 協調・共有</label>
@@ -323,18 +323,18 @@
               <input type="range" id="w-kyochosei" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-kyochosei').textContent=this.value">
               <span class="axis-val" id="v-kyochosei">3</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">チームとして予測を共有・連携できたか</p>
+            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">チームとして共有・連携できたか</p>
           </div>
         </div>
 
         <div class="text-fields-grid">
-          <div class="text-field"><label>今週の最大の成長点</label><textarea id="w-growth" placeholder="具体的な場面や変化を記述"></textarea></div>
+          <div class="text-field"><label>今週の最大の成長点</label><textarea id="w-growth" placeholder="具体的な変化を記述"></textarea></div>
           <div class="text-field"><label>今週の主な課題・ズレ</label><textarea id="w-challenge" placeholder="どのような場面でズレが出やすかったか"></textarea></div>
-          <div class="text-field"><label>来週のFEPテーマ</label><textarea id="w-nextTheme" placeholder="次週に重点的に取り組む予測・修正テーマ"></textarea></div>
+          <div class="text-field"><label>来週の課題</label><textarea id="w-nextTheme" placeholder="次に重点的に取り組む課題"></textarea></div>
         </div>
 
         <div class="btn-row">
-          <button class="btn btn-save" onclick="saveWeekly()">💾 週間まとめを保存</button>
+          <button class="btn btn-save" onclick="saveWeekly()">💾 コーチ評価シートを保存</button>
         </div>
         <div id="toast-weekly" class="save-toast"></div>
       </div>
@@ -342,7 +342,7 @@
       <!-- Weekly history display -->
       <div style="margin-top:28px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-          <h3 style="font-size:1.05rem;font-weight:800">📂 週間まとめ 履歴</h3>
+          <h3 style="font-size:1.05rem;font-weight:800">📂 コーチ評価シート 履歴</h3>
         </div>
         <div id="weekly-history-list"></div>
       </div>
