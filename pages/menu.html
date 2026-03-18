@@ -1,41 +1,44 @@
-<div class="section-header">
-      <h2>全体トレーニング</h2>
-      <p>年代グループとレベルを選んでトレーニング内容を確認・編集してください</p>
-    </div>
+<div id="menu-page-wrapper">
 
-    <!-- Age Group Tabs -->
-    <div id="age-group-tabs">
-      <button class="age-tab-btn active" onclick="switchAgeGroup('elem', this)">🎒 小学生</button>
-      <button class="age-tab-btn" onclick="switchAgeGroup('junior', this)">🏫 中高生</button>
-      <button class="age-tab-btn" onclick="switchAgeGroup('pro', this)">🎓 大学生・社会人</button>
+  <!-- ── Header Row ── -->
+  <div class="menu-page-header">
+    <div>
+      <h2 style="font-size:1.35rem; font-weight:800; color:var(--text);">全体トレーニング</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:3px;">年代に合ったプランを選びます</p>
     </div>
+    <button class="edit-mode-btn" onclick="toggleEditMode()" id="edit-mode-btn">✏️ 編集</button>
+  </div>
 
-    <!-- Level Tabs with editable names -->
+  <!-- ── Age Group Tabs ── -->
+  <div id="age-group-tabs">
+    <button class="age-tab-btn active" onclick="switchAgeGroup('elem', this)">🎒 小学生</button>
+    <button class="age-tab-btn" onclick="switchAgeGroup('junior', this)">🏫 中高生</button>
+    <button class="age-tab-btn" onclick="switchAgeGroup('pro', this)">🎓 大学生・社会人</button>
+  </div>
+
+  <!-- ── Plan Selector (rendered by JS) ── -->
+  <div id="plan-selector"></div>
+
+  <!-- ── Session List: compact view (hidden in edit mode) ── -->
+  <div id="session-list"></div>
+
+  <!-- ── Edit Level Area: full edit UI (hidden in normal mode, shown in edit mode) ── -->
+  <div id="edit-level-area">
+
+    <!-- Level Tabs (simple, no rename buttons) -->
     <div id="level-tabs" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; align-items:center;">
-      <div class="level-tab-wrapper active" data-level="l1">
-        <button class="tab-btn active" onclick="switchLevelTab('l1',this)"><span class="level-label" id="lname-l1">Level 1</span></button>
-        <button class="level-edit-btn" onclick="editLevelName('l1')" title="名前を変更">✏️</button>
-      </div>
-      <div class="level-tab-wrapper" data-level="l2">
-        <button class="tab-btn" onclick="switchLevelTab('l2',this)"><span class="level-label" id="lname-l2">Level 2</span></button>
-        <button class="level-edit-btn" onclick="editLevelName('l2')" title="名前を変更">✏️</button>
-      </div>
-      <div class="level-tab-wrapper" data-level="l3">
-        <button class="tab-btn" onclick="switchLevelTab('l3',this)"><span class="level-label" id="lname-l3">Level 3</span></button>
-        <button class="level-edit-btn" onclick="editLevelName('l3')" title="名前を変更">✏️</button>
-      </div>
-      <div class="level-tab-wrapper" data-level="custom">
-        <button class="tab-btn" onclick="switchLevelTab('custom',this)"><span class="level-label" id="lname-custom">カスタム</span></button>
-        <button class="level-edit-btn" onclick="editLevelName('custom')" title="名前を変更">✏️</button>
-      </div>
+      <button class="tab-btn active" data-level="l1" onclick="switchLevelTab('l1',this)"><span class="level-label" id="lname-l1">あそびながら</span></button>
+      <button class="tab-btn" data-level="l2" onclick="switchLevelTab('l2',this)"><span class="level-label" id="lname-l2">しっかり基礎</span></button>
+      <button class="tab-btn" data-level="l3" onclick="switchLevelTab('l3',this)"><span class="level-label" id="lname-l3">試合につながる</span></button>
+      <button class="tab-btn" data-level="custom" onclick="switchLevelTab('custom',this)"><span class="level-label" id="lname-custom">カスタム</span></button>
     </div>
 
-    <!-- ===== LEVEL 1 (小学生ベース) ===== -->
+    <!-- ===== LEVEL 1 ===== -->
     <div id="level-l1" class="level-content">
       <div class="age-header blue" style="position:relative;">
         <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="このヘッダーを削除" style="top:8px;right:8px;">✕</button>
         <div>
-          <div class="age-header-title blue" id="level-l1-title">Level 1 プログラム</div>
+          <div class="age-header-title blue" id="level-l1-title">プログラム概要</div>
           <div class="age-header-sub">週3回 ／ 60〜75分 ／ 身体感覚の育成</div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap">
@@ -44,7 +47,6 @@
       </div>
 
       <div class="level-menu-list">
-        <!-- セッション 1 -->
         <div class="concept-card menu-item-card" style="position:relative;">
           <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
           <h3>セッション 1 <span class="tag">技術</span> <span class="tag">60分</span></h3>
@@ -58,7 +60,6 @@
           </ul>
         </div>
 
-        <!-- セッション 2 -->
         <div class="concept-card menu-item-card" style="position:relative;">
           <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
           <h3>セッション 2 <span class="tag">戦術</span> <span class="tag">60分</span></h3>
@@ -71,7 +72,6 @@
           </ul>
         </div>
 
-        <!-- セッション 3 -->
         <div class="concept-card menu-item-card" style="position:relative;">
           <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
           <h3>セッション 3 <span class="tag">フィジカル</span> <span class="tag">60分</span></h3>
@@ -83,34 +83,20 @@
             <li>ゲーム（15分）: 学んだことを活かす</li>
           </ul>
         </div>
-      </div><!-- /.level-menu-list -->
+      </div>
 
       <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('l1')">＋ メニューを追加</button>
-        <div id="add-form-l1" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-l1" placeholder="例：セッション 4" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-l1" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-l1" placeholder="ドリルの内容、目的など" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-l1" placeholder="60" min="1" max="120" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addMenuItem('l1')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('l1')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveLevelMenu('l1')" style="margin-top:12px;">💾 このレベルを保存</button>
+        <button class="btn btn-accent" onclick="toggleAddMenuForm('l1')">＋ セッションを追加</button>
+        <button class="btn btn-primary" onclick="saveLevelMenu('l1')" style="margin-top:12px;">💾 保存</button>
       </div>
     </div><!-- /#level-l1 -->
 
-    <!-- ===== LEVEL 2 (中高生ベース) ===== -->
+    <!-- ===== LEVEL 2 ===== -->
     <div id="level-l2" class="level-content" style="display:none;">
       <div class="age-header green" style="position:relative;">
         <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
         <div>
-          <div class="age-header-title green" id="level-l2-title">Level 2 プログラム</div>
+          <div class="age-header-title green" id="level-l2-title">プログラム概要</div>
           <div class="age-header-sub">週3〜4回 ／ 75〜90分 ／ 戦術理解・予測精度向上</div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap">
@@ -155,31 +141,17 @@
       </div>
 
       <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('l2')">＋ メニューを追加</button>
-        <div id="add-form-l2" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-l2" placeholder="例：セッション 4" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-l2" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-l2" placeholder="ドリルの内容、目的など" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-l2" placeholder="60" min="1" max="120" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addMenuItem('l2')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('l2')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveLevelMenu('l2')" style="margin-top:12px;">💾 このレベルを保存</button>
+        <button class="btn btn-accent" onclick="toggleAddMenuForm('l2')">＋ セッションを追加</button>
+        <button class="btn btn-primary" onclick="saveLevelMenu('l2')" style="margin-top:12px;">💾 保存</button>
       </div>
     </div><!-- /#level-l2 -->
 
-    <!-- ===== LEVEL 3 (プロベース) ===== -->
+    <!-- ===== LEVEL 3 ===== -->
     <div id="level-l3" class="level-content" style="display:none;">
       <div class="age-header orange" style="position:relative;">
         <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
         <div>
-          <div class="age-header-title orange" id="level-l3-title">Level 3 プログラム</div>
+          <div class="age-header-title orange" id="level-l3-title">プログラム概要</div>
           <div class="age-header-sub">週4〜5回 ／ 90〜120分 ／ 高強度・戦術的複雑性</div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap">
@@ -213,54 +185,24 @@
       </div>
 
       <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('l3')">＋ メニューを追加</button>
-        <div id="add-form-l3" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-l3" placeholder="例：セッション 3" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-l3" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-l3" placeholder="ドリルの内容、目的など" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-l3" placeholder="60" min="1" max="120" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addMenuItem('l3')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('l3')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveLevelMenu('l3')" style="margin-top:12px;">💾 このレベルを保存</button>
+        <button class="btn btn-accent" onclick="toggleAddMenuForm('l3')">＋ セッションを追加</button>
+        <button class="btn btn-primary" onclick="saveLevelMenu('l3')" style="margin-top:12px;">💾 保存</button>
       </div>
     </div><!-- /#level-l3 -->
 
-    <!-- ===== CUSTOM LEVEL ===== -->
+    <!-- ===== CUSTOM ===== -->
     <div id="level-custom" class="level-content" style="display:none;">
       <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
         <div style="font-size:3rem; margin-bottom:16px;">✏️</div>
-        <p style="font-size:0.95rem; margin-bottom:20px;">カスタムレベルです。下の「＋ メニューを追加」からオリジナルメニューを作成できます。</p>
+        <p style="font-size:0.95rem; margin-bottom:20px;">カスタムプランです。下の「＋ セッションを追加」からオリジナルメニューを作成できます。</p>
       </div>
       <div class="level-menu-list"></div>
       <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('custom')">＋ メニューを追加</button>
-        <div id="add-form-custom" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-custom" placeholder="例：特別セッション" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-custom" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-custom" placeholder="ドリルの内容、目的など" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-custom" placeholder="60" min="1" max="120" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addMenuItem('custom')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('custom')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveLevelMenu('custom')" style="margin-top:12px;">💾 このレベルを保存</button>
+        <button class="btn btn-accent" onclick="toggleAddMenuForm('custom')">＋ セッションを追加</button>
+        <button class="btn btn-primary" onclick="saveLevelMenu('custom')" style="margin-top:12px;">💾 保存</button>
       </div>
     </div><!-- /#level-custom -->
 
-  </div><!-- /#page-menu -->
+  </div><!-- /#edit-level-area -->
 
-  <!-- ═══════════════════════════════════════════════════════
-       POSITION PAGE
-  ═══════════════════════════════════════════════════════ -->
+</div><!-- /#menu-page-wrapper -->
