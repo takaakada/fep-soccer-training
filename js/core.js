@@ -57,25 +57,49 @@ function showLoginScreen() {
   }
 
 function renderAuthBadge(user) {
-    const area = document.getElementById('auth-area');
-    if (!area) return;
+    const area       = document.getElementById('auth-area');
+    const sidebarArea = document.getElementById('sidebar-auth-area');
+
     if (user) {
-      const name  = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-      const email = user.email || '';
+      const name   = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+      const email  = user.email || '';
       const avatar = user.user_metadata?.avatar_url;
       const initial = name.charAt(0).toUpperCase();
-      document.getElementById('menu-display-name').textContent = name;
-      document.getElementById('menu-email').textContent = email;
-      area.innerHTML = `
-        <div class="auth-badge" onclick="toggleUserMenu()">
-          <div class="auth-avatar">
-            ${avatar ? `<img src="${avatar}" alt="avatar">` : initial}
-          </div>
-          <span>${name}</span>
-          <span class="auth-sync-badge">☁ 同期中</span>
-        </div>`;
+
+      // user-menu の表示名・メール更新
+      const dispName = document.getElementById('menu-display-name');
+      const dispEmail = document.getElementById('menu-email');
+      if (dispName)  dispName.textContent  = name;
+      if (dispEmail) dispEmail.textContent = email;
+
+      // モバイルトップバーのバッジ
+      if (area) {
+        area.innerHTML = `
+          <div class="auth-badge" onclick="toggleUserMenu()">
+            <div class="auth-avatar">
+              ${avatar ? `<img src="${avatar}" alt="avatar">` : initial}
+            </div>
+            <span>${name}</span>
+          </div>`;
+      }
+
+      // サイドバーのユーザー情報
+      if (sidebarArea) {
+        sidebarArea.innerHTML = `
+          <div class="sidebar-user-info" onclick="toggleUserMenu()">
+            <div class="sidebar-user-avatar">
+              ${avatar ? `<img src="${avatar}" alt="avatar">` : initial}
+            </div>
+            <div class="sidebar-user-text">
+              <div class="sidebar-user-name">${name}</div>
+              <div class="sidebar-user-email">${email}</div>
+            </div>
+            <div class="sidebar-user-arrow">⌄</div>
+          </div>`;
+      }
     } else {
-      area.innerHTML = '';
+      if (area)        area.innerHTML = '';
+      if (sidebarArea) sidebarArea.innerHTML = '';
     }
   }
 
