@@ -2,6 +2,10 @@
 // DRILL LIBRARY  (js/drill-library.js)
 // ══════════════════════════════════════════════════════════
 // プリセットドリル一覧 — レベル別メニュー・ポジション別で共有
+//
+// ※ このファイルはハードコードのフォールバックデータです。
+//    アプリ起動時に data-loader.js が Google Sheets から最新データを取得し、
+//    DRILL_PRESETS / POS_PRESETS を上書きします。
 
 const CAT_LABEL = {
   warm:   'ウォームアップ',
