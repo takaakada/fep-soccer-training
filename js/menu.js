@@ -305,10 +305,16 @@ function editMenuItem(btn) {
   `).join('');
 
   // プリセット選択肢（drill-library.js の DRILL_PRESETS を利用）
+  // value = "name（time分）: desc" 形式（そのままli テキストになる）
   const presetOptsHtml = (typeof DRILL_PRESETS !== 'undefined')
     ? DRILL_PRESETS.map(p => {
-        const label = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
-        return `<option value="${escHtml(p.name)}">${escHtml(p.name)}（${label}）</option>`;
+        const label   = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
+        const timeStr = p.time ? `${p.time}分` : '';
+        const paren   = timeStr ? `（${timeStr}）` : '';
+        const descPart = p.desc ? `: ${p.desc}` : '';
+        const itemText = `${p.name}${paren}${descPart}`;
+        const display  = `${p.name}（${label}${timeStr ? '・' + timeStr : ''}）`;
+        return `<option value="${escHtml(itemText)}">${escHtml(display)}</option>`;
       }).join('')
     : '';
 

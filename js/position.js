@@ -212,25 +212,47 @@ function addPosItemFromPreset(posId, preset) {
   const existingCards = container.querySelectorAll('.drill-card');
   const nextNum = existingCards.length + 1;
 
+  // steps: POS_PRESETS の steps 配列（data-loader.js で設定）
+  const steps = Array.isArray(preset.steps) ? preset.steps : [];
+  const stepsHtml = steps.length
+    ? `<ul class="drill-steps">${steps.map(s => `<li>${escPosHtml(s)}</li>`).join('')}</ul>`
+    : '';
+
+  // FEP解説
+  const fepText = preset.fep || '';
+  const fepHtml = fepText
+    ? `<details class="drill-fep-details">
+         <summary>解説</summary>
+         <div class="drill-fep ${posId}">${escPosHtml(fepText)}</div>
+       </details>`
+    : '';
+
   const card = document.createElement('div');
   card.className = `drill-card ${posId}`;
   card.style.position = 'relative';
   card.dataset.posTitle = preset.name;
   card.dataset.posDesc  = preset.desc || '';
-  card.dataset.posFep   = '';
+  card.dataset.posFep   = fepText;
   card.dataset.posNum   = `Drill ${nextNum}`;
-  card.dataset.posItems = '[]';
+  card.dataset.posItems = JSON.stringify(steps);
   card.dataset.posInit  = '1';
+
   card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+    <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+    <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
     <div class="drill-header">
       <span class="drill-num ${posId}">Drill ${nextNum}</span>
       <div class="drill-title">${escPosHtml(preset.name)}</div>
     </div>
     ${preset.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(preset.desc)}</p>` : ''}
+    ${stepsHtml}
+    ${fepHtml}
   `;
-  container.appendChild(card);
+
+  // add-menu-section（編集エリア）の直前に挿入
+  const addSection = container.querySelector('.pos-edit-section');
+  if (addSection) container.insertBefore(card, addSection);
+  else container.appendChild(card);
 }
 
 // ─── ポジションメニュー保存（localStorage）──────────────
