@@ -2162,3 +2162,108 @@
   display: flex;
   gap: 8px;
 }
+
+/* ══════════════════════════════════════════════════════════
+   POSITION PAGE — EDIT MODE
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── ヘッダー行 ─────────────────────────────────────────── */
+.pos-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* ─── 編集トグルボタン ─────────────────────────────────── */
+.pos-edit-btn {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.pos-edit-btn:hover {
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+.pos-edit-btn.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* ─── 通常表示：編集系ボタンとセクションを非表示 ──────────── */
+#pos-page-wrapper .pos-del-btn,
+#pos-page-wrapper .pos-edit-item-btn {
+  display: none !important;
+}
+#pos-page-wrapper .pos-edit-section {
+  display: none;
+}
+
+/* ─── 編集モード：編集系ボタンとセクションを表示 ────────── */
+#pos-page-wrapper.edit-mode .pos-del-btn {
+  display: flex !important;
+}
+#pos-page-wrapper.edit-mode .pos-edit-item-btn {
+  display: flex !important;
+}
+#pos-page-wrapper.edit-mode .pos-edit-section {
+  display: block;
+}
+
+/* ─── FEP解説 details ────────────────────────────────────── */
+.drill-fep-details {
+  margin-top: 8px;
+}
+.drill-fep-details > summary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.drill-fep-details > summary::before {
+  content: '▶';
+  font-size: 0.65rem;
+  transition: transform 0.2s;
+}
+.drill-fep-details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+/* ─── 評価ポイント details ───────────────────────────────── */
+.pos-eval-details {
+  margin-top: 16px;
+}
+.pos-eval-details > summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+.pos-eval-details > summary::before {
+  content: '▶';
+  font-size: 0.7rem;
+  transition: transform 0.2s;
+}
+.pos-eval-details[open] > summary::before {
+  transform: rotate(90deg);
+}
