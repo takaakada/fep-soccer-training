@@ -2016,3 +2016,149 @@
   .other-plans-grid { grid-template-columns: 1fr 1fr; }
   .menu-page-header h2 { font-size: 1.15rem !important; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   POSITION PAGE — ToDo スタイル
+══════════════════════════════════════════════════════════ */
+
+/* ── ポジションヘッダー ── */
+.simple-pos-header {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.simple-pos-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.simple-pos-header > p {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+.simple-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.simple-tags span {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── ToDo リスト ── */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.todo-item {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.todo-item.todo-done {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.todo-item label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin: 0;
+}
+.todo-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+  margin: 0;
+}
+.todo-title {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+}
+.todo-item.todo-done .todo-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+.todo-sub {
+  margin: 8px 0 0 28px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.todo-item details {
+  margin: 10px 0 0 28px;
+}
+.todo-item details summary {
+  font-size: 0.82rem;
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.todo-item details summary::-webkit-details-marker { display: none; }
+.todo-item details summary::before { content: '▾ 詳細を見る'; }
+.todo-item details[open] summary::before { content: '▲ 閉じる'; }
+.todo-item details ul {
+  margin: 8px 0 0 0;
+  padding-left: 16px;
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+
+/* ── メモ欄 ── */
+.todo-note-box {
+  margin-top: 16px;
+}
+.todo-note-box label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+.todo-note-box textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+.todo-note-box textarea:focus {
+  outline: none;
+  border-color: var(--primary-light);
+}
+
+/* ── アクションボタン ── */
+.todo-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+}

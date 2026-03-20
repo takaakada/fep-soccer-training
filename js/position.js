@@ -1,10 +1,10 @@
 // ══════════════════════════════════════════════════════════
-// POSITION MENU FUNCTIONS  (js/position.js)
+// POSITION MENU FUNCTIONS — ToDo-style UI  (js/position.js)
 // ══════════════════════════════════════════════════════════
 
 const POS_KEYS = ['gk', 'df', 'mf', 'fw'];
 
-// ─── HTML エスケープ（menu.js と共有、念のため再定義）──────
+// ─── HTML エスケープ ──────────────────────────────────────
 function escPosHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -12,6 +12,189 @@ function escPosHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// ─── ポジションデータ ─────────────────────────────────────
+const positionMenus = {
+  gk: {
+    icon:  '🧤',
+    title: 'GKメニュー',
+    theme: '先読みと判断',
+    tags:  ['予測のズレ', '更新速度', '声かけ'],
+    items: [
+      {
+        title:   'シュートコース予測',
+        sub:     '打たれる前にコースを予測する',
+        details: [
+          '左右・高さを先に宣言してから構える',
+          '実際のシュートとのズレを言語化する',
+          '5本連続で宣言し、予測精度を確認する',
+        ],
+      },
+      {
+        title:   'クロス落下点予測',
+        sub:     'クロスの着地点を読む',
+        details: [
+          '蹴られた瞬間に「ファーポスト前方」などを宣言',
+          '実際の落下点との誤差を確認する',
+          'キャッチまたはコーチングをセットで行う',
+        ],
+      },
+      {
+        title:   'PK判断',
+        sub:     '助走・体の向きから飛ぶ方向を決める',
+        details: [
+          '助走角度・目線・体の向きを観察する',
+          '「右・左・中央」の判断根拠を宣言してから飛ぶ',
+          '後から「どの手がかりが有効だったか」を振り返る',
+        ],
+      },
+      {
+        title:   '1対1の角度調整',
+        sub:     '最も打ちにくい位置を取る',
+        details: [
+          'FWが向かってきたら「最適ポジション」を声に出す',
+          'シュートコースを最も狭める位置を先に取る',
+          '出るタイミングのフィードバックを受けて修正する',
+        ],
+      },
+    ],
+  },
+
+  df: {
+    icon:  '🛡️',
+    title: 'DFメニュー',
+    theme: '相手予測とライン調整',
+    tags:  ['相手の意図', 'スペース管理', 'ライン共有'],
+    items: [
+      {
+        title:   '方向転換予測',
+        sub:     '相手がどちらに切るかを事前に読む',
+        details: [
+          '肩・腰・体重移動を見て「右に切る」などを宣言',
+          '実際の方向との一致率を記録する（目標：10本中6本）',
+          '「どの手がかりで予測したか」を毎回言語化する',
+        ],
+      },
+      {
+        title:   'パスライン先読み',
+        sub:     '次のパス先を予測して先に動く',
+        details: [
+          '保持者を観察し「次のパス先」を指差しで宣言',
+          'そのパスラインを切れる位置に先に動く',
+          '予測が外れたときは「何の情報を見逃したか」を確認',
+        ],
+      },
+      {
+        title:   'プレスタイミング判断',
+        sub:     '行く/待つを根拠とともに決める',
+        details: [
+          '相手がボールを受けた瞬間「今すぐ行く/待つ」を宣言',
+          '判断根拠（「コントロールが大きかった」など）を同時に言語化',
+          '成功/失敗後に「タイミングは正しかったか」を確認',
+        ],
+      },
+      {
+        title:   'ラインコントロール',
+        sub:     'DF全体でタイミングを統一する',
+        details: [
+          'リーダーDFが「ライン上げ/下げ」を声で宣言してから動く',
+          '他のDFが声なしでも合わせられるようにする',
+          '「なぜそのタイミングで上げたか」を毎回説明できるようにする',
+        ],
+      },
+    ],
+  },
+
+  mf: {
+    icon:  '⚙️',
+    title: 'MFメニュー',
+    theme: '情報整理と選択',
+    tags:  ['周囲確認', '選択肢準備', '切り替え'],
+    items: [
+      {
+        title:   'ファーストタッチ前宣言',
+        sub:     '受ける前に何をするかを決める',
+        details: [
+          'パスが届く前に「右足でコントロールして前へ」などを宣言',
+          '宣言通りに実行できたか、変更が必要だったかを振り返る',
+          '変更した場合は「何の情報が来て変えたか」を言語化する',
+        ],
+      },
+      {
+        title:   'プレス方向予測',
+        sub:     '相手の来る方向を先読みする',
+        details: [
+          '相手の足の向きから来る方向を予測して宣言',
+          '予測に基づき「体の向き」を先に作っておく',
+          '逆プレスをかけられた場合の「次の手」も準備しておく',
+        ],
+      },
+      {
+        title:   '3つの選択肢準備',
+        sub:     '第1〜第3の選択肢を持っておく',
+        details: [
+          'ボールを受ける前に周囲をスキャンして選択肢を3つ挙げる',
+          '「最優先は右前方、次は左の味方」などを声で宣言',
+          '使わなかった選択肢の「その時点での状況」も確認する',
+        ],
+      },
+      {
+        title:   '攻守切り替え予測',
+        sub:     '切り替えのタイミングを先読みする',
+        details: [
+          '守備→攻撃が切り替わる瞬間を「予測」してスプリント開始',
+          '「次のプレーで取れそうか」を常に3秒先まで予測する',
+          '切り替えが遅れた場面で「どの情報を見落としたか」を分析',
+        ],
+      },
+    ],
+  },
+
+  fw: {
+    icon:  '🎯',
+    title: 'FWメニュー',
+    theme: '動き出しとフィニッシュ',
+    tags:  ['動き出し', '打つ判断', 'ミス後の修正'],
+    items: [
+      {
+        title:   'シュートゾーン選択',
+        sub:     'GKの体勢を読んでコースを決める',
+        details: [
+          'ゴールを6ゾーンに分割し、シュート前に「どこを狙うか」を宣言',
+          'GKの重心・手の位置から「空いているゾーン」を判断',
+          '宣言したゾーンと実際の着弾点のズレを記録する',
+        ],
+      },
+      {
+        title:   '裏抜けタイミング',
+        sub:     'パスが出るタイミングを予測して動く',
+        details: [
+          '出し手の「予備動作（体の向き・視線）」を観察する',
+          '「今出る」と判断した根拠を声に出してから動き出す',
+          'オフサイドの場合は「どのタイミングが早すぎたか」を振り返る',
+        ],
+      },
+      {
+        title:   '1対1フィニッシュ',
+        sub:     'いつ打つか・どこへ打つかを判断する',
+        details: [
+          'GKが前に出てきた「歩数」をカウントし、打ち時を判断する',
+          'GKが倒れたら→浮かせる、立っていたら→コースを狙う',
+          '成功・失敗後に「その時点でのGKの状態」を言語化する',
+        ],
+      },
+      {
+        title:   'オフザボール動き出し',
+        sub:     '次にボールが来る場面を予測する',
+        details: [
+          'ボールが味方の足元に入った瞬間、次に自分が受ける場面を予測',
+          '動き出す方向を指差しで宣言し、出し手に意思を伝える',
+          '「パスが来なかった場合」も原因を分析して次の動きに活かす',
+        ],
+      },
+    ],
+  },
+};
 
 // ─── ポジションタブ切替 ─────────────────────────────────
 function switchPosTab(posId, btn) {
@@ -22,237 +205,29 @@ function switchPosTab(posId, btn) {
   if (btn) btn.classList.add('active');
 }
 
-// ─── カードの正規化（既存カードに data属性 と 編集ボタンを付与）──
-function normalizeAllPosCards() {
-  document.querySelectorAll('.drill-card').forEach(card => {
-    if (!card.dataset.posInit) {
-      const titleEl = card.querySelector('.drill-title');
-      const descEl  = card.querySelector('p');
-      const stepsEl = card.querySelector('.drill-steps');
-      const fepEl   = card.querySelector('.drill-fep');
-      const numEl   = card.querySelector('.drill-num');
-
-      card.dataset.posTitle = titleEl ? titleEl.textContent.trim() : '';
-      card.dataset.posDesc  = descEl  ? descEl.textContent.trim()  : '';
-      card.dataset.posFep   = fepEl   ? fepEl.textContent.trim()   : '';
-      card.dataset.posNum   = numEl   ? numEl.textContent.trim()   : '';
-
-      // <li> をテキスト配列として保存
-      const items = stepsEl
-        ? Array.from(stepsEl.querySelectorAll('li')).map(li => li.textContent.trim())
-        : [];
-      card.dataset.posItems = JSON.stringify(items);
-      card.dataset.posInit  = '1';
-    }
-
-    // 編集ボタンがなければ追加
-    if (!card.querySelector('.menu-edit-btn')) {
-      const editBtn = document.createElement('button');
-      editBtn.className = 'menu-edit-btn';
-      editBtn.title = '編集';
-      editBtn.textContent = '✏️';
-      editBtn.onclick = () => editPosItem(editBtn);
-      card.style.position = 'relative';
-      const delBtn = card.querySelector('.menu-delete-btn');
-      if (delBtn) delBtn.insertAdjacentElement('afterend', editBtn);
-      else card.prepend(editBtn);
-    }
-  });
+// ─── 状態の読み込み ────────────────────────────────────
+function loadPosState(posId) {
+  try {
+    const raw = localStorage.getItem('fep_pos_state_' + posId);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  const count = positionMenus[posId]?.items?.length || 4;
+  return { checks: new Array(count).fill(false), note: '' };
 }
 
-// ─── カード編集開始 ─────────────────────────────────────
-function editPosItem(btn) {
-  const card = btn.closest('.drill-card');
-  if (!card || card.querySelector('.menu-edit-form')) return;
-
-  const title = card.dataset.posTitle || '';
-  const desc  = card.dataset.posDesc  || '';
-  const fep   = card.dataset.posFep   || '';
-  const items = JSON.parse(card.dataset.posItems || '[]');
-
-  // このカードのポジション（gk/df/mf/fw）を特定
-  const posId = POS_KEYS.find(p => card.classList.contains(p)) || 'gk';
-
-  card.dataset.originalHtml = card.innerHTML;
-
-  // 既存ステップのHTML
-  const itemsHtml = items.map(item => `
-    <div class="item-row">
-      <span class="item-text">${escPosHtml(item)}</span>
-      <button class="item-del-btn" type="button" onclick="removeItemRow(this)" title="削除">✕</button>
-    </div>
-  `).join('');
-
-  // ポジション別プリセット（drill-library.js の POS_PRESETS）
-  const posPresets = (typeof POS_PRESETS !== 'undefined' && POS_PRESETS[posId]) ? POS_PRESETS[posId] : [];
-  const posPresetOpts = posPresets.map(p =>
-    `<option value="${escPosHtml(p.name)}">${escPosHtml(p.name)}</option>`
-  ).join('');
-
-  // 汎用ドリルプリセット（drill-library.js の DRILL_PRESETS）
-  const genPresetOpts = (typeof DRILL_PRESETS !== 'undefined')
-    ? DRILL_PRESETS.map(p => {
-        const label = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
-        return `<option value="${escPosHtml(p.name)}">${escPosHtml(p.name)}（${label}）</option>`;
-      }).join('')
-    : '';
-
-  // 選択肢：ポジション別を先に、次に汎用
-  const allPresetOpts = [
-    posPresets.length ? `<optgroup label="ポジション別（${posId.toUpperCase()}）">${posPresetOpts}</optgroup>` : '',
-    genPresetOpts ? `<optgroup label="汎用ドリル">${genPresetOpts}</optgroup>` : '',
-  ].join('');
-
-  card.innerHTML = `
-    <div class="menu-edit-form">
-      <div class="menu-edit-row">
-        <label>ドリル名</label>
-        <input type="text" class="edit-pos-title" value="${escPosHtml(title)}" placeholder="例: シュートストップ宣言">
-      </div>
-      <div class="menu-edit-row">
-        <label>概要説明</label>
-        <input type="text" class="edit-pos-desc" value="${escPosHtml(desc)}" placeholder="ドリルの概要をひとことで">
-      </div>
-      <div class="menu-edit-row">
-        <label>ステップ・内容リスト</label>
-        <div class="items-editor">
-          <div class="items-list">
-            ${itemsHtml || '<div class="items-empty">内容がありません。下から追加してください。</div>'}
-          </div>
-          <div class="items-add-panel">
-            <div class="items-add-tabs">
-              <button class="items-tab-btn active" type="button" onclick="switchItemAddTab(this,'from-list')">リストから選ぶ</button>
-              <button class="items-tab-btn" type="button" onclick="switchItemAddTab(this,'custom')">カスタムで追加</button>
-            </div>
-            <div class="items-tab-content items-tab-from-list">
-              <select class="items-preset-select">
-                <option value="">── ドリルを選択 ──</option>
-                ${allPresetOpts}
-              </select>
-              <button class="btn btn-accent" type="button" onclick="addItemFromPreset(this)">＋</button>
-            </div>
-            <div class="items-tab-content items-tab-custom" style="display:none;">
-              <input type="text" class="items-custom-input" placeholder="例: 着地点を宣言してからジャンプ（10分）">
-              <button class="btn btn-accent" type="button" onclick="addCustomItem(this)">＋</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="menu-edit-row">
-        <label>FEP的ポイント</label>
-        <input type="text" class="edit-pos-fep" value="${escPosHtml(fep)}" placeholder="🧠 FEP的ポイント：予測誤差を最小化する...">
-      </div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="btn btn-primary" onclick="savePosEdit(this)">💾 保存</button>
-        <button class="btn btn-secondary" onclick="cancelPosEdit(this)">キャンセル</button>
-      </div>
-    </div>
-  `;
-  card.querySelector('.edit-pos-title')?.focus();
-}
-
-// ─── 編集保存 ────────────────────────────────────────────
-function savePosEdit(btn) {
-  const form = btn.closest('.menu-edit-form');
-  const card = btn.closest('.drill-card');
-  if (!form || !card) return;
-
-  const title = form.querySelector('.edit-pos-title')?.value?.trim() || '';
-  const desc  = form.querySelector('.edit-pos-desc')?.value?.trim()  || '';
-  const fep   = form.querySelector('.edit-pos-fep')?.value?.trim()   || '';
-
-  // items-list から項目を収集
-  const itemEls = form.querySelectorAll('.item-row .item-text');
-  const items   = Array.from(itemEls).map(el => el.textContent.trim()).filter(Boolean);
-
-  if (!title) { alert('ドリル名を入力してください'); return; }
-
-  const posId = POS_KEYS.find(p => card.classList.contains(p)) || 'gk';
-
-  card.dataset.posTitle = title;
-  card.dataset.posDesc  = desc;
-  card.dataset.posFep   = fep;
-  card.dataset.posItems = JSON.stringify(items);
-  card.dataset.posInit  = '1';
-
-  const stepsHtml = items.length
-    ? `<ul class="drill-steps">${items.map(i => `<li>${escPosHtml(i)}</li>`).join('')}</ul>`
-    : '';
-
-  card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editPosItem(this)" title="編集">✏️</button>
-    <div class="drill-header">
-      <span class="drill-num ${posId}">${escPosHtml(card.dataset.posNum || '')}</span>
-      <div class="drill-title">${escPosHtml(title)}</div>
-    </div>
-    ${desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(desc)}</p>` : ''}
-    ${stepsHtml}
-    ${fep ? `<div class="drill-fep ${posId}">🧠 ${escPosHtml(fep)}</div>` : ''}
-  `;
-}
-
-// ─── 編集キャンセル ─────────────────────────────────────
-function cancelPosEdit(btn) {
-  const card = btn.closest('.drill-card');
-  if (card?.dataset.originalHtml) {
-    card.innerHTML = card.dataset.originalHtml;
-    delete card.dataset.originalHtml;
-  }
-}
-
-// ─── カード削除（menu.js の deleteMenuItem を共有）────────
-// deleteMenuItem(btn) は menu.js で定義済み
-
-// ─── ライブラリからカードを追加（drill-library.js から呼ばれる）────
-function addPosItemFromPreset(posId, preset) {
+// ─── 状態の保存 ────────────────────────────────────────
+function savePosState(posId) {
   const container = document.getElementById('pos-' + posId);
   if (!container) return;
 
-  const existingCards = container.querySelectorAll('.drill-card');
-  const nextNum = existingCards.length + 1;
+  const checks = Array.from(container.querySelectorAll('.todo-list input[type="checkbox"]'))
+    .map(cb => cb.checked);
+  const note = document.getElementById(posId + '-note')?.value || '';
 
-  const card = document.createElement('div');
-  card.className = `drill-card ${posId}`;
-  card.style.position = 'relative';
-  card.dataset.posTitle = preset.name;
-  card.dataset.posDesc  = preset.desc || '';
-  card.dataset.posFep   = '';
-  card.dataset.posNum   = `Drill ${nextNum}`;
-  card.dataset.posItems = '[]';
-  card.dataset.posInit  = '1';
-  card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editPosItem(this)" title="編集">✏️</button>
-    <div class="drill-header">
-      <span class="drill-num ${posId}">Drill ${nextNum}</span>
-      <div class="drill-title">${escPosHtml(preset.name)}</div>
-    </div>
-    ${preset.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(preset.desc)}</p>` : ''}
-  `;
-  container.appendChild(card);
-}
+  localStorage.setItem('fep_pos_state_' + posId, JSON.stringify({ checks, note }));
 
-// ─── ポジションメニュー保存（localStorage）──────────────
-function savePosMenu(posId) {
-  const container = document.getElementById('pos-' + posId);
-  if (!container) return;
-
-  normalizeAllPosCards();
-
-  const cards = Array.from(container.querySelectorAll('.drill-card'));
-  const data = cards.map(card => ({
-    title: card.dataset.posTitle || '',
-    desc:  card.dataset.posDesc  || '',
-    items: JSON.parse(card.dataset.posItems || '[]'),
-    fep:   card.dataset.posFep   || '',
-    num:   card.dataset.posNum   || '',
-    pos:   posId,
-  }));
-
-  localStorage.setItem('fep_pos_' + posId, JSON.stringify(data));
-
-  const btn = document.querySelector(`[onclick*="savePosMenu('${posId}')"]`);
+  // フィードバック
+  const btn = container.querySelector('.todo-actions .btn-primary');
   if (btn) {
     const orig = btn.textContent;
     btn.textContent = '✅ 保存しました';
@@ -261,55 +236,88 @@ function savePosMenu(posId) {
   }
 }
 
-// ─── 保存済みドリルを DOM に復元 ────────────────────────
-function loadSavedPosMenus() {
-  POS_KEYS.forEach(posId => {
-    const raw = localStorage.getItem('fep_pos_' + posId);
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw);
-      const container = document.getElementById('pos-' + posId);
-      if (!container) return;
+// ─── チェック変更時 ────────────────────────────────────
+function onTodoChange(posId, idx, cb) {
+  const item = cb.closest('.todo-item');
+  if (item) {
+    item.classList.toggle('todo-done', cb.checked);
+  }
+}
 
-      container.querySelectorAll('.drill-card').forEach(c => c.remove());
+// ─── リセット ──────────────────────────────────────────
+function resetPosState(posId) {
+  if (!confirm('チェックとメモをリセットしますか？')) return;
+  localStorage.removeItem('fep_pos_state_' + posId);
+  renderPosContent(posId);
+}
 
-      data.forEach(item => {
-        const card = document.createElement('div');
-        card.className = `drill-card ${item.pos || posId}`;
-        card.style.position = 'relative';
-        card.dataset.posTitle = item.title || '';
-        card.dataset.posDesc  = item.desc  || '';
-        card.dataset.posItems = JSON.stringify(item.items || []);
-        card.dataset.posFep   = item.fep   || '';
-        card.dataset.posNum   = item.num   || '';
-        card.dataset.posInit  = '1';
+// ─── コンテンツ描画 ────────────────────────────────────
+function renderPosContent(posId) {
+  const container = document.getElementById('pos-' + posId);
+  if (!container) return;
 
-        const items = item.items || [];
-        const stepsHtml = items.length
-          ? `<ul class="drill-steps">${items.map(i => `<li>${escPosHtml(i)}</li>`).join('')}</ul>`
-          : '';
+  const data = positionMenus[posId];
+  if (!data) return;
 
-        card.innerHTML = `
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <button class="menu-edit-btn" onclick="editPosItem(this)" title="編集">✏️</button>
-          <div class="drill-header">
-            <span class="drill-num ${item.pos || posId}">${escPosHtml(item.num || '')}</span>
-            <div class="drill-title">${escPosHtml(item.title || '')}</div>
-          </div>
-          ${item.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(item.desc)}</p>` : ''}
-          ${stepsHtml}
-          ${item.fep  ? `<div class="drill-fep ${item.pos || posId}">🧠 ${escPosHtml(item.fep)}</div>` : ''}
-        `;
-        container.appendChild(card);
-      });
-    } catch(e) { console.error('loadSavedPosMenus:', posId, e); }
-  });
+  const state = loadPosState(posId);
+
+  const tagsHtml = data.tags
+    .map(t => `<span>${escPosHtml(t)}</span>`)
+    .join('');
+
+  const todosHtml = data.items.map((item, i) => {
+    const isChecked = state.checks[i] === true;
+    const checkedAttr = isChecked ? ' checked' : '';
+    const doneClass   = isChecked ? ' todo-done' : '';
+
+    const hasDetails = item.details && item.details.length > 0;
+    const detailsHtml = hasDetails
+      ? `<details>
+           <summary>詳細を見る</summary>
+           <ul>${item.details.map(d => `<li>${escPosHtml(d)}</li>`).join('')}</ul>
+         </details>`
+      : '';
+
+    return `
+      <div class="todo-item${doneClass}">
+        <label>
+          <input type="checkbox"${checkedAttr} onchange="onTodoChange('${posId}', ${i}, this)">
+          <span class="todo-title">${escPosHtml(item.title)}</span>
+        </label>
+        <p class="todo-sub">${escPosHtml(item.sub)}</p>
+        ${detailsHtml}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="simple-pos-header">
+      <h3>${data.icon} ${escPosHtml(data.title)}</h3>
+      <p>テーマ：${escPosHtml(data.theme)}</p>
+      <div class="simple-tags">${tagsHtml}</div>
+    </div>
+
+    <div class="todo-list">
+      ${todosHtml}
+    </div>
+
+    <div class="todo-note-box">
+      <label for="${posId}-note">今日のメモ</label>
+      <textarea id="${posId}-note" placeholder="気づいたことを記録しておきましょう">${escPosHtml(state.note || '')}</textarea>
+    </div>
+
+    <div class="todo-actions">
+      <button class="btn btn-primary" onclick="savePosState('${posId}')">💾 保存</button>
+      <button class="btn btn-secondary" onclick="resetPosState('${posId}')">リセット</button>
+    </div>
+  `;
 }
 
 // ─── 初期化 ──────────────────────────────────────────────
 function initPositionPage() {
-  loadSavedPosMenus();
-  normalizeAllPosCards();
+  POS_KEYS.forEach(posId => renderPosContent(posId));
+
+  // GK タブをアクティブに
   const firstBtn = document.querySelector('#pos-tabs .pos-tab-btn');
   if (firstBtn) switchPosTab('gk', firstBtn);
 }
