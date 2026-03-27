@@ -341,11 +341,14 @@
       background: linear-gradient(135deg, var(--primary-dark) 0%, #1d4ed8 60%, #2563eb 100%);
       color: white;
       border-radius: 16px;
-      padding: 44px 36px 36px;
+      padding: 44px 36px 40px;
       margin-bottom: 28px;
       text-align: center;
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .hero::before {
       content: '⚽';
@@ -2495,15 +2498,12 @@
 }
 
 .hero-qr {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  opacity: 0.75;
-  z-index: 100;
+  gap: 6px;
+  margin-top: 28px;
+  opacity: 0.8;
   transition: opacity 0.2s;
 }
 
@@ -2512,15 +2512,15 @@
 }
 
 .hero-qr img {
-  width: 56px;
-  height: 56px;
-  border-radius: 6px;
-  border: 1.5px solid rgba(0,0,0,0.12);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 
 .hero-qr span {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  letter-spacing: 0.03em;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.04em;
 }
