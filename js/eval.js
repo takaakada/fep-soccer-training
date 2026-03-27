@@ -1,237 +1,367 @@
+// ══════════════════════════════════════════════════════════════
+// EVAL.JS  —  Inflexion Index VFE 評価シート
+// ══════════════════════════════════════════════════════════════
+//
+// VFE計算式（既存 Inflexion Index アプリと同一）:
+//   sigmoid(x) = 1 / (1 + exp(-0.8 * (x - 5)))   ← k=0.8, x0=5
+//
+//   weight_value による重みマップ（線形補間あり）:
+//     +2 → (w_c=0.8, w_a=0.2)   イメージ偏重: complexity重視
+//     +1 → (w_c=0.7, w_a=0.3)
+//      0 → (w_c=0.6, w_a=0.4)   バランス
+//     -1 → (w_c=0.5, w_a=0.5)
+//     -2 → (w_c=0.4, w_a=0.6)   感覚偏重: accuracy重視
+//
+//   F_display = (w_c * sigmoid(complexity) + w_a * sigmoid(accuracy)) * 100
+//
+// デュアル Supabase 書き込み:
+//   sb    (Inflexion Index)      → assessments（選手VFE）
+//                                → estimation_uncertainty（コーチ σ/λ/τ）
+//   sbFep (FEP Soccer Training)  → training_sessions（フリーテキスト）
+// ══════════════════════════════════════════════════════════════
+
+// ── タブ切り替え ────────────────────────────────────────────
 function switchEvalTab(tabId, btn) {
-    document.querySelectorAll('.eval-sub-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.eval-sub-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('eval-sub-' + tabId).classList.add('active');
-    if (btn) btn.classList.add('active');
-    if (tabId === 'history') loadHistory();
-    if (tabId === 'weekly') loadWeeklyHistory();
+  document.querySelectorAll('.eval-sub-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.eval-sub-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('eval-sub-' + tabId).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (tabId === 'history') loadHistory();
+}
+
+// ── VFE ユーティリティ ───────────────────────────────────────
+
+// Sigmoid変換（Inflexion Index アプリと同一パラメータ）
+function vfeSigmoid(x) {
+  return 1.0 / (1.0 + Math.exp(-0.8 * (x - 5.0)));
+}
+
+// weight_value (-2〜+2) から (w_c, w_a) を線形補間で取得
+const VFE_WEIGHTS_MAP = { 2: [0.8, 0.2], 1: [0.7, 0.3], 0: [0.6, 0.4], '-1': [0.5, 0.5], '-2': [0.4, 0.6] };
+
+function interpolateVfeWeights(weight_value) {
+  const floor = Math.floor(weight_value);
+  const ceil  = Math.ceil(weight_value);
+  if (floor === ceil) {
+    return VFE_WEIGHTS_MAP[floor] || [0.6, 0.4];
   }
+  const frac = weight_value - floor;
+  const [wc_f, wa_f] = VFE_WEIGHTS_MAP[floor] || [0.6, 0.4];
+  const [wc_c, wa_c] = VFE_WEIGHTS_MAP[ceil]  || [0.6, 0.4];
+  return [wc_f + frac * (wc_c - wc_f), wa_f + frac * (wa_c - wa_f)];
+}
 
-function updateEvalSheet() {
-    const role = document.getElementById('role-select').value;
-    const grade = document.getElementById('grade-select').value;
-    document.querySelectorAll('.eval-sheet').forEach(s => s.style.display = 'none');
-    const target = document.getElementById('sheet-' + role + '-' + grade);
-    if (target) target.style.display = 'block';
-  }
+function getVfeLabel(score) {
+  if (score < 20) return '非常に安定';
+  if (score < 40) return '安定';
+  if (score < 60) return 'やや混乱';
+  if (score < 80) return '混乱が強い';
+  return '非常に混乱が強い';
+}
 
-function calcScore(prefix, numQ, maxPerQ) {
-    let total = 0, answered = 0;
-    for (let i = 1; i <= numQ; i++) {
-      const radios = document.querySelectorAll(`input[name="${prefix}${i}"]`);
-      radios.forEach(r => {
-        if (r.checked) { total += parseInt(r.value); answered++; }
-      });
-    }
-    const maxScore = numQ * maxPerQ;
-    const ratio = total / maxScore;
-    let comment = '', color = '#047857';
-    if (ratio >= 0.84)      { comment = '非常に良い適応 — 高いFEP的学習サイクルが回っています ✨'; }
-    else if (ratio >= 0.64) { comment = '概ね良い — 継続して取り組みましょう 👍'; }
-    else if (ratio >= 0.44) { comment = '一部で修正が必要 — 特定の軸に注目してみましょう 🔍'; color = '#b45309'; }
-    else if (ratio >= 0.24) { comment = '基礎から再確認 — 負荷を少し下げてみましょう ⚙️'; color = '#b45309'; }
-    else                    { comment = '未回答の項目があるか、負荷設定の見直しが必要です'; color = '#dc2626'; }
+function getVfeColor(score) {
+  if (score < 20) return '#059669';
+  if (score < 40) return '#10b981';
+  if (score < 60) return '#f59e0b';
+  if (score < 80) return '#ef4444';
+  return '#991b1b';
+}
 
-    const scoreEl = document.getElementById('score-' + prefix);
-    if (!scoreEl) return;
-    scoreEl.innerHTML = `
-      <div class="score-result">
-        <h4>スコア結果</h4>
-        <div class="score-number">${total} <span>/ ${maxScore}点</span></div>
-        ${answered < numQ ? `<div class="score-warning">⚠️ ${numQ - answered}項目が未回答です</div>` : '<div style="font-size:0.84rem;color:#6b7280;margin-top:4px">✅ 全項目回答済み</div>'}
-        <div class="score-comment" style="color:${color}">${comment}</div>
-      </div>`;
-    return { total, maxScore, answered };
-  }
+function getVfeBgColor(score) {
+  if (score < 40) return '#d1fae5';
+  if (score < 60) return '#fef3c7';
+  return '#fee2e2';
+}
 
-async function saveSession(sheetId, prefix, numQ, maxPerQ) {
-    let total = 0, scores = [];
-    for (let i = 1; i <= numQ; i++) {
-      const checked = document.querySelector(`input[name="${prefix}${i}"]:checked`);
-      const v = checked ? parseInt(checked.value) : 0;
-      scores.push(v); total += v;
-    }
-    const maxScore = numQ * maxPerQ;
-    const meta = readSheetMeta(sheetId);
-    const parts = sheetId.split('-');
-    const record = {
-      id: Date.now().toString(),
-      sheetId, role: parts[0], grade: parts.slice(1).join('-'),
-      playerName: meta.playerName || '（未入力）',
-      date: meta.date || new Date().toISOString().slice(0,10),
-      theme: meta.theme || '（未入力）',
-      scores, total, maxScore,
-      notes: meta.notes,
-      savedAt: new Date().toISOString()
+// ── VFEスコア表示HTML ────────────────────────────────────────
+function renderVfeScoreHtml(score, components, role) {
+  const label = getVfeLabel(score);
+  const color = getVfeColor(score);
+  const bg    = getVfeBgColor(score);
+  const pct   = Math.round(score * 10) / 10;
+
+  const compRows = components.map(c =>
+    `<div class="vfe-comp-row">
+      <span class="vfe-comp-name">${c.name}</span>
+      <div class="vfe-comp-bar-wrap">
+        <div class="vfe-comp-bar-fill" style="width:${Math.min(100, Math.round(c.pct))}%;background:${color}50"></div>
+      </div>
+      <span class="vfe-comp-val">${c.rawLabel}</span>
+    </div>`
+  ).join('');
+
+  return `
+    <div class="vfe-score-card" style="border-color:${color};background:${bg}20">
+      <div class="vfe-score-top">
+        <div>
+          <div class="vfe-score-label-sm">${role === 'player' ? 'Player VFEスコア（F_display）' : 'Coach σ/λ/τ スコア'}</div>
+          <div class="vfe-score-badge" style="color:${color};border-color:${color}">${label}</div>
+        </div>
+        <div class="vfe-score-number" style="color:${color}">${pct}<span style="font-size:1rem;font-weight:400"> / 100</span></div>
+      </div>
+      <div class="vfe-score-bar-track">
+        <div class="vfe-score-bar-fill" style="width:${Math.min(100, pct)}%;background:${color}"></div>
+      </div>
+      <div class="vfe-comp-list" style="margin-top:12px">${compRows}</div>
+      <p class="vfe-score-note">VFEスコアが高いほど混乱・不安定な状態を示します（0 = 非常に安定、100 = 非常に混乱）</p>
+    </div>`;
+}
+
+// ── Player VFEスコア計算 ─────────────────────────────────────
+// 既存 Inflexion Index アプリの fe_calculator.py と同一ロジック
+function calcPlayerVfeScore() {
+  const complexity   = parseFloat(document.getElementById('p-complexity')?.value ?? 5);
+  const accuracy     = parseFloat(document.getElementById('p-accuracy')?.value ?? 5);
+  const weight_value = parseFloat(document.getElementById('p-weight')?.value ?? 0);
+  const dr_score     = parseFloat(document.getElementById('p-dr')?.value ?? 5);
+  const uh_score     = parseFloat(document.getElementById('p-uh')?.value ?? 5);
+  const fh_score     = parseFloat(document.getElementById('p-fh')?.value ?? 5);
+
+  // Sigmoid変換
+  const norm_c = vfeSigmoid(complexity);
+  const norm_a = vfeSigmoid(accuracy);
+
+  // weight_value で重み変換
+  const [w_c, w_a] = interpolateVfeWeights(weight_value);
+
+  // F_display = (w_c * norm_c + w_a * norm_a) * 100
+  const F_display = (w_c * norm_c + w_a * norm_a) * 100;
+
+  const el = document.getElementById('vfe-player-score-result');
+  if (!el) return F_display;
+
+  // F'（感情変化）表示用スコア（別途参考表示）
+  const fPrimeAvg = (dr_score + uh_score + fh_score) / 3;
+
+  const components = [
+    { name: `complexity (w=${w_c.toFixed(2)})`, pct: norm_c * 100, rawLabel: `${complexity}/10` },
+    { name: `accuracy   (w=${w_a.toFixed(2)})`, pct: norm_a * 100, rawLabel: `${accuracy}/10` },
+    { name: 'dr 成長感 (F\'参考)',              pct: dr_score / 10 * 100, rawLabel: `${dr_score}/10` },
+    { name: 'uh 満足度 (F\'参考)',              pct: uh_score / 10 * 100, rawLabel: `${uh_score}/10` },
+    { name: 'fh 期待感 (F\'参考)',              pct: fh_score / 10 * 100, rawLabel: `${fh_score}/10` },
+  ];
+
+  el.innerHTML = renderVfeScoreHtml(F_display, components, 'player');
+  return F_display;
+}
+
+// ── Coach σ/λ/τ スコア計算（表示用）─────────────────────────
+// sigma_raw / lambda_raw は「高いほど混乱」として0-100で表示
+// tau_raw は5が中心で両方向にズレるとスコア増
+function calcCoachVfeScore() {
+  const sigma_raw  = parseFloat(document.getElementById('c-sigma')?.value ?? 5);
+  const lambda_raw = parseFloat(document.getElementById('c-lambda')?.value ?? 5);
+  const tau_raw    = parseFloat(document.getElementById('c-tau')?.value ?? 5);
+
+  // 表示用スコア（Inflexion Index アプリ内でより詳細計算が行われる）
+  const sigmaC  = sigma_raw / 10 * 100;
+  const lambdaC = lambda_raw / 10 * 100;
+  const tauC    = Math.abs(tau_raw - 5) / 5 * 100;
+  const displayScore = sigmaC * 0.5 + lambdaC * 0.3 + tauC * 0.2;
+
+  const el = document.getElementById('vfe-coach-score-result');
+  if (!el) return displayScore;
+
+  const components = [
+    { name: 'σ ばらつき (50%)', pct: sigmaC,  rawLabel: `${sigma_raw}/10` },
+    { name: 'λ 修正速度 (30%)', pct: lambdaC, rawLabel: `${lambda_raw}/10` },
+    { name: 'τ タイミング (20%)', pct: tauC,  rawLabel: `${tau_raw}/10` },
+  ];
+
+  el.innerHTML = renderVfeScoreHtml(displayScore, components, 'coach');
+  return displayScore;
+}
+
+// ── セッション保存（デュアル Supabase）───────────────────────
+async function saveVfeSession(role) {
+  const isPlayer = role === 'player';
+
+  const playerName = document.getElementById(isPlayer ? 'p-name' : 'c-name')?.value || '（未入力）';
+  const date       = document.getElementById(isPlayer ? 'p-date' : 'c-date')?.value
+                     || new Date().toISOString().slice(0, 10);
+  const theme      = document.getElementById(isPlayer ? 'p-theme' : 'c-theme')?.value || '（未入力）';
+
+  // ── ① Inflexion Index Supabase への書き込み ──────────────
+  if (isPlayer) {
+    const complexity   = parseFloat(document.getElementById('p-complexity').value);
+    const accuracy     = parseFloat(document.getElementById('p-accuracy').value);
+    const weight_value = parseFloat(document.getElementById('p-weight').value);
+    const dr_score     = parseFloat(document.getElementById('p-dr').value);
+    const uh_score     = parseFloat(document.getElementById('p-uh').value);
+    const fh_score     = parseFloat(document.getElementById('p-fh').value);
+    const F_display    = calcPlayerVfeScore();
+
+    // Inflexion Index assessments テーブルへ
+    await persistInflexionPlayerVfe({
+      pid:          playerName,
+      facility:     'soccer_training',
+      input_date:   date,
+      complexity, accuracy, weight_value,
+      F_display:    Math.round(F_display * 10) / 10,
+      dr_score, uh_score, fh_score,
+    });
+
+    // ── ② FEP Soccer Training → training_sessions（フリーテキスト）
+    const notes = {
+      maxZure:    document.getElementById('p-maxZure')?.value    || '',
+      correction: document.getElementById('p-correction')?.value || '',
+      nextTheme:  document.getElementById('p-nextTheme')?.value  || '',
+      memo:       document.getElementById('p-memo')?.value       || '',
     };
+    await persistSession({
+      id: Date.now().toString(), sheetId: 'player-vfe',
+      role: 'player', grade: 'vfe', playerName, date, theme,
+      scores: { complexity, accuracy, weight_value, dr_score, uh_score, fh_score },
+      total: Math.round(F_display * 10) / 10, maxScore: 100,
+      notes, savedAt: new Date().toISOString(),
+    });
 
-    await persistSession(record);
+    showVfeToast('toast-player', F_display, date);
 
-    const pct = maxScore > 0 ? Math.round(total / maxScore * 100) : 0;
-    const mode = (sb && currentUser) ? '☁ クラウドに保存' : '💾 ローカルに保存';
-    const toast = document.getElementById('toast-' + sheetId);
-    if (toast) {
-      toast.innerHTML = `✅ ${mode}しました！　スコア：${total}/${maxScore}点（${pct}%）　記録日：${record.date}`;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 4000);
-    }
+  } else {
+    const sigma_raw  = parseFloat(document.getElementById('c-sigma').value);
+    const lambda_raw = parseFloat(document.getElementById('c-lambda').value);
+    const tau_raw    = parseFloat(document.getElementById('c-tau').value);
+    const displayScore = calcCoachVfeScore();
+
+    // Inflexion Index estimation_uncertainty テーブルへ
+    await persistInflexionCoachEval({
+      pid:          playerName,
+      facility:     'soccer_training',
+      input_date:   date,
+      sigma_raw, lambda_raw, tau_raw,
+      evaluator_id: typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '',
+    });
+
+    // ② FEP Soccer Training → training_sessions（コーチコメント）
+    const notes = {
+      good:      document.getElementById('c-good')?.value      || '',
+      challenge: document.getElementById('c-challenge')?.value || '',
+      nextTheme: document.getElementById('c-nextTheme')?.value || '',
+    };
+    await persistSession({
+      id: Date.now().toString(), sheetId: 'coach-vfe',
+      role: 'coach', grade: 'vfe', playerName, date, theme,
+      scores: { sigma_raw, lambda_raw, tau_raw },
+      total: Math.round(displayScore * 10) / 10, maxScore: 100,
+      notes, savedAt: new Date().toISOString(),
+    });
+
+    showVfeToast('toast-coach', displayScore, date);
   }
+}
 
+function showVfeToast(toastId, score, date) {
+  const pct   = Math.round(score * 10) / 10;
+  const label = getVfeLabel(score);
+  const mode  = (typeof sbFep !== 'undefined' && sbFep && typeof currentUser !== 'undefined' && currentUser)
+                ? '☁ クラウドに保存' : '💾 ローカルに保存';
+  const toast = document.getElementById(toastId);
+  if (toast) {
+    toast.innerHTML = `✅ ${mode}しました！　VFEスコア：${pct}/100（${label}）　記録日：${date}`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4500);
+  }
+}
+
+// ── 履歴読み込み・表示 ───────────────────────────────────────
 async function loadHistory() {
-    const container = document.getElementById('history-list-container');
-    if (!container) return;
-    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted)">読み込み中…</div>';
+  const container = document.getElementById('history-list-container');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted)">読み込み中…</div>';
 
-    const sessions = await fetchSessions();
-    if (sessions.length === 0) {
-      container.innerHTML = `
-        <div class="history-empty">
-          <div class="big-icon">📋</div>
-          <p>まだセッション記録がありません。</p>
-          <p style="margin-top:8px;font-size:0.84rem">評価シートに記入後「💾 記録を保存」ボタンを押すと、ここに記録が表示されます。</p>
-          ${!(sb && currentUser) ? '<p style="margin-top:8px;font-size:0.82rem;color:#d97706">⚠ ログインするとクラウドに保存され、複数デバイスで閲覧できます。</p>' : ''}
-        </div>`;
-      return;
-    }
-    const roleLabel  = { player:'選手', coach:'指導者' };
-    const gradeLabel = { elementary:'小学生', junior:'中高生', pro:'大学生・社会人' };
-    container.innerHTML = `<div class="history-list">${sessions.map(s => {
-      const pct = s.maxScore > 0 ? Math.round(s.total / s.maxScore * 100) : 0;
-      const notesHtml = Object.entries(s.notes||{}).map(([k,v]) =>
-        `<div style="margin-bottom:8px"><span class="lbl">${k}</span><div class="hist-notes">${v}</div></div>`).join('');
-      return `
-      <div class="hist-card ${s.role==='coach'?'coach':''}" id="hcard-${s.id}">
-        <div class="hist-card-header">
-          <div>
-            <div class="hist-card-title">${s.playerName} — ${s.theme}</div>
-            <div class="hist-card-meta">${roleLabel[s.role]||s.role} ／ ${gradeLabel[s.grade]||s.grade} ／ ${s.date}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            <div class="hist-card-score">${s.total}/${s.maxScore}点（${pct}%）</div>
-            <div class="hist-card-actions">
-              <button class="hist-btn" onclick="toggleHistDetail('${s.id}')">詳細</button>
-              <button class="hist-btn del" onclick="deleteSession('${s.id}')">削除</button>
-            </div>
-          </div>
-        </div>
-        <div id="hdetail-${s.id}" class="hist-detail">
-          <div class="hist-detail-grid">
-            <div class="hist-detail-item"><span class="lbl">保存日時</span>${new Date(s.savedAt).toLocaleString('ja-JP')}</div>
-            <div class="hist-detail-item"><span class="lbl">スコア内訳</span>${s.scores.map((v,i)=>`Q${i+1}:${v}`).join(' / ')}</div>
-          </div>
-          ${notesHtml}
-        </div>
+  const sessions = await fetchSessions();
+  if (sessions.length === 0) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <div class="big-icon">📋</div>
+        <p>まだセッション記録がありません。</p>
+        <p style="margin-top:8px;font-size:0.84rem">評価シートに記入後「💾 記録を保存」ボタンを押すと、ここに記録が表示されます。</p>
       </div>`;
-    }).join('')}</div>`;
+    return;
   }
 
-async function saveWeekly() {
-    const record = {
-      id:        Date.now().toString(),
-      name:      document.getElementById('w-name').value  || '（未入力）',
-      week:      document.getElementById('w-week').value  || '（期間未入力）',
-      grade:     document.getElementById('w-grade').value,
-      theme:     document.getElementById('w-theme').value || '',
-      axes: {
-        jikoYosoku:   parseInt(document.getElementById('w-jikoYosoku').value),
-        gosaNinshiki: parseInt(document.getElementById('w-gosaNinshiki').value),
-        shuseiryoku:  parseInt(document.getElementById('w-shuseiryoku').value),
-        tekioryoku:   parseInt(document.getElementById('w-tekioryoku').value),
-        kyochosei:    parseInt(document.getElementById('w-kyochosei').value),
-      },
-      growth:    document.getElementById('w-growth').value    || '',
-      challenge: document.getElementById('w-challenge').value || '',
-      nextTheme: document.getElementById('w-nextTheme').value || '',
-      savedAt:   new Date().toISOString()
+  const roleLabel = { player: '選手（自己評価）', coach: 'コーチ（観察評価）' };
+
+  container.innerHTML = `<div class="history-list">${sessions.map(s => {
+    const vfeScore = s.total;
+    const color    = getVfeColor(vfeScore);
+    const label    = getVfeLabel(vfeScore);
+    const pct      = Math.round(vfeScore * 10) / 10;
+
+    const scoreKeys = {
+      complexity: 'complexity', accuracy: 'accuracy', weight_value: 'weight',
+      dr_score: 'dr', uh_score: 'uh', fh_score: 'fh',
+      sigma_raw: 'σ', lambda_raw: 'λ', tau_raw: 'τ',
     };
-
-    await persistWeekly(record);
-
-    const mode = (sb && currentUser) ? '☁ クラウドに保存' : '💾 ローカルに保存';
-    const toast = document.getElementById('toast-weekly');
-    if (toast) {
-      toast.innerHTML = `✅ 週間まとめを${mode}しました！ （${record.name}・${record.week}）`;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 4000);
+    let scoreDetail = '';
+    if (typeof s.scores === 'object' && !Array.isArray(s.scores)) {
+      scoreDetail = Object.entries(s.scores).map(([k, v]) =>
+        `<span class="hist-score-chip">${scoreKeys[k] || k}: ${v}</span>`).join('');
     }
-    loadWeeklyHistory();
-  }
 
-async function loadWeeklyHistory() {
-    const container = document.getElementById('weekly-history-list');
-    if (!container) return;
-    const weeklies = await fetchWeeklies();
-    if (weeklies.length === 0) {
-      container.innerHTML = `<div class="history-empty" style="padding:30px"><div class="big-icon">📊</div><p>まだ週間まとめがありません。</p></div>`;
-      return;
-    }
-    const axisLabels = { jikoYosoku:'自己予測', gosaNinshiki:'誤差認識', shuseiryoku:'修正力', tekioryoku:'適応力', kyochosei:'協調・共有' };
-    const gradeLabel = { elementary:'小学生', junior:'中高生', pro:'大学生・社会人' };
-    container.innerHTML = `<div class="weekly-history-list">${weeklies.map(w => {
-      const axisTotal = Object.values(w.axes).reduce((a,b)=>a+b,0);
-      const axisMax = Object.keys(w.axes).length * 5;
-      const pct = Math.round(axisTotal / axisMax * 100);
-      const barHtml = Object.entries(w.axes).map(([k,v]) =>
-        `<div class="weekly-axis-row">
-          <span class="weekly-axis-label">${axisLabels[k]||k}</span>
-          <div class="weekly-axis-bar-wrap"><div class="weekly-axis-bar-fill" style="width:${v/5*100}%"></div></div>
-          <span class="weekly-axis-val">${v}/5</span>
-        </div>`).join('');
-      return `
-      <div class="weekly-hist-card" id="wcard-${w.id}">
-        <div class="weekly-hist-header">
-          <div>
-            <div class="weekly-hist-title">${w.name} ／ ${w.week}</div>
-            <div class="weekly-hist-meta">${gradeLabel[w.grade]||w.grade}${w.theme?' ／ テーマ：'+w.theme:''} ／ 総合 ${pct}%</div>
-          </div>
+    const notesMap = { maxZure: '最大のズレ', correction: '修正方法', nextTheme: '次回テーマ', memo: 'メモ', good: 'よかった点', challenge: '課題' };
+    const notesHtml = Object.entries(s.notes || {}).filter(([, v]) => v).map(([k, v]) =>
+      `<div style="margin-bottom:6px"><span class="lbl">${notesMap[k] || k}</span><div class="hist-notes">${v}</div></div>`
+    ).join('');
+
+    return `
+    <div class="hist-card ${s.role === 'coach' ? 'coach' : ''}" id="hcard-${s.id}">
+      <div class="hist-card-header">
+        <div style="flex:1;min-width:0">
+          <div class="hist-card-title">${s.playerName} — ${s.theme}</div>
+          <div class="hist-card-meta">${roleLabel[s.role] || s.role} ／ ${s.date}</div>
+          <div class="hist-vfe-badge" style="color:${color};border-color:${color}">${label}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+          <div class="hist-card-score" style="color:${color}">${pct}/100</div>
+          <div class="hist-vfe-bar-mini"><div style="width:${Math.min(100,pct)}%;background:${color}"></div></div>
           <div class="hist-card-actions">
-            <button class="hist-btn" onclick="toggleWeeklyDetail('${w.id}')">詳細</button>
-            <button class="hist-btn del" onclick="deleteWeekly('${w.id}')">削除</button>
+            <button class="hist-btn" onclick="toggleHistDetail('${s.id}')">詳細</button>
+            <button class="hist-btn del" onclick="deleteSession('${s.id}')">削除</button>
           </div>
         </div>
-        <div id="wdetail-${w.id}" class="weekly-detail">
-          <div class="weekly-axis-bars">${barHtml}</div>
-          ${w.growth?`<div style="margin-top:10px"><span style="font-size:0.77rem;font-weight:700;color:var(--text-muted)">成長点</span><div class="hist-notes" style="margin-top:4px">${w.growth}</div></div>`:''}
-          ${w.challenge?`<div style="margin-top:8px"><span style="font-size:0.77rem;font-weight:700;color:var(--text-muted)">課題</span><div class="hist-notes" style="margin-top:4px">${w.challenge}</div></div>`:''}
-          ${w.nextTheme?`<div style="margin-top:8px"><span style="font-size:0.77rem;font-weight:700;color:var(--text-muted)">来週のテーマ</span><div class="hist-notes" style="margin-top:4px">${w.nextTheme}</div></div>`:''}
+      </div>
+      <div id="hdetail-${s.id}" class="hist-detail">
+        <div class="hist-detail-grid">
+          <div class="hist-detail-item"><span class="lbl">保存日時</span>${new Date(s.savedAt).toLocaleString('ja-JP')}</div>
+          <div class="hist-detail-item"><span class="lbl">スコア内訳</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${scoreDetail}</div></div>
         </div>
-      </div>`;
-    }).join('')}</div>`;
-  }
+        ${notesHtml}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
 
-function toggleHistDetail(id) { document.getElementById('hdetail-'+id)?.classList.toggle('open'); }
+// ── 詳細トグル ──────────────────────────────────────────────
+function toggleHistDetail(id) {
+  document.getElementById('hdetail-' + id)?.classList.toggle('open');
+}
 
+// ── セッション削除 ───────────────────────────────────────────
 async function deleteSession(id) {
   if (!confirm('このセッション記録を削除しますか？')) return;
   await removeSession(id);
   loadHistory();
 }
 
-function toggleWeeklyDetail(id) { document.getElementById('wdetail-'+id)?.classList.toggle('open'); }
+// ── 全データ削除 ─────────────────────────────────────────────
+async function clearAllData() {
+  if (!confirm('すべてのセッション記録を削除しますか？この操作は元に戻せません。')) return;
+  localStorage.removeItem('fep_sessions');
+  loadHistory();
+}
 
-async function deleteWeekly(id) {
-    if (!confirm('この週間まとめを削除しますか？')) return;
-    await removeWeekly(id);
-    loadWeeklyHistory();
-  }
-
-
+// ── 選手フィルター ───────────────────────────────────────────
 let playerFilterValue = '';
 
 function filterByPlayer() {
   const filterInput = document.getElementById('player-filter-input');
   if (!filterInput) return;
-
   playerFilterValue = filterInput.value.toLowerCase().trim();
-
-  const rows = document.querySelectorAll('#history-table tbody tr');
-  rows.forEach(row => {
-    const playerCell = row.querySelector('td:nth-child(3)');
-    if (!playerCell) return;
-
-    const playerName = playerCell.textContent.toLowerCase();
-    const matches = playerName.includes(playerFilterValue) || playerFilterValue === '';
-    row.style.display = matches ? '' : 'none';
+  document.querySelectorAll('#history-list-container .hist-card').forEach(card => {
+    const title = card.querySelector('.hist-card-title')?.textContent?.toLowerCase() || '';
+    card.style.display = (title.includes(playerFilterValue) || playerFilterValue === '') ? '' : 'none';
   });
 }
 
@@ -239,19 +369,20 @@ function clearPlayerFilter() {
   playerFilterValue = '';
   const filterInput = document.getElementById('player-filter-input');
   if (filterInput) filterInput.value = '';
-
-  const rows = document.querySelectorAll('#history-table tbody tr');
-  rows.forEach(row => row.style.display = '');
+  document.querySelectorAll('#history-list-container .hist-card').forEach(card => card.style.display = '');
 }
 
+// ── ページ初期化 ─────────────────────────────────────────────
 function initEvalPage() {
-  updateEvalSheet();
+  const today = new Date().toISOString().slice(0, 10);
+  const pDate = document.getElementById('p-date');
+  const cDate = document.getElementById('c-date');
+  if (pDate && !pDate.value) pDate.value = today;
+  if (cDate && !cDate.value) cDate.value = today;
+
+  calcPlayerVfeScore();
+  calcCoachVfeScore();
+
   const activeTab = document.querySelector('.eval-sub-btn.active');
-  if (activeTab) {
-    const tab = activeTab.textContent.trim();
-    if (tab.includes('履歴')) {
-      loadHistory();
-      loadWeeklyHistory();
-    }
-  }
+  if (activeTab?.textContent?.includes('履歴')) loadHistory();
 }

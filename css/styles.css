@@ -2267,3 +2267,220 @@
 .pos-eval-details[open] > summary::before {
   transform: rotate(90deg);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   VFE 評価シート スタイル
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── セクション説明文 ──────────────────────────────────── */
+.vfe-section-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  margin-top: -4px;
+}
+
+/* ─── スライダーグリッド ────────────────────────────────── */
+.vfe-slider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.vfe-slider-item {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+}
+
+.vfe-slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main, #111827);
+  margin-bottom: 4px;
+}
+
+.vfe-val {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--primary, #2563eb);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.vfe-desc {
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+/* ─── スライダー本体 ────────────────────────────────────── */
+.vfe-slider-item input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary, #2563eb);
+  cursor: pointer;
+  height: 6px;
+}
+
+/* ─── スケール端ラベル ──────────────────────────────────── */
+.vfe-scale-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.vfe-scale-ends-3 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ─── VFEスコアカード ───────────────────────────────────── */
+.vfe-score-display {
+  margin-top: 16px;
+}
+
+.vfe-score-card {
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: #f9fafb;
+}
+
+.vfe-score-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.vfe-score-label-sm {
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.vfe-score-badge {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border: 2px solid;
+  border-radius: 20px;
+  padding: 3px 12px;
+}
+
+.vfe-score-number {
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* ─── スコアバー ────────────────────────────────────────── */
+.vfe-score-bar-track {
+  height: 10px;
+  background: var(--border, #e5e7eb);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.vfe-score-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* ─── 成分バー ──────────────────────────────────────────── */
+.vfe-comp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vfe-comp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+
+.vfe-comp-name {
+  width: 130px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.vfe-comp-bar-wrap {
+  flex: 1;
+  height: 7px;
+  background: var(--border, #e5e7eb);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.vfe-comp-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.3s;
+}
+
+.vfe-comp-val {
+  width: 36px;
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vfe-score-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 12px;
+  border-top: 1px solid var(--border, #e5e7eb);
+  padding-top: 8px;
+}
+
+/* ─── 履歴カード VFE 追加スタイル ──────────────────────── */
+.hist-vfe-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1.5px solid;
+  border-radius: 20px;
+  padding: 2px 10px;
+  margin-top: 4px;
+}
+
+.hist-vfe-bar-mini {
+  width: 80px;
+  height: 5px;
+  background: var(--border, #e5e7eb);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.hist-vfe-bar-mini > div {
+  height: 100%;
+  border-radius: 99px;
+}
+
+.hist-score-chip {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: var(--border, #e5e7eb);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-variant-numeric: tabular-nums;
+}
