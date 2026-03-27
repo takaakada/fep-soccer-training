@@ -269,7 +269,8 @@
 
     body {
       font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
-      background: var(--bg);
+      background: linear-gradient(180deg, #dce8fb 0%, #eef3fc 40%, #f1f5f9 100%);
+      background-attachment: fixed;
       color: var(--text);
       min-height: 100vh;
       line-height: 1.65;
