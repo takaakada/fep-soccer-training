@@ -1,6 +1,6 @@
 <div class="section-header">
       <h2>評価シート</h2>
-      <p>セッション評価の記録・週間まとめ・履歴管理</p>
+      <p>VFEスコア記録・コーチ評価・履歴管理</p>
     </div>
 
     <div class="eval-sub-tabs" id="eval-sub-tabs">
@@ -9,342 +9,182 @@
       <button class="eval-sub-btn" onclick="switchEvalTab('history', this)">📁 記録・履歴</button>
     </div>
 
-    <!-- ─── Session Eval Sub-page ─── -->
+    <!-- ─── Player VFE Sub-page ─── -->
     <div id="eval-sub-session" class="eval-sub-content active">
-
-    <div class="eval-selector">
-      <div class="eval-select">
-        <label>役割</label>
-        <select id="role-select" onchange="updateEvalSheet()">
-          <option value="player">選手（自己評価）</option>
-          <option value="coach">指導者（観察評価）</option>
-        </select>
-      </div>
-      <div class="eval-select">
-        <label>年代</label>
-        <select id="grade-select" onchange="updateEvalSheet()">
-          <option value="elementary">小学生</option>
-          <option value="junior">中高生</option>
-          <option value="pro">大学生・社会人</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ─── Player / Elementary ─── -->
-    <div id="sheet-player-elementary" class="eval-sheet">
       <div class="eval-form">
-        <div class="eval-form-title">⭐ 今日のふりかえりシート（小学生・選手用）</div>
-        <div class="eval-form-sub">1 = もうすこし ／ 2 = まあまあできた ／ 3 = できた ⭐</div>
+        <div class="eval-form-title">📝 自己評価シート（Inflexion Index · VFE）</div>
+        <div class="eval-form-sub">今日の練習の感覚を正直に記録しましょう。スライダーは動かすたびに自動計算されます。</div>
+
         <div class="eval-meta">
-          <div class="meta-field"><label>なまえ</label><input type="text" placeholder="なまえをかこう"></div>
-          <div class="meta-field"><label>ひにち</label><input type="date"></div>
-          <div class="meta-field"><label>きょうのテーマ</label><input type="text" placeholder="テーマ"></div>
-          <div class="meta-field"><label>いちばんたのしかったこと</label><input type="text" placeholder=""></div>
-          <div class="meta-field"><label>いちばんむずかしかったこと</label><input type="text" placeholder=""></div>
+          <div class="meta-field"><label>名前</label><input type="text" id="p-name" placeholder="選手名"></div>
+          <div class="meta-field"><label>日付</label><input type="date" id="p-date"></div>
+          <div class="meta-field"><label>テーマ</label><input type="text" id="p-theme" placeholder="今日のテーマ"></div>
         </div>
-        <div class="rating-section-label">ひょうか</div>
-        <table class="rating-table">
-          <thead><tr><th>こうもく</th><th>もうすこし ①</th><th>まあまあ ②</th><th>できた ③</th></tr></thead>
-          <tbody>
-            <tr><td>じぶんのうごきをよそうできた</td><td><input type="radio" name="e1_q1" value="1"></td><td><input type="radio" name="e1_q1" value="2"></td><td><input type="radio" name="e1_q1" value="3"></td></tr>
-            <tr><td>おもったのとちがうことにきづけた</td><td><input type="radio" name="e1_q2" value="1"></td><td><input type="radio" name="e1_q2" value="2"></td><td><input type="radio" name="e1_q2" value="3"></td></tr>
-            <tr><td>つぎでなおそうとできた</td><td><input type="radio" name="e1_q3" value="1"></td><td><input type="radio" name="e1_q3" value="2"></td><td><input type="radio" name="e1_q3" value="3"></td></tr>
-            <tr><td>へんかしてもつづけられた</td><td><input type="radio" name="e1_q4" value="1"></td><td><input type="radio" name="e1_q4" value="2"></td><td><input type="radio" name="e1_q4" value="3"></td></tr>
-            <tr><td>みかたをみてできた</td><td><input type="radio" name="e1_q5" value="1"></td><td><input type="radio" name="e1_q5" value="2"></td><td><input type="radio" name="e1_q5" value="3"></td></tr>
-          </tbody>
-        </table>
+
+        <!-- VFE Core -->
+        <div class="rating-section-label">📊 VFEコア指標</div>
+        <p class="vfe-section-note">練習の複雑さ・ズレの大きさ・認知バランスを記録します（高いほどVFEスコアが上昇）</p>
+
+        <div class="vfe-slider-grid">
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>Q1 · 複雑さ（complexity）</span>
+              <span class="vfe-val" id="v-complexity">5</span>
+            </div>
+            <p class="vfe-desc">今日の練習の複雑さ・難しさ</p>
+            <input type="range" id="p-complexity" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-complexity').textContent=this.value;calcPlayerVfeScore()">
+            <div class="vfe-scale-ends"><span>簡単 (0)</span><span>複雑 (10)</span></div>
+          </div>
+
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>Q2 · 不調・ズレ（accuracy）</span>
+              <span class="vfe-val" id="v-accuracy">5</span>
+            </div>
+            <p class="vfe-desc">動きの不調・ズレの大きさ</p>
+            <input type="range" id="p-accuracy" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-accuracy').textContent=this.value;calcPlayerVfeScore()">
+            <div class="vfe-scale-ends"><span>ズレなし (0)</span><span>大きなズレ (10)</span></div>
+          </div>
+
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>Q3 · 認知バランス（weight）</span>
+              <span class="vfe-val" id="v-weight">0</span>
+            </div>
+            <p class="vfe-desc">イメージ先行か感覚先行か（0 = バランス、両極端でVFEが上昇）</p>
+            <input type="range" id="p-weight" min="-2" max="2" step="1" value="0"
+                   oninput="document.getElementById('v-weight').textContent=(parseFloat(this.value)>0?'+':'')+this.value;calcPlayerVfeScore()">
+            <div class="vfe-scale-ends"><span>イメージ偏重 (−2)</span><span>感覚偏重 (+2)</span></div>
+          </div>
+        </div>
+
+        <!-- F' Emotional -->
+        <div class="rating-section-label" style="margin-top:24px">💚 感情変化（F'スコア）</div>
+        <p class="vfe-section-note">高いほど良い状態です（内部でVFEスコアに反転して使用）</p>
+
+        <div class="vfe-slider-grid">
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>Q4 · 成長の実感（dr）</span>
+              <span class="vfe-val" id="v-dr">5</span>
+            </div>
+            <p class="vfe-desc">今日の練習でうまくなった・成長した実感</p>
+            <input type="range" id="p-dr" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-dr').textContent=this.value;calcPlayerVfeScore()">
+            <div class="vfe-scale-ends"><span>実感なし (0)</span><span>強い実感 (10)</span></div>
+          </div>
+
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>Q5 · 満足度（uh）</span>
+              <span class="vfe-val" id="v-uh">5</span>
+            </div>
+            <p class="vfe-desc">今日の練習への満足度</p>
+            <input type="range" id="p-uh" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-uh').textContent=this.value;calcPlayerVfeScore()">
+            <div class="vfe-scale-ends"><span>不満足 (0)</span><span>非常に満足 (10)</span></div>
+          </div>
+
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>Q6 · 次回への期待（fh）</span>
+              <span class="vfe-val" id="v-fh">5</span>
+            </div>
+            <p class="vfe-desc">次回の練習への期待感・楽しみ</p>
+            <input type="range" id="p-fh" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-fh').textContent=this.value;calcPlayerVfeScore()">
+            <div class="vfe-scale-ends"><span>期待なし (0)</span><span>非常に期待 (10)</span></div>
+          </div>
+        </div>
+
+        <!-- Live score display -->
+        <div id="vfe-player-score-result" class="vfe-score-display"></div>
+
+        <!-- Free text -->
+        <div class="rating-section-label" style="margin-top:24px">📝 フリー記述</div>
         <div class="text-fields-grid">
-          <div class="text-field"><label>つぎにがんばること</label><textarea placeholder="ひとこと書いてみよう"></textarea></div>
+          <div class="text-field"><label>今日の最大のズレ</label><textarea id="p-maxZure" placeholder="どんな場面で一番ズレを感じたか？"></textarea></div>
+          <div class="text-field"><label>修正方法</label><textarea id="p-correction" placeholder="どうやって修正しようとしたか？"></textarea></div>
+          <div class="text-field"><label>次回テーマ</label><textarea id="p-nextTheme" placeholder="次回意識したいこと"></textarea></div>
+          <div class="text-field"><label>その他メモ</label><textarea id="p-memo" placeholder="自由記述"></textarea></div>
         </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="calcScore('e1_q',5,3)">スコアを見る ✨</button>
-          <button class="btn btn-save" onclick="saveSession('player-elementary','e1_q',5,3)">💾 記録を保存</button>
+
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-save" onclick="saveVfeSession('player')">💾 記録を保存</button>
           <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
         </div>
-        <div id="toast-player-elementary" class="save-toast"></div>
-        <div id="score-e1_q"></div>
+        <div id="toast-player" class="save-toast"></div>
       </div>
     </div>
 
-    <!-- ─── Player / Junior ─── -->
-    <div id="sheet-player-junior" class="eval-sheet" style="display:none">
-      <div class="eval-form">
-        <div class="eval-form-title">📝 本日の自己評価シート（中高生・選手用）</div>
-        <div class="eval-form-sub">1 = できなかった ／ 2 = あまりできなかった ／ 3 = どちらともいえない ／ 4 = できた ／ 5 = よくできた</div>
-        <div class="eval-meta">
-          <div class="meta-field"><label>名前</label><input type="text" placeholder="選手名"></div>
-          <div class="meta-field"><label>練習日</label><input type="date"></div>
-          <div class="meta-field"><label>テーマ</label><input type="text" placeholder="今日のテーマ"></div>
-          <div class="meta-field"><label>今日の体調</label><select><option>5 — 絶好調</option><option>4 — 良い</option><option selected>3 — 普通</option><option>2 — やや悪い</option><option>1 — 不調</option></select></div>
-        </div>
-        <div class="rating-section-label">自己評価（5段階）</div>
-        <table class="rating-table">
-          <thead><tr><th>評価項目</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
-          <tbody>
-            <tr><td>自分のプレーをある程度予測して動けた</td><td><input type="radio" name="j1_q1" value="1"></td><td><input type="radio" name="j1_q1" value="2"></td><td><input type="radio" name="j1_q1" value="3"></td><td><input type="radio" name="j1_q1" value="4"></td><td><input type="radio" name="j1_q1" value="5"></td></tr>
-            <tr><td>予想と結果のズレに気づけた</td><td><input type="radio" name="j1_q2" value="1"></td><td><input type="radio" name="j1_q2" value="2"></td><td><input type="radio" name="j1_q2" value="3"></td><td><input type="radio" name="j1_q2" value="4"></td><td><input type="radio" name="j1_q2" value="5"></td></tr>
-            <tr><td>ズレを次のプレーで修正できた</td><td><input type="radio" name="j1_q3" value="1"></td><td><input type="radio" name="j1_q3" value="2"></td><td><input type="radio" name="j1_q3" value="3"></td><td><input type="radio" name="j1_q3" value="4"></td><td><input type="radio" name="j1_q3" value="5"></td></tr>
-            <tr><td>ルールや状況の変化に対応できた</td><td><input type="radio" name="j1_q4" value="1"></td><td><input type="radio" name="j1_q4" value="2"></td><td><input type="radio" name="j1_q4" value="3"></td><td><input type="radio" name="j1_q4" value="4"></td><td><input type="radio" name="j1_q4" value="5"></td></tr>
-            <tr><td>味方や相手の動きを見て判断できた</td><td><input type="radio" name="j1_q5" value="1"></td><td><input type="radio" name="j1_q5" value="2"></td><td><input type="radio" name="j1_q5" value="3"></td><td><input type="radio" name="j1_q5" value="4"></td><td><input type="radio" name="j1_q5" value="5"></td></tr>
-          </tbody>
-        </table>
-        <div class="text-fields-grid">
-          <div class="text-field"><label>今日もっともズレた場面</label><textarea placeholder="具体的に書いてみよう"></textarea></div>
-          <div class="text-field"><label>そのズレをどう修正したか</label><textarea placeholder="どうやって直した？"></textarea></div>
-          <div class="text-field"><label>次回のテーマ</label><textarea placeholder="次回意識したいこと"></textarea></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="calcScore('j1_q',5,5)">スコアを計算</button>
-          <button class="btn btn-save" onclick="saveSession('player-junior','j1_q',5,5)">💾 記録を保存</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
-        </div>
-        <div id="toast-player-junior" class="save-toast"></div>
-        <div id="score-j1_q"></div>
-      </div>
-    </div>
-
-    <!-- ─── Player / Pro ─── -->
-    <div id="sheet-player-pro" class="eval-sheet" style="display:none">
-      <div class="eval-form">
-        <div class="eval-form-title">📊 セッション自己評価シート（大学生・社会人・選手用）</div>
-        <div class="eval-form-sub">1 = できなかった ／ 3 = どちらともいえない ／ 5 = よくできた</div>
-        <div class="eval-meta">
-          <div class="meta-field"><label>選手名</label><input type="text" placeholder="選手名"></div>
-          <div class="meta-field"><label>日付</label><input type="date"></div>
-          <div class="meta-field"><label>セッションテーマ</label><input type="text" placeholder="今日のテーマ"></div>
-          <div class="meta-field"><label>主観的コンディション</label><select><option>5</option><option>4</option><option selected>3</option><option>2</option><option>1</option></select></div>
-          <div class="meta-field"><label>主観的集中度</label><select><option>5</option><option>4</option><option selected>3</option><option>2</option><option>1</option></select></div>
-        </div>
-        <div class="rating-section-label">自己評価（5段階）</div>
-        <table class="rating-table">
-          <thead><tr><th>評価項目</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
-          <tbody>
-            <tr><td>自己予測の精度を意識してプレーできた</td><td><input type="radio" name="p1_q1" value="1"></td><td><input type="radio" name="p1_q1" value="2"></td><td><input type="radio" name="p1_q1" value="3"></td><td><input type="radio" name="p1_q1" value="4"></td><td><input type="radio" name="p1_q1" value="5"></td></tr>
-            <tr><td>予測誤差を明確に捉えられた</td><td><input type="radio" name="p1_q2" value="1"></td><td><input type="radio" name="p1_q2" value="2"></td><td><input type="radio" name="p1_q2" value="3"></td><td><input type="radio" name="p1_q2" value="4"></td><td><input type="radio" name="p1_q2" value="5"></td></tr>
-            <tr><td>修正を短時間で行えた</td><td><input type="radio" name="p1_q3" value="1"></td><td><input type="radio" name="p1_q3" value="2"></td><td><input type="radio" name="p1_q3" value="3"></td><td><input type="radio" name="p1_q3" value="4"></td><td><input type="radio" name="p1_q3" value="5"></td></tr>
-            <tr><td>外乱や条件変化に適応できた</td><td><input type="radio" name="p1_q4" value="1"></td><td><input type="radio" name="p1_q4" value="2"></td><td><input type="radio" name="p1_q4" value="3"></td><td><input type="radio" name="p1_q4" value="4"></td><td><input type="radio" name="p1_q4" value="5"></td></tr>
-            <tr><td>味方と状況認識を共有してプレーできた</td><td><input type="radio" name="p1_q5" value="1"></td><td><input type="radio" name="p1_q5" value="2"></td><td><input type="radio" name="p1_q5" value="3"></td><td><input type="radio" name="p1_q5" value="4"></td><td><input type="radio" name="p1_q5" value="5"></td></tr>
-            <tr><td>判断と実行を分けて振り返ることができた</td><td><input type="radio" name="p1_q6" value="1"></td><td><input type="radio" name="p1_q6" value="2"></td><td><input type="radio" name="p1_q6" value="3"></td><td><input type="radio" name="p1_q6" value="4"></td><td><input type="radio" name="p1_q6" value="5"></td></tr>
-          </tbody>
-        </table>
-        <div class="text-fields-grid">
-          <div class="text-field"><label>今日の最大の予測誤差（場面）</label><textarea placeholder="具体的な場面を記述"></textarea></div>
-          <div class="text-field"><label>その原因</label><textarea placeholder="なぜズレたか？"></textarea></div>
-          <div class="text-field"><label>修正に使えた手がかり</label><textarea placeholder="何が手がかりになったか？"></textarea></div>
-          <div class="text-field"><label>次回改善したい点</label><textarea placeholder="次回のテーマ"></textarea></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="calcScore('p1_q',6,5)">スコアを計算</button>
-          <button class="btn btn-save" onclick="saveSession('player-pro','p1_q',6,5)">💾 記録を保存</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
-        </div>
-        <div id="toast-player-pro" class="save-toast"></div>
-        <div id="score-p1_q"></div>
-      </div>
-    </div>
-
-    <!-- ─── Coach / Elementary ─── -->
-    <div id="sheet-coach-elementary" class="eval-sheet" style="display:none">
-      <div class="eval-form">
-        <div class="eval-form-title">👁️ 指導者観察シート（小学生）</div>
-        <div class="eval-form-sub">1 = これから ／ 2 = ときどきできる ／ 3 = よくできる</div>
-        <div class="eval-meta">
-          <div class="meta-field"><label>選手名</label><input type="text" placeholder="選手名"></div>
-          <div class="meta-field"><label>日付</label><input type="date"></div>
-          <div class="meta-field"><label>テーマ</label><input type="text" placeholder="今日のテーマ"></div>
-        </div>
-        <div class="rating-section-label">観察評価（3段階）</div>
-        <table class="rating-table">
-          <thead><tr><th>観察項目</th><th>これから ①</th><th>ときどき ②</th><th>よくできる ③</th></tr></thead>
-          <tbody>
-            <tr><td>動く前に考えようとしている</td><td><input type="radio" name="ce_q1" value="1"></td><td><input type="radio" name="ce_q1" value="2"></td><td><input type="radio" name="ce_q1" value="3"></td></tr>
-            <tr><td>うまくいかない時に止まらず続けられる</td><td><input type="radio" name="ce_q2" value="1"></td><td><input type="radio" name="ce_q2" value="2"></td><td><input type="radio" name="ce_q2" value="3"></td></tr>
-            <tr><td>次のプレーで少し直そうとしている</td><td><input type="radio" name="ce_q3" value="1"></td><td><input type="radio" name="ce_q3" value="2"></td><td><input type="radio" name="ce_q3" value="3"></td></tr>
-            <tr><td>変化しても楽しみながら取り組める</td><td><input type="radio" name="ce_q4" value="1"></td><td><input type="radio" name="ce_q4" value="2"></td><td><input type="radio" name="ce_q4" value="3"></td></tr>
-            <tr><td>仲間を見ながらプレーしようとしている</td><td><input type="radio" name="ce_q5" value="1"></td><td><input type="radio" name="ce_q5" value="2"></td><td><input type="radio" name="ce_q5" value="3"></td></tr>
-          </tbody>
-        </table>
-        <div class="text-fields-grid">
-          <div class="text-field"><label>今日のよかった点</label><textarea placeholder="具体的な場面や言動"></textarea></div>
-          <div class="text-field"><label>次に伸ばしたい点</label><textarea placeholder="次回のテーマ"></textarea></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-accent" onclick="calcScore('ce_q',5,3)">スコアを計算</button>
-          <button class="btn btn-save" onclick="saveSession('coach-elementary','ce_q',5,3)">💾 記録を保存</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
-        </div>
-        <div id="toast-coach-elementary" class="save-toast"></div>
-        <div id="score-ce_q"></div>
-      </div>
-    </div>
-
-    <!-- ─── Coach / Junior ─── -->
-    <div id="sheet-coach-junior" class="eval-sheet" style="display:none">
-      <div class="eval-form">
-        <div class="eval-form-title">👁️ 指導者評価シート（中高生）</div>
-        <div class="eval-form-sub">1 = できていない ／ 3 = どちらともいえない ／ 5 = よくできている</div>
-        <div class="eval-meta">
-          <div class="meta-field"><label>選手名</label><input type="text" placeholder="選手名"></div>
-          <div class="meta-field"><label>日付</label><input type="date"></div>
-          <div class="meta-field"><label>テーマ</label><input type="text" placeholder="今日のテーマ"></div>
-        </div>
-        <div class="rating-section-label">観察評価（5段階）</div>
-        <table class="rating-table">
-          <thead><tr><th>観察項目</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
-          <tbody>
-            <tr><td>自己予測をもってプレーしている</td><td><input type="radio" name="cj_q1" value="1"></td><td><input type="radio" name="cj_q1" value="2"></td><td><input type="radio" name="cj_q1" value="3"></td><td><input type="radio" name="cj_q1" value="4"></td><td><input type="radio" name="cj_q1" value="5"></td></tr>
-            <tr><td>予測と現実のズレに気づいている</td><td><input type="radio" name="cj_q2" value="1"></td><td><input type="radio" name="cj_q2" value="2"></td><td><input type="radio" name="cj_q2" value="3"></td><td><input type="radio" name="cj_q2" value="4"></td><td><input type="radio" name="cj_q2" value="5"></td></tr>
-            <tr><td>技術や判断を修正できている</td><td><input type="radio" name="cj_q3" value="1"></td><td><input type="radio" name="cj_q3" value="2"></td><td><input type="radio" name="cj_q3" value="3"></td><td><input type="radio" name="cj_q3" value="4"></td><td><input type="radio" name="cj_q3" value="5"></td></tr>
-            <tr><td>制約や状況変化に適応できている</td><td><input type="radio" name="cj_q4" value="1"></td><td><input type="radio" name="cj_q4" value="2"></td><td><input type="radio" name="cj_q4" value="3"></td><td><input type="radio" name="cj_q4" value="4"></td><td><input type="radio" name="cj_q4" value="5"></td></tr>
-            <tr><td>味方・相手の情報を見て判断している</td><td><input type="radio" name="cj_q5" value="1"></td><td><input type="radio" name="cj_q5" value="2"></td><td><input type="radio" name="cj_q5" value="3"></td><td><input type="radio" name="cj_q5" value="4"></td><td><input type="radio" name="cj_q5" value="5"></td></tr>
-            <tr><td>振り返りで自分の言葉で説明できる</td><td><input type="radio" name="cj_q6" value="1"></td><td><input type="radio" name="cj_q6" value="2"></td><td><input type="radio" name="cj_q6" value="3"></td><td><input type="radio" name="cj_q6" value="4"></td><td><input type="radio" name="cj_q6" value="5"></td></tr>
-          </tbody>
-        </table>
-        <div class="text-fields-grid">
-          <div class="text-field"><label>ズレが出やすい場面</label><textarea placeholder="観察した内容"></textarea></div>
-          <div class="text-field"><label>修正が早い場面</label><textarea placeholder="観察した内容"></textarea></div>
-          <div class="text-field"><label>今後の個別テーマ</label><textarea placeholder="次回フォーカスすること"></textarea></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-accent" onclick="calcScore('cj_q',6,5)">スコアを計算</button>
-          <button class="btn btn-save" onclick="saveSession('coach-junior','cj_q',6,5)">💾 記録を保存</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
-        </div>
-        <div id="toast-coach-junior" class="save-toast"></div>
-        <div id="score-cj_q"></div>
-      </div>
-    </div>
-
-    <!-- ─── Coach / Pro ─── -->
-    <div id="sheet-coach-pro" class="eval-sheet" style="display:none">
-      <div class="eval-form">
-        <div class="eval-form-title">📋 指導者評価シート（大学生・社会人）</div>
-        <div class="eval-form-sub">1 = できていない ／ 3 = どちらともいえない ／ 5 = 非常によくできている</div>
-        <div class="eval-meta">
-          <div class="meta-field"><label>選手名</label><input type="text" placeholder="選手名"></div>
-          <div class="meta-field"><label>日付</label><input type="date"></div>
-          <div class="meta-field"><label>テーマ</label><input type="text" placeholder="今日のテーマ"></div>
-        </div>
-        <div class="rating-section-label">観察評価（5段階）</div>
-        <table class="rating-table">
-          <thead><tr><th>観察項目</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
-          <tbody>
-            <tr><td>自己モデルに基づいてプレーしている</td><td><input type="radio" name="cp_q1" value="1"></td><td><input type="radio" name="cp_q1" value="2"></td><td><input type="radio" name="cp_q1" value="3"></td><td><input type="radio" name="cp_q1" value="4"></td><td><input type="radio" name="cp_q1" value="5"></td></tr>
-            <tr><td>誤差を即時に検出している</td><td><input type="radio" name="cp_q2" value="1"></td><td><input type="radio" name="cp_q2" value="2"></td><td><input type="radio" name="cp_q2" value="3"></td><td><input type="radio" name="cp_q2" value="4"></td><td><input type="radio" name="cp_q2" value="5"></td></tr>
-            <tr><td>修正速度が高い</td><td><input type="radio" name="cp_q3" value="1"></td><td><input type="radio" name="cp_q3" value="2"></td><td><input type="radio" name="cp_q3" value="3"></td><td><input type="radio" name="cp_q3" value="4"></td><td><input type="radio" name="cp_q3" value="5"></td></tr>
-            <tr><td>外乱・圧力下でも安定している</td><td><input type="radio" name="cp_q4" value="1"></td><td><input type="radio" name="cp_q4" value="2"></td><td><input type="radio" name="cp_q4" value="3"></td><td><input type="radio" name="cp_q4" value="4"></td><td><input type="radio" name="cp_q4" value="5"></td></tr>
-            <tr><td>状況判断が妥当である</td><td><input type="radio" name="cp_q5" value="1"></td><td><input type="radio" name="cp_q5" value="2"></td><td><input type="radio" name="cp_q5" value="3"></td><td><input type="radio" name="cp_q5" value="4"></td><td><input type="radio" name="cp_q5" value="5"></td></tr>
-            <tr><td>味方との共有モデル形成が見られる</td><td><input type="radio" name="cp_q6" value="1"></td><td><input type="radio" name="cp_q6" value="2"></td><td><input type="radio" name="cp_q6" value="3"></td><td><input type="radio" name="cp_q6" value="4"></td><td><input type="radio" name="cp_q6" value="5"></td></tr>
-            <tr><td>自己修正の言語化ができる</td><td><input type="radio" name="cp_q7" value="1"></td><td><input type="radio" name="cp_q7" value="2"></td><td><input type="radio" name="cp_q7" value="3"></td><td><input type="radio" name="cp_q7" value="4"></td><td><input type="radio" name="cp_q7" value="5"></td></tr>
-          </tbody>
-        </table>
-        <div class="rating-section-label" style="margin-top:10px">定量記録</div>
-        <div class="eval-meta" style="margin-bottom:18px">
-          <div class="meta-field"><label>予測時間誤差</label><input type="text" placeholder="例: ±0.3秒"></div>
-          <div class="meta-field"><label>到達点誤差</label><input type="text" placeholder="例: ±50cm"></div>
-          <div class="meta-field"><label>条件変更後の適応時間</label><input type="text" placeholder="例: 約20秒"></div>
-          <div class="meta-field"><label>疲労後の精度低下</label><input type="text" placeholder="例: 誤差が約20%増加"></div>
-        </div>
-        <div class="text-fields-grid">
-          <div class="text-field"><label>今週の強み</label><textarea placeholder="観察した強みを記述"></textarea></div>
-          <div class="text-field"><label>今週の課題</label><textarea placeholder="課題と改善点"></textarea></div>
-          <div class="text-field"><label>次週の焦点</label><textarea placeholder="来週フォーカスすること"></textarea></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-accent" onclick="calcScore('cp_q',7,5)">スコアを計算</button>
-          <button class="btn btn-save" onclick="saveSession('coach-pro','cp_q',7,5)">💾 記録を保存</button>
-          <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
-        </div>
-        <div id="toast-coach-pro" class="save-toast"></div>
-        <div id="score-cp_q"></div>
-      </div>
-    </div>
-
-    </div><!-- end eval-sub-session -->
-
-    <!-- ─── Weekly Summary Sub-page ─── -->
+    <!-- ─── Coach VFE Sub-page ─── -->
     <div id="eval-sub-weekly" class="eval-sub-content">
-      <div class="weekly-form">
-        <div class="weekly-form-title">📊 週間まとめシート</div>
-        <div class="weekly-form-sub">1週間のFEP学習サイクルを5つの軸で振り返り、成長の傾向を記録します。</div>
+      <div class="eval-form">
+        <div class="eval-form-title">📋 コーチ評価シート（Inflexion Index · 3軸）</div>
+        <div class="eval-form-sub">観察に基づいた3軸スコアを記録します。スライダーは動かすたびに自動計算されます。</div>
 
-        <div class="weekly-meta-grid">
-          <div class="meta-field"><label>名前 / チーム</label><input type="text" id="w-name" placeholder="名前またはチーム名"></div>
-          <div class="meta-field"><label>週（記録期間）</label><input type="text" id="w-week" placeholder="例: 3/10〜3/16"></div>
-          <div class="meta-field"><label>年代</label>
-            <select id="w-grade">
-              <option value="elementary">小学生</option>
-              <option value="junior">中高生</option>
-              <option value="pro">大学生・社会人</option>
-            </select>
-          </div>
-          <div class="meta-field"><label>今週のメインテーマ</label><input type="text" id="w-theme" placeholder="例: ファーストタッチ前の宣言"></div>
+        <div class="eval-meta">
+          <div class="meta-field"><label>選手名</label><input type="text" id="c-name" placeholder="選手名 / チーム"></div>
+          <div class="meta-field"><label>日付</label><input type="date" id="c-date"></div>
+          <div class="meta-field"><label>テーマ</label><input type="text" id="c-theme" placeholder="今日のテーマ"></div>
         </div>
 
-        <div class="rating-section-label">FEP 5軸評価（週平均）</div>
-        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px">各軸について今週の全体的な達成度をスライダーで評価してください（1〜5）</p>
+        <div class="rating-section-label">📐 Inflexion Index 3軸</div>
+        <p class="vfe-section-note">高いほど混乱・不安定な状態です（VFEスコアが上昇）</p>
 
-        <div class="weekly-axis-grid">
-          <div class="weekly-axis-item">
-            <label>🔮 自己予測の精度</label>
-            <div class="axis-score-row">
-              <input type="range" id="w-jikoYosoku" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-jikoYosoku').textContent=this.value">
-              <span class="axis-val" id="v-jikoYosoku">3</span>
+        <div class="vfe-slider-grid">
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>σ · 行動のばらつき（sigma）</span>
+              <span class="vfe-val" id="v-sigma">5</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">動く前に自分の行動結果を予測できたか</p>
+            <p class="vfe-desc">プレーの一貫性・ばらつきの大きさ（重みづけ 50%）</p>
+            <input type="range" id="c-sigma" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-sigma').textContent=this.value;calcCoachVfeScore()">
+            <div class="vfe-scale-ends"><span>安定 (0)</span><span>ばらつき大 (10)</span></div>
           </div>
-          <div class="weekly-axis-item">
-            <label>⚡ 誤差の認識速度</label>
-            <div class="axis-score-row">
-              <input type="range" id="w-gosaNinshiki" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-gosaNinshiki').textContent=this.value">
-              <span class="axis-val" id="v-gosaNinshiki">3</span>
+
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>λ · 修正の遅さ（lambda）</span>
+              <span class="vfe-val" id="v-lambda">5</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">予測と結果のズレを素早く捉えられたか</p>
+            <p class="vfe-desc">ズレに気づいて修正する速さ（重みづけ 30%）</p>
+            <input type="range" id="c-lambda" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-lambda').textContent=this.value;calcCoachVfeScore()">
+            <div class="vfe-scale-ends"><span>即座に修正 (0)</span><span>修正が遅い (10)</span></div>
           </div>
-          <div class="weekly-axis-item">
-            <label>🔧 修正力</label>
-            <div class="axis-score-row">
-              <input type="range" id="w-shuseiryoku" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-shuseiryoku').textContent=this.value">
-              <span class="axis-val" id="v-shuseiryoku">3</span>
+
+          <div class="vfe-slider-item">
+            <div class="vfe-slider-label">
+              <span>τ · タイミングのズレ（tau）</span>
+              <span class="vfe-val" id="v-tau">5</span>
             </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">ズレを次のプレーで修正できたか</p>
-          </div>
-          <div class="weekly-axis-item">
-            <label>🌊 適応力</label>
-            <div class="axis-score-row">
-              <input type="range" id="w-tekioryoku" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-tekioryoku').textContent=this.value">
-              <span class="axis-val" id="v-tekioryoku">3</span>
-            </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">条件変化・不確実な状況に対応できたか</p>
-          </div>
-          <div class="weekly-axis-item">
-            <label>🤝 協調・共有</label>
-            <div class="axis-score-row">
-              <input type="range" id="w-kyochosei" min="1" max="5" step="1" value="3" oninput="document.getElementById('v-kyochosei').textContent=this.value">
-              <span class="axis-val" id="v-kyochosei">3</span>
-            </div>
-            <p style="font-size:0.77rem;color:var(--text-muted);margin-top:4px">チームとして予測を共有・連携できたか</p>
+            <p class="vfe-desc">動作タイミングの一貫性（重みづけ 20%）。5が最も安定 — 両方向へのズレがVFEを上昇させます</p>
+            <input type="range" id="c-tau" min="0" max="10" step="1" value="5"
+                   oninput="document.getElementById('v-tau').textContent=this.value;calcCoachVfeScore()">
+            <div class="vfe-scale-ends-3"><span>早すぎ (0)</span><span>適切 (5)</span><span>遅すぎ (10)</span></div>
           </div>
         </div>
 
+        <!-- Live score display -->
+        <div id="vfe-coach-score-result" class="vfe-score-display"></div>
+
+        <!-- Free text -->
+        <div class="rating-section-label" style="margin-top:24px">📝 コーチコメント</div>
         <div class="text-fields-grid">
-          <div class="text-field"><label>今週の最大の成長点</label><textarea id="w-growth" placeholder="具体的な場面や変化を記述"></textarea></div>
-          <div class="text-field"><label>今週の主な課題・ズレ</label><textarea id="w-challenge" placeholder="どのような場面でズレが出やすかったか"></textarea></div>
-          <div class="text-field"><label>来週のFEPテーマ</label><textarea id="w-nextTheme" placeholder="次週に重点的に取り組む予測・修正テーマ"></textarea></div>
+          <div class="text-field"><label>よかった点</label><textarea id="c-good" placeholder="観察した強みや良い点"></textarea></div>
+          <div class="text-field"><label>課題</label><textarea id="c-challenge" placeholder="改善が必要な点・観察した課題"></textarea></div>
+          <div class="text-field"><label>次回テーマ</label><textarea id="c-nextTheme" placeholder="次回フォーカスすること"></textarea></div>
         </div>
 
-        <div class="btn-row">
-          <button class="btn btn-save" onclick="saveWeekly()">💾 週間まとめを保存</button>
+        <div class="btn-row" style="margin-top:16px">
+          <button class="btn btn-save" onclick="saveVfeSession('coach')">💾 コーチ評価を保存</button>
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ 印刷</button>
         </div>
-        <div id="toast-weekly" class="save-toast"></div>
-      </div>
-
-      <!-- Weekly history display -->
-      <div style="margin-top:28px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-          <h3 style="font-size:1.05rem;font-weight:800">📂 週間まとめ 履歴</h3>
-        </div>
-        <div id="weekly-history-list"></div>
+        <div id="toast-coach" class="save-toast"></div>
       </div>
     </div>
 

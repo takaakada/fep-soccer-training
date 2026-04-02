@@ -4,20 +4,37 @@
 
 const LEVEL_KEYS = ['l1', 'l2', 'l3', 'custom'];
 
+// ─── プランラベル（年代別）───────────────────────────────────
+const PLAN_LABELS = {
+  elem:   ['あそびながら', 'しっかり基礎', '試合につながる', 'カスタム'],
+  junior: ['基礎再現',     '判断強化',     '実戦発展',       'カスタム'],
+  pro:    ['ベース調整',   '実戦最適化',   '高強度対応',     'カスタム'],
+};
+
 // ─── 年代グループ管理 ───────────────────────────────────────
 let currentAgeGroup = 'elem'; // 'elem' | 'junior' | 'pro'
+let currentLevelId  = 'l1';
+let isEditMode      = false;
 
 function switchAgeGroup(ageId, btn) {
   // 現在のデータを保存してから切り替え
   LEVEL_KEYS.forEach(lvl => _saveLevelMenuSilent(lvl));
 
   currentAgeGroup = ageId;
+  currentLevelId  = 'l1';
 
   document.querySelectorAll('.age-tab-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 
   loadSavedLevelMenus();
   normalizeAllMenuCards();
+  updateLevelTabLabels();
+
+  // Level タブをリセット
+  switchLevelTab('l1', document.querySelector('#level-tabs .tab-btn[data-level="l1"]'));
+
+  renderPlanSelector();
+  renderSessionList();
 }
 
 // ─── カテゴリ定義 ───────────────────────────────────────────
@@ -50,56 +67,173 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ─── レベル名 ───────────────────────────────────────────────
-function loadLevelNames() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('fep_level_names') || '{}');
-    const defaults = { l1: 'Level 1', l2: 'Level 2', l3: 'Level 3', custom: 'カスタム' };
-    LEVEL_KEYS.forEach(k => {
-      const el = document.getElementById('lname-' + k);
-      if (el) el.textContent = saved[k] || defaults[k];
-    });
-  } catch(e) { console.error('loadLevelNames:', e); }
+// ─── レベルタブラベル更新 ────────────────────────────────────
+function updateLevelTabLabels() {
+  const labels = PLAN_LABELS[currentAgeGroup] || PLAN_LABELS.elem;
+  LEVEL_KEYS.forEach((key, i) => {
+    const el = document.getElementById('lname-' + key);
+    if (el) el.textContent = labels[i];
+  });
 }
 
-function editLevelName(key) {
-  const el = document.getElementById('lname-' + key);
-  if (!el) return;
-  const current = el.textContent;
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.value = current;
-  input.style.cssText = 'width:80px;padding:3px 7px;font-size:0.85rem;border:1.5px solid #93c5fd;border-radius:6px;font-family:inherit;';
-  el.replaceWith(input);
-  input.focus(); input.select();
-
-  const commit = () => {
-    const val = input.value.trim() || current;
-    const span = document.createElement('span');
-    span.className = 'level-label'; span.id = 'lname-' + key;
-    span.textContent = val;
-    input.replaceWith(span);
-    try {
-      const saved = JSON.parse(localStorage.getItem('fep_level_names') || '{}');
-      saved[key] = val;
-      localStorage.setItem('fep_level_names', JSON.stringify(saved));
-    } catch(e) {}
-  };
-  input.addEventListener('blur', commit);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+// ─── レベル名（後方互換 - 使用しなくなったが残す）──────────────
+function loadLevelNames() {
+  updateLevelTabLabels();
 }
 
 // ─── レベルタブ切替 ─────────────────────────────────────────
 function switchLevelTab(levelId, btn) {
   document.querySelectorAll('.level-content').forEach(c => c.style.display = 'none');
   document.querySelectorAll('#level-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#level-tabs .level-tab-wrapper').forEach(w => w.classList.remove('active'));
   const el = document.getElementById('level-' + levelId);
   if (el) el.style.display = 'block';
-  if (btn) {
-    btn.classList.add('active');
-    btn.closest('.level-tab-wrapper')?.classList.add('active');
+  // activate the clicked button (or find by data-level)
+  const targetBtn = btn || document.querySelector(`#level-tabs .tab-btn[data-level="${levelId}"]`);
+  if (targetBtn) targetBtn.classList.add('active');
+}
+
+// ─── 編集モード切替 ─────────────────────────────────────────
+function toggleEditMode() {
+  isEditMode = !isEditMode;
+  const wrapper = document.getElementById('menu-page-wrapper');
+  const btn     = document.getElementById('edit-mode-btn');
+  if (!wrapper || !btn) return;
+
+  if (isEditMode) {
+    wrapper.classList.add('edit-mode');
+    btn.textContent = '✓ 完了';
+    btn.classList.add('is-active');
+    // 編集エリアをカレントレベルに合わせる
+    switchLevelTab(currentLevelId, null);
+  } else {
+    wrapper.classList.remove('edit-mode');
+    btn.textContent = '✏️ 編集';
+    btn.classList.remove('is-active');
+    // 閲覧ビューをリフレッシュ
+    normalizeAllMenuCards();
+    renderSessionList();
   }
+}
+
+// ─── プランセレクター描画 ────────────────────────────────────
+function renderPlanSelector() {
+  const container = document.getElementById('plan-selector');
+  if (!container) return;
+
+  const labels = PLAN_LABELS[currentAgeGroup] || PLAN_LABELS.elem;
+
+  // おすすめ（l1）
+  const recKey   = 'l1';
+  const recLabel = labels[0];
+  const recSel   = currentLevelId === recKey ? ' selected' : '';
+
+  // その他のプラン
+  const otherKeys   = ['l2', 'l3', 'custom'];
+  const otherCards  = otherKeys.map((key, i) => {
+    const label = labels[i + 1];
+    const sel   = currentLevelId === key ? ' plan-card-selected' : '';
+    return `<div class="plan-card${sel}" onclick="selectPlan('${key}')">${label}</div>`;
+  }).join('');
+
+  // 展開状態を保持
+  const wasExpanded = container.querySelector('.other-plans-grid')?.style.display === 'grid';
+
+  container.innerHTML = `
+    <div class="plan-selector-wrapper">
+      <div class="plan-recommended-card${recSel}" onclick="selectPlan('${recKey}')">
+        <span class="plan-recommended-badge">おすすめ</span>
+        <div class="plan-recommended-name">${recLabel}</div>
+        <div class="plan-recommended-hint">${currentLevelId === recKey ? '✓ 選択中' : 'このプランを使う →'}</div>
+      </div>
+      <button class="other-plans-toggle" onclick="toggleOtherPlans(this)">
+        他のプランを見る ${wasExpanded ? '▲' : '▾'}
+      </button>
+      <div class="other-plans-grid" style="display:${wasExpanded ? 'grid' : 'none'};">
+        ${otherCards}
+      </div>
+    </div>
+  `;
+}
+
+// ─── プラン選択 ─────────────────────────────────────────────
+function selectPlan(levelId) {
+  currentLevelId = levelId;
+  // 編集エリアのタブも同期
+  switchLevelTab(levelId, null);
+  renderPlanSelector();
+  renderSessionList();
+}
+
+// ─── 他のプラン展開/折りたたみ ──────────────────────────────
+function toggleOtherPlans(btn) {
+  const grid = btn.nextElementSibling;
+  if (!grid) return;
+  const isOpen = grid.style.display === 'grid';
+  grid.style.display = isOpen ? 'none' : 'grid';
+  btn.innerHTML = isOpen ? '他のプランを見る ▾' : '閉じる ▲';
+}
+
+// ─── セッションリスト描画（コンパクト表示）───────────────────
+function renderSessionList() {
+  const container = document.getElementById('session-list');
+  if (!container) return;
+
+  const levelEl = document.getElementById('level-' + currentLevelId);
+  if (!levelEl) { container.innerHTML = ''; return; }
+
+  normalizeAllMenuCards();
+  const cards = Array.from(levelEl.querySelectorAll('.menu-item-card'));
+
+  if (cards.length === 0) {
+    container.innerHTML = `<div class="session-list-empty">セッションがまだありません。<br>編集モード（✏️ 編集）で追加できます。</div>`;
+    return;
+  }
+
+  const cardsHtml = cards.map((card) => {
+    const name  = card.dataset.menuName  || '';
+    const cat   = card.dataset.menuCat   || '';
+    const time  = card.dataset.menuTime  || '';
+    const theme = card.dataset.menuTheme || '';
+    const items = JSON.parse(card.dataset.menuItems || '[]');
+
+    const preview   = items.slice(0, 3);
+    const remaining = items.slice(3);
+
+    const previewHtml   = preview.map(i => `<li>${escHtml(i)}</li>`).join('');
+    const remainingHtml = remaining.map(i => `<li>${escHtml(i)}</li>`).join('');
+
+    const moreBtn = remaining.length > 0
+      ? `<div class="session-card-detail" style="display:none;"><ul class="session-card-more-list">${remainingHtml}</ul></div>
+         <button class="session-detail-btn" onclick="toggleSessionDetail(this)">詳細を見る ▾</button>`
+      : '';
+
+    return `
+      <div class="session-card-compact">
+        <div class="session-card-header">
+          <div class="session-card-title">${escHtml(name)}</div>
+          <div class="session-card-tags">
+            ${cat  ? `<span class="tag">${escHtml(cat)}</span>`       : ''}
+            ${time ? `<span class="tag">${escHtml(time)}分</span>` : ''}
+          </div>
+        </div>
+        ${theme ? `<div class="session-card-theme">${escHtml(theme)}</div>` : ''}
+        ${previewHtml ? `<ul class="session-card-preview">${previewHtml}</ul>` : ''}
+        ${moreBtn}
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `<div class="session-list-wrapper">${cardsHtml}</div>`;
+}
+
+// ─── セッション詳細 展開/折りたたみ ─────────────────────────
+function toggleSessionDetail(btn) {
+  const card   = btn.closest('.session-card-compact');
+  const detail = card?.querySelector('.session-card-detail');
+  if (!detail) return;
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '詳細を見る ▾' : '閉じる ▲';
 }
 
 // ─── カードの正規化（data属性 + 編集ボタン付与）─────────────
@@ -171,10 +305,16 @@ function editMenuItem(btn) {
   `).join('');
 
   // プリセット選択肢（drill-library.js の DRILL_PRESETS を利用）
+  // value = "name（time分）: desc" 形式（そのままli テキストになる）
   const presetOptsHtml = (typeof DRILL_PRESETS !== 'undefined')
     ? DRILL_PRESETS.map(p => {
-        const label = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
-        return `<option value="${escHtml(p.name)}">${escHtml(p.name)}（${label}）</option>`;
+        const label   = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
+        const timeStr = p.time ? `${p.time}分` : '';
+        const paren   = timeStr ? `（${timeStr}）` : '';
+        const descPart = p.desc ? `: ${p.desc}` : '';
+        const itemText = `${p.name}${paren}${descPart}`;
+        const display  = `${p.name}（${label}${timeStr ? '・' + timeStr : ''}）`;
+        return `<option value="${escHtml(itemText)}">${escHtml(display)}</option>`;
       }).join('')
     : '';
 
@@ -529,18 +669,29 @@ function loadSavedLevelMenus() {
 // ─── 初期化 ─────────────────────────────────────────────────
 function initMenuPage() {
   currentAgeGroup = 'elem';
-  loadLevelNames();
+  currentLevelId  = 'l1';
+  isEditMode      = false;
+
+  // 編集モードをリセット
+  const wrapper = document.getElementById('menu-page-wrapper');
+  if (wrapper) wrapper.classList.remove('edit-mode');
+  const editBtn = document.getElementById('edit-mode-btn');
+  if (editBtn) { editBtn.textContent = '✏️ 編集'; editBtn.classList.remove('is-active'); }
+
+  // データ復元とラベル設定
   loadSavedLevelMenus();
   normalizeAllMenuCards();
+  updateLevelTabLabels();
 
-  // Level タブ初期化
-  const firstLevelBtn = document.querySelector('#level-tabs .tab-btn');
-  if (firstLevelBtn) switchLevelTab('l1', firstLevelBtn);
+  // 編集エリアのLevel タブを l1 に合わせる
+  switchLevelTab('l1', document.querySelector('#level-tabs .tab-btn[data-level="l1"]'));
 
   // Age タブ初期化
+  document.querySelectorAll('.age-tab-btn').forEach(b => b.classList.remove('active'));
   const firstAgeBtn = document.querySelector('.age-tab-btn');
-  if (firstAgeBtn) {
-    document.querySelectorAll('.age-tab-btn').forEach(b => b.classList.remove('active'));
-    firstAgeBtn.classList.add('active');
-  }
+  if (firstAgeBtn) firstAgeBtn.classList.add('active');
+
+  // 閲覧ビューを描画
+  renderPlanSelector();
+  renderSessionList();
 }

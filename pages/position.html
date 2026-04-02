@@ -1,239 +1,244 @@
-<div class="section-header">
+<div id="pos-page-wrapper">
+
+  <div class="pos-page-header">
+    <div class="section-header" style="margin:0; padding:0;">
       <h2>ポジション別メニュー</h2>
-      <p>FEP（自由エネルギー原理）に基づく、ポジション特性に応じた予測・修正ドリル</p>
+      <p>今日やるドリルを確認します</p>
+    </div>
+    <button class="pos-edit-btn" onclick="togglePosEditMode()" id="pos-edit-btn">✏️ 編集</button>
+  </div>
+
+  <div class="pos-tabs" id="pos-tabs">
+    <button class="pos-tab-btn active" onclick="switchPosTab('gk', this)">
+      <span class="pos-icon">🧤</span>GK
+    </button>
+    <button class="pos-tab-btn" onclick="switchPosTab('df', this)">
+      <span class="pos-icon">🛡️</span>DF
+    </button>
+    <button class="pos-tab-btn" onclick="switchPosTab('mf', this)">
+      <span class="pos-icon">⚙️</span>MF
+    </button>
+    <button class="pos-tab-btn" onclick="switchPosTab('fw', this)">
+      <span class="pos-icon">🎯</span>FW
+    </button>
+  </div>
+
+  <!-- GK -->
+  <div id="pos-gk" class="pos-content active">
+    <div class="pos-hero gk">
+      <div class="pos-hero-icon">🧤</div>
+      <div class="pos-hero-body">
+        <h3>GKメニュー</h3>
+        <p>テーマ：先読みと判断</p>
+        <div class="pos-fep-tags">
+          <span class="pos-fep-tag">予測のズレ</span>
+          <span class="pos-fep-tag">更新速度</span>
+          <span class="pos-fep-tag">声かけ</span>
+        </div>
+      </div>
     </div>
 
-    <div class="pos-tabs" id="pos-tabs">
-      <button class="pos-tab-btn active" onclick="switchPosTab('gk', this)">
-        <span class="pos-icon">🧤</span>GK
-      </button>
-      <button class="pos-tab-btn" onclick="switchPosTab('df', this)">
-        <span class="pos-icon">🛡️</span>DF
-      </button>
-      <button class="pos-tab-btn" onclick="switchPosTab('mf', this)">
-        <span class="pos-icon">⚙️</span>MF
-      </button>
-      <button class="pos-tab-btn" onclick="switchPosTab('fw', this)">
-        <span class="pos-icon">🎯</span>FW
-      </button>
+    <div class="drill-card gk" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num gk">Drill 1</span>
+        <div class="drill-title">シュートコース予測（宣言ストップ）</div>
+      </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">シュートを受ける前に「どこへ来るか」を声に出して宣言し、予測の精度を確かめる。</p>
+      <ul class="drill-steps">
+        <li>キッカーが蹴る前に「左寄り」「右足で低い弾道」などを宣言</li>
+        <li>実際のシュートとのズレを言語化する</li>
+        <li>5本連続で宣言し、予測精度（正解率）を記録する</li>
+        <li>疲労後に同じ課題を繰り返し、精度の変化を確認する</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep gk">予測を「外に出す」ことで内部モデルが可視化され、ズレを修正できる速度が上がる</div>
+      </details>
     </div>
 
-    <!-- GK -->
-    <div id="pos-gk" class="pos-content active">
-      <div class="pos-hero gk" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
-        <div class="pos-hero-icon">🧤</div>
-        <div class="pos-hero-body">
-          <h3>GK — ゴールキーパーのFEP的特性</h3>
-          <p>GKは「最後の砦」であるとともに、チーム全体の感覚情報を統合する役割を担います。シュートを止めるだけでなく、相手の意図を先読みし、期待自由エネルギーを最小化する判断が求められます。</p>
-          <div class="pos-fep-tags">
-            <span class="pos-fep-tag">🔮 先読み予測</span>
-            <span class="pos-fep-tag">📐 アングル最小化</span>
-            <span class="pos-fep-tag">🎯 期待自由エネルギー判断</span>
-            <span class="pos-fep-tag">🔊 情報発信</span>
-          </div>
-        </div>
+    <div class="drill-card gk" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num gk">Drill 2</span>
+        <div class="drill-title">クロス着地点予測</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">クロスボールが上がった瞬間に着地点を宣言し、落下予測の精度を高める。</p>
+      <ul class="drill-steps">
+        <li>ボールが蹴り出された瞬間に「ファーポスト前方」「ニアで落ちる」などを宣言</li>
+        <li>実際の落下点との誤差を確認する</li>
+        <li>蹴る選手を変えて多様なクロスに対応する</li>
+        <li>宣言してキャッチ／コーチングをセットで行う</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep gk">「軌跡の感覚入力」と「予測」のズレを繰り返し修正することで、落下モデルが精密になる</div>
+      </details>
+    </div>
 
-      <div class="drill-card gk" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num gk">Drill 1</span>
-          <div class="drill-title">意思決定前宣言シュートストップ</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">シュートを受ける前に「どこへ来るか」を声に出して宣言し、予測の精度を可視化する。</p>
-        <ul class="drill-steps">
-          <li>キッカーがシュートを蹴る前に「左寄り」「右足で低い弾道」などGKが宣言</li>
-          <li>実際のシュートとのズレを言語化（「思ったより外側だった」など）</li>
-          <li>5本連続で宣言し、予測精度（正解率）を記録する</li>
-          <li>疲労後に同じ課題を繰り返し、精度の変化を確認する</li>
-        </ul>
-        <div class="drill-fep gk">🧠 FEP的ポイント：予測を「外に出す」ことで内部モデルが可視化され、ズレを修正できる速度が上がる</div>
+    <div class="drill-card gk" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num gk">Drill 3</span>
+        <div class="drill-title">PK判断トレーニング</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">PK場面での「飛ぶ方向判断」を情報に基づいて行う。</p>
+      <ul class="drill-steps">
+        <li>キッカーの助走角度・目線・体の向きを観察し、傾向を事前に把握</li>
+        <li>「右・左・中央」の3択で判断根拠を宣言してから飛ぶ</li>
+        <li>「どの手がかりが最も有効だったか」を後から振り返る</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep gk">不確実性が高いほど、情報を最大限に使った合理的な判断が重要になる</div>
+      </details>
+    </div>
 
-      <div class="drill-card gk" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num gk">Drill 2</span>
-          <div class="drill-title">クロス着地点予測トレーニング</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">クロスボールが上がった瞬間に着地点を宣言し、落下予測の精度を高める。</p>
-        <ul class="drill-steps">
-          <li>ボールが蹴り出された瞬間（滞空中）に「ファーポスト前方」「ニアで落ちる」などを宣言</li>
-          <li>実際の落下点との誤差を距離（メートル）で記録</li>
-          <li>蹴る選手を変えて多様なクロスに対応する</li>
-          <li>宣言してキャッチ／コーチングをセットで行う</li>
-        </ul>
-        <div class="drill-fep gk">🧠 FEP的ポイント：「軌跡の感覚入力」と「予測」のズレを繰り返し修正することで、ボール落下モデルが精密になる</div>
+    <div class="drill-card gk" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num gk">Drill 4</span>
+        <div class="drill-title">1対1アングル最小化</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">GKが「シュートコースを最も狭める位置」を宣言してから動く。</p>
+      <ul class="drill-steps">
+        <li>FWがボールを持って向かってくる</li>
+        <li>GKは「今の最適ポジションは○○」と声に出してから前に出る</li>
+        <li>FWがシュートを打ちにくい状況を作れているか確認する</li>
+        <li>コーチはGKの出るタイミング（早すぎ・遅すぎ）をフィードバック</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep gk">相手の選択肢を予測し、不確実性をこちらから圧縮する能動的な判断が求められる</div>
+      </details>
+    </div>
 
-      <div class="drill-card gk" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num gk">Drill 3</span>
-          <div class="drill-title">PKの期待自由エネルギー判断</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">PK場面での「飛ぶ方向判断」は純粋なギャンブルではなく、情報に基づく期待値計算。</p>
-        <ul class="drill-steps">
-          <li>キッカーの助走角度・目線・体の向きを観察し、傾向データを事前に収集</li>
-          <li>「右に飛ぶか・左に飛ぶか・中央待つか」の3択で判断根拠を宣言</li>
-          <li>自分が持つキッカー情報量（既知・未知）を5段階で評価してから飛ぶ</li>
-          <li>後から「どの手がかりが最も有効だったか」を振り返る</li>
-        </ul>
-        <div class="drill-fep gk">🧠 FEP的ポイント：不確実性が高いほど「期待自由エネルギーを最小化する行動」＝情報を最大に使った合理的判断が重要</div>
-      </div>
+    <div class="add-menu-section pos-edit-section">
+      <button class="btn btn-accent" onclick="openAddModal('pos','gk')">＋ メニューを追加</button>
+      <button class="btn btn-primary" onclick="savePosMenu('gk')" style="margin-top:12px;">💾 保存</button>
+    </div>
 
-      <div class="drill-card gk" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num gk">Drill 4</span>
-          <div class="drill-title">1対1アングル最小化ドリル</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">FW vs GKの1対1で、GKが「シュートコースを最も狭める位置」を事前に宣言してから動く。</p>
-        <ul class="drill-steps">
-          <li>FWがボールを持ちながらGKに向かってくる</li>
-          <li>GKは「今の最適ポジションは○○」と声に出してから前に出る</li>
-          <li>FWがシュートを打ちにくい状況を作れているか確認する</li>
-          <li>コーチはGKの出るタイミング（早すぎ・遅すぎ）をフィードバック</li>
-        </ul>
-        <div class="drill-fep gk">🧠 FEP的ポイント：アングル最小化は「相手の選択肢を予測し、不確実性をこちらから圧縮する」能動的推論の典型</div>
-      </div>
-
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="openAddModal('pos','gk')">＋ メニューを追加</button>
-        <div id="add-form-gk" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-gk" placeholder="ドリル名" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-gk" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-gk" placeholder="ドリルの内容" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-gk" placeholder="15" min="1" max="60" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addPosMenuItem('gk')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('gk')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="savePosMenu('gk')" style="margin-top:12px;">💾 GK メニューを保存</button>
-      </div>
-
+    <details class="pos-eval-details">
+      <summary>評価ポイントを見る</summary>
       <div class="pos-eval-box">
-        <h4>🧤 GK ポジション別評価ポイント</h4>
         <ul style="padding-left:16px">
           <li>シュートコースを宣言してから反応できているか</li>
           <li>クロスの落下点予測の誤差が小さくなっているか</li>
-          <li>判断根拠を言語化できているか（「なぜそこへ飛んだか」）</li>
-          <li>チームへの情報発信（コーチング）をタイミング良く行えているか</li>
+          <li>判断根拠を言語化できているか</li>
+          <li>チームへの情報発信をタイミング良く行えているか</li>
           <li>予測外のシュートに対して最短で修正できているか</li>
         </ul>
       </div>
+    </details>
+  </div>
+
+  <!-- DF -->
+  <div id="pos-df" class="pos-content">
+    <div class="pos-hero df">
+      <div class="pos-hero-icon">🛡️</div>
+      <div class="pos-hero-body">
+        <h3>DFメニュー</h3>
+        <p>テーマ：相手予測とライン調整</p>
+        <div class="pos-fep-tags">
+          <span class="pos-fep-tag">相手の意図</span>
+          <span class="pos-fep-tag">スペース管理</span>
+          <span class="pos-fep-tag">ライン共有</span>
+        </div>
+      </div>
     </div>
 
-    <!-- DF -->
-    <div id="pos-df" class="pos-content">
-      <div class="pos-hero df" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
-        <div class="pos-hero-icon">🛡️</div>
-        <div class="pos-hero-body">
-          <h3>DF — ディフェンダーのFEP的特性</h3>
-          <p>DFは「相手の次の行動を先読みし、スペースを予測的に埋める」役割。受動的な待ちではなく、相手の内部モデルを予測して先手を打つ能動的推論が核心です。</p>
-          <div class="pos-fep-tags">
-            <span class="pos-fep-tag">🔮 相手意図の先読み</span>
-            <span class="pos-fep-tag">📍 スペース予測</span>
-            <span class="pos-fep-tag">⚡ プレスタイミング</span>
-            <span class="pos-fep-tag">🤝 ラインコントロール</span>
-          </div>
-        </div>
+    <div class="drill-card df" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num df">Drill 1</span>
+        <div class="drill-title">方向転換予測ドリル</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">相手がドリブルで仕掛けてくる際、「どちらに切る」かを体の向きから予測・宣言する。</p>
+      <ul class="drill-steps">
+        <li>アタッカーがボールを持ちながらDFに向かってくる</li>
+        <li>DFは相手の肩・腰・体重移動を見て「右に切る」などを事前に宣言</li>
+        <li>実際の方向との一致率を記録する（目標：10本中6本以上）</li>
+        <li>「どの手がかりで予測したか」を毎回言語化する</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep df">相手の体の動きから相手の意図を逆推定する能力を磨くことで、先手を取れるようになる</div>
+      </details>
+    </div>
 
-      <div class="drill-card df" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num df">Drill 1</span>
-          <div class="drill-title">相手の方向転換予測ドリル</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">相手がドリブルで仕掛けてくる際、「どちらに切る」かを体の向きから予測・宣言する。</p>
-        <ul class="drill-steps">
-          <li>アタッカーがボールを持ちながらDFに向かってくる</li>
-          <li>DFは相手の肩・腰・体重移動を見て「右に切る」などを事前に宣言</li>
-          <li>実際の方向との一致率を記録（目標：10本中6本以上）</li>
-          <li>「どの手がかりで予測したか」を毎回言語化する</li>
-        </ul>
-        <div class="drill-fep df">🧠 FEP的ポイント：相手の体の動きは「意図の感覚情報」。その情報から相手の内部モデルを逆推定する能力を磨く</div>
+    <div class="drill-card df" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num df">Drill 2</span>
+        <div class="drill-title">パスライン先読みポジショニング</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">相手がパスを出す前に、出てくるパスコースを予測してポジションを取る。</p>
+      <ul class="drill-steps">
+        <li>相手ボール保持者を観察し「次のパス先」を指差しで宣言</li>
+        <li>そのパスラインを切れる位置に先に動く（待たない）</li>
+        <li>予測が外れたときは「どの情報を見逃したか」を振り返る</li>
+        <li>4対4のミニゲームで「1つ先のパスを先読みして動く」を課題とする</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep df">パスラインを「読む」のではなく「予測して先に体を置く」ことで不確実性を圧縮できる</div>
+      </details>
+    </div>
 
-      <div class="drill-card df" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num df">Drill 2</span>
-          <div class="drill-title">パスラインの先読みポジショニング</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">相手がパスを出す前に、出てくるパスコースを予測してポジションを取る。</p>
-        <ul class="drill-steps">
-          <li>相手チームのボール保持者を観察し「次のパス先」を指差しで宣言</li>
-          <li>そのパスラインを切れる位置に先に動く（待たない）</li>
-          <li>予測が外れたときは「どの情報を見逃したか」を振り返る</li>
-          <li>4対4のミニゲームで「1つ先のパスを先読みして動く」を課題とする</li>
-        </ul>
-        <div class="drill-fep df">🧠 FEP的ポイント：パスラインを「読む」のではなく「予測して先に体を置く」が能動的推論。先に動くことで不確実性を圧縮</div>
+    <div class="drill-card df" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num df">Drill 3</span>
+        <div class="drill-title">プレスタイミング宣言</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">プレスをかけるタイミング（行く/待つ）を、根拠とともに声に出してから動く。</p>
+      <ul class="drill-steps">
+        <li>相手がボールを受けた瞬間「今すぐ行く」「少し待つ」を宣言</li>
+        <li>宣言の根拠（「相手のコントロールが大きかった」など）を同時に言語化</li>
+        <li>プレスの成功/失敗後に「タイミングは正しかったか」を問い返す</li>
+        <li>チームでプレス発動ルールを共有し、全員で宣言を習慣化</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep df">「行く/待つ」の判断は、相手の状態の不確実性を低く見積もれた瞬間を能動的に選ぶ行為</div>
+      </details>
+    </div>
 
-      <div class="drill-card df" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num df">Drill 3</span>
-          <div class="drill-title">プレスのタイミング宣言ドリル</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">プレスをかけるタイミング（行く/待つ）を、根拠とともに声に出してから動く。</p>
-        <ul class="drill-steps">
-          <li>相手がボールを受けた瞬間「今すぐ行く」「少し待つ」を宣言</li>
-          <li>宣言の根拠（「相手のコントロールが大きかった」など）を同時に言語化</li>
-          <li>プレスの成功/失敗後に「タイミングは正しかったか」を問い返す</li>
-          <li>チームでプレス発動ルールを共有し、全員で宣言を習慣化</li>
-        </ul>
-        <div class="drill-fep df">🧠 FEP的ポイント：「行く/待つ」の二択は、相手の状態の不確実性を低く見積もれた瞬間を能動的に選ぶ判断</div>
+    <div class="drill-card df" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num df">Drill 4</span>
+        <div class="drill-title">ラインコントロール判断</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ライン上げ/下げのタイミングをDFラインで統一し、共有された判断モデルを構築する。</p>
+      <ul class="drill-steps">
+        <li>リーダーDFが「ライン上げ」「ライン下げ」を声で宣言してから動く</li>
+        <li>他のDFがそれに合わせる（声なしでも動けるようになることが目標）</li>
+        <li>オフサイドトラップの成功/失敗を記録し、タイミングのズレを分析</li>
+        <li>「なぜそのタイミングで上げたか」を毎回説明できるようにする</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep df">チームとして共有された予測モデルが揃うほど、集団として一体的な動きができる</div>
+      </details>
+    </div>
 
-      <div class="drill-card df" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num df">Drill 4</span>
-          <div class="drill-title">ラインコントロール判断トレーニング</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ライン上げ/下げのタイミングをDFラインで統一し、共有された予測モデルを構築する。</p>
-        <ul class="drill-steps">
-          <li>リーダーDFが「ライン上げ」「ライン下げ」を声で宣言してから動く</li>
-          <li>他のDFがそれに合わせる（声なしでも動けるようになることが目標）</li>
-          <li>オフサイドトラップの成功/失敗を記録し、タイミングのズレを分析</li>
-          <li>「なぜそのタイミングで上げたか」を毎回説明できるようにする</li>
-        </ul>
-        <div class="drill-fep df">🧠 FEP的ポイント：チームとして共有された予測モデルが揃うほど、集団として自由エネルギーを最小化できる</div>
-      </div>
+    <div class="add-menu-section pos-edit-section">
+      <button class="btn btn-accent" onclick="openAddModal('pos','df')">＋ メニューを追加</button>
+      <button class="btn btn-primary" onclick="savePosMenu('df')" style="margin-top:12px;">💾 保存</button>
+    </div>
 
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="openAddModal('pos','df')">＋ メニューを追加</button>
-        <div id="add-form-df" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-df" placeholder="ドリル名" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-df" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-df" placeholder="ドリルの内容" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-df" placeholder="15" min="1" max="60" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addPosMenuItem('df')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('df')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="savePosMenu('df')" style="margin-top:12px;">💾 DF メニューを保存</button>
-      </div>
-
+    <details class="pos-eval-details">
+      <summary>評価ポイントを見る</summary>
       <div class="pos-eval-box">
-        <h4>🛡️ DF ポジション別評価ポイント</h4>
         <ul style="padding-left:16px">
           <li>相手の方向転換を事前に予測できているか（宣言一致率）</li>
           <li>パスラインを先読みしてポジションを取れているか</li>
@@ -242,224 +247,226 @@
           <li>予測が外れたとき、次の修正が素早いか</li>
         </ul>
       </div>
+    </details>
+  </div>
+
+  <!-- MF -->
+  <div id="pos-mf" class="pos-content">
+    <div class="pos-hero mf">
+      <div class="pos-hero-icon">⚙️</div>
+      <div class="pos-hero-body">
+        <h3>MFメニュー</h3>
+        <p>テーマ：情報整理と選択</p>
+        <div class="pos-fep-tags">
+          <span class="pos-fep-tag">周囲確認</span>
+          <span class="pos-fep-tag">選択肢準備</span>
+          <span class="pos-fep-tag">切り替え</span>
+        </div>
+      </div>
     </div>
 
-    <!-- MF -->
-    <div id="pos-mf" class="pos-content">
-      <div class="pos-hero mf" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
-        <div class="pos-hero-icon">⚙️</div>
-        <div class="pos-hero-body">
-          <h3>MF — ミッドフィルダーのFEP的特性</h3>
-          <p>MFは攻守の接点として「多選択肢を瞬時に処理する認知的ハブ」です。複数の可能性を並列で予測し、最も期待自由エネルギーの低い選択肢を選ぶ能力が核心。</p>
-          <div class="pos-fep-tags">
-            <span class="pos-fep-tag">🔀 多選択肢処理</span>
-            <span class="pos-fep-tag">⚡ 攻守切替予測</span>
-            <span class="pos-fep-tag">📍 スペース創出</span>
-            <span class="pos-fep-tag">🗺️ 全体把握</span>
-          </div>
-        </div>
+    <div class="drill-card mf" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num mf">Drill 1</span>
+        <div class="drill-title">ファーストタッチ前の選択宣言</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールが来る前に「受けたら何をするか」を宣言してからファーストタッチを行う。</p>
+      <ul class="drill-steps">
+        <li>パスが届く前に「右足でコントロールして前へ」などを宣言</li>
+        <li>宣言通りに実行できたか、変更が必要だったかを振り返る</li>
+        <li>変更が必要だった場合、「何の情報が来て変えたか」を言語化</li>
+        <li>5人でのポゼッション練習でルールとして導入する</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep mf">ファーストタッチ前に選択を確定させることで、実行と修正のサイクルを最速にできる</div>
+      </details>
+    </div>
 
-      <div class="drill-card mf" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num mf">Drill 1</span>
-          <div class="drill-title">ファーストタッチ前の選択宣言</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールが来る前に「受けたら何をするか」を宣言してからファーストタッチを行う。</p>
-        <ul class="drill-steps">
-          <li>パスが届く前に「右足でコントロールして前へ」などを宣言</li>
-          <li>宣言通りに実行できたか、変更が必要だったかを振り返る</li>
-          <li>変更が必要だった場合、「何の情報が来て変えたか」を言語化</li>
-          <li>5人でのポゼッション練習でルールとして導入する</li>
-        </ul>
-        <div class="drill-fep mf">🧠 FEP的ポイント：ファーストタッチ前に選択を確定させることで、実行と修正のサイクルを最速にできる</div>
+    <div class="drill-card mf" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num mf">Drill 2</span>
+        <div class="drill-title">プレス方向予測と回避ルート選択</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">相手のプレス方向を予測し、最も効率的な回避ルートを瞬時に判断する。</p>
+      <ul class="drill-steps">
+        <li>相手プレス役がどの方向から来るかを「足の向き」で予測して宣言</li>
+        <li>その予測に基づき、「体の向き」を先に作っておく</li>
+        <li>プレスが来た方向と予測の一致率を記録する</li>
+        <li>逆プレスをかけられた場合の「次の手」も準備しておく</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep mf">プレスの方向を事前に「確率」として持っておくことで認知負荷が下がる</div>
+      </details>
+    </div>
 
-      <div class="drill-card mf" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num mf">Drill 2</span>
-          <div class="drill-title">プレス方向予測と回避ルート選択</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">相手のプレス方向を予測し、最も効率的な回避ルートを瞬時に判断する。</p>
-        <ul class="drill-steps">
-          <li>相手プレス役がどの方向から来るかを「足の向き」で予測して宣言</li>
-          <li>その予測に基づき、「体の向き」を先に作っておく</li>
-          <li>プレスが来た方向と予測の一致率を記録する</li>
-          <li>逆プレスをかけられた場合の「次の手」も準備しておく</li>
-        </ul>
-        <div class="drill-fep mf">🧠 FEP的ポイント：プレスの方向は事前に「確率」として持っておく。高確率な方向への準備が認知負荷を下げる</div>
+    <div class="drill-card mf" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num mf">Drill 3</span>
+        <div class="drill-title">3つの選択肢の優先順位付け</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールを受ける前に「第1・第2・第3の選択肢」を頭の中で準備しておく。</p>
+      <ul class="drill-steps">
+        <li>ボールを受ける前に周囲をスキャンし、選択肢を3つ挙げる</li>
+        <li>「最優先は右前方のスペース、次は左の味方」などを声で宣言</li>
+        <li>プレー後に「どの選択肢を使ったか、なぜか」を振り返る</li>
+        <li>使わなかった選択肢の「その時点での状況」も確認する</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep mf">複数の選択肢を並列で持つことで、不確実な状況での意思決定速度が上がる</div>
+      </details>
+    </div>
 
-      <div class="drill-card mf" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num mf">Drill 3</span>
-          <div class="drill-title">3つの選択肢の優先順位付け</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールを受ける前に「第1・第2・第3の選択肢」を頭の中で準備しておく。</p>
-        <ul class="drill-steps">
-          <li>ボールを受ける前に周囲をスキャンし、選択肢を3つ挙げる</li>
-          <li>「最優先は右前方のスペース、次は左の味方」などを声で宣言</li>
-          <li>プレー後に「どの選択肢を使ったか、なぜか」を振り返る</li>
-          <li>使わなかった選択肢の「その時点での状況」も確認する</li>
-        </ul>
-        <div class="drill-fep mf">🧠 FEP的ポイント：複数の予測モデルを並列で持つことで、不確実な状況での意思決定速度が上がる</div>
+    <div class="drill-card mf" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num mf">Drill 4</span>
+        <div class="drill-title">守備→攻撃切り替えタイミング予測</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールロスト直後から奪取の瞬間まで、「切り替え完了のタイミング」を予測して動く。</p>
+      <ul class="drill-steps">
+        <li>守備から攻撃に切り替わる瞬間を「予測」してスプリント開始</li>
+        <li>「次のプレーで取れそうか」を常に3秒先まで予測して動き続ける</li>
+        <li>切り替えが遅れた場面を記録し、「どの情報を見落としたか」を分析</li>
+        <li>チームとして「切り替えの共通サイン」を決めて練習する</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep mf">切り替えの速さは「次の状態を予測する速さ」に等しい。常に先のシナリオを更新し続ける</div>
+      </details>
+    </div>
 
-      <div class="drill-card mf" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num mf">Drill 4</span>
-          <div class="drill-title">守備→攻撃切り替えタイミング予測</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールロスト直後から奪取の瞬間まで、「切り替え完了のタイミング」を予測して動く。</p>
-        <ul class="drill-steps">
-          <li>守備から攻撃に切り替わる瞬間を「予測」してスプリント開始</li>
-          <li>「次のプレーで取れそうか」を常に3秒先まで予測して動き続ける</li>
-          <li>切り替えが遅れた場面を記録し、「どの情報を見落としたか」を分析</li>
-          <li>チームとして「切り替えの共通サイン」を決めて練習する</li>
-        </ul>
-        <div class="drill-fep mf">🧠 FEP的ポイント：切り替えの速さは「次の状態を予測する速さ」に等しい。常に先のシナリオを動的に更新し続ける</div>
-      </div>
+    <div class="add-menu-section pos-edit-section">
+      <button class="btn btn-accent" onclick="openAddModal('pos','mf')">＋ メニューを追加</button>
+      <button class="btn btn-primary" onclick="savePosMenu('mf')" style="margin-top:12px;">💾 保存</button>
+    </div>
 
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="openAddModal('pos','mf')">＋ メニューを追加</button>
-        <div id="add-form-mf" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-mf" placeholder="ドリル名" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-mf" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-mf" placeholder="ドリルの内容" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-mf" placeholder="15" min="1" max="60" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addPosMenuItem('mf')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('mf')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="savePosMenu('mf')" style="margin-top:12px;">💾 MF メニューを保存</button>
-      </div>
-
+    <details class="pos-eval-details">
+      <summary>評価ポイントを見る</summary>
       <div class="pos-eval-box">
-        <h4>⚙️ MF ポジション別評価ポイント</h4>
         <ul style="padding-left:16px">
           <li>ファーストタッチ前に選択を宣言できているか</li>
           <li>3つの選択肢を事前に準備できているか</li>
           <li>プレス対応時に「来る方向の予測」が正確か</li>
-          <li>攻守切り替えのタイミングが早いか（予測の速さ）</li>
+          <li>攻守切り替えのタイミングが早いか</li>
           <li>全体把握（ヘッドスキャン）が習慣化されているか</li>
         </ul>
       </div>
+    </details>
+  </div>
+
+  <!-- FW -->
+  <div id="pos-fw" class="pos-content">
+    <div class="pos-hero fw">
+      <div class="pos-hero-icon">🎯</div>
+      <div class="pos-hero-body">
+        <h3>FWメニュー</h3>
+        <p>テーマ：動き出しとフィニッシュ</p>
+        <div class="pos-fep-tags">
+          <span class="pos-fep-tag">動き出し</span>
+          <span class="pos-fep-tag">打つ判断</span>
+          <span class="pos-fep-tag">ミス後の修正</span>
+        </div>
+      </div>
     </div>
 
-    <!-- FW -->
-    <div id="pos-fw" class="pos-content">
-      <div class="pos-hero fw" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
-        <div class="pos-hero-icon">🎯</div>
-        <div class="pos-hero-body">
-          <h3>FW — フォワードのFEP的特性</h3>
-          <p>FWは「得点という結果から逆算して動く」役割。裏抜け・シュート選択・オフザボールの動き出しすべてが、相手DFの内部モデルを攪乱する能動的推論です。</p>
-          <div class="pos-fep-tags">
-            <span class="pos-fep-tag">🎯 ゴール逆算思考</span>
-            <span class="pos-fep-tag">⏱️ タイミング予測</span>
-            <span class="pos-fep-tag">🏃 動き出し予測</span>
-            <span class="pos-fep-tag">🎲 シュート選択</span>
-          </div>
-        </div>
+    <div class="drill-card fw" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num fw">Drill 1</span>
+        <div class="drill-title">ゾーン選択型シュートドリル</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">シュートを打つ前にGKの体勢とゴールのゾーンを評価し、最適なコースを選ぶ。</p>
+      <ul class="drill-steps">
+        <li>ゴールを6ゾーンに分割し、シュート前に「どのゾーンを狙うか」を宣言</li>
+        <li>GKの重心・手の位置から「空いているゾーン」を瞬時に判断</li>
+        <li>宣言したゾーンと実際の着弾点のズレを記録する</li>
+        <li>「GKが来る前に蹴れたか・来てから蹴ったか」もチェック</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep fw">GKの位置を情報源として予測を更新しながら、最適コースを選ぶ</div>
+      </details>
+    </div>
 
-      <div class="drill-card fw" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num fw">Drill 1</span>
-          <div class="drill-title">ゾーン選択型シュートドリル</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">シュートを打つ前にGKの体勢とゴールのゾーンを瞬時に評価し、最適なコースを選ぶ。</p>
-        <ul class="drill-steps">
-          <li>ゴールを6ゾーンに分割し、シュート前に「どのゾーンを狙うか」を宣言</li>
-          <li>GKの重心・手の位置から「空いているゾーン」を瞬時に判断</li>
-          <li>宣言したゾーンと実際の着弾点のズレを記録する</li>
-          <li>「GKが来る前に蹴れたか・来てから蹴ったか」もチェック</li>
-        </ul>
-        <div class="drill-fep fw">🧠 FEP的ポイント：GKの位置は「どのゾーンが最も確率が高いか」の情報源。予測を更新しながら最適コースを選ぶ</div>
+    <div class="drill-card fw" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num fw">Drill 2</span>
+        <div class="drill-title">裏抜けタイミングの予測ドリル</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">パスが出るタイミングを予測して「1拍早く」動き出す。DFラインを予測的に突破する。</p>
+      <ul class="drill-steps">
+        <li>パスを出す選手の「予備動作（体の向き・視線）」を観察する</li>
+        <li>「今出る」と判断した根拠を声に出してから動き出す</li>
+        <li>オフサイドの場合は「どのタイミングが早すぎたか」を振り返る</li>
+        <li>DFラインの高さを事前にチェックし、走るコースを予測的に決める</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep fw">裏抜けはDFと出し手の両方を読んで、その隙間のタイミングを探す二重の予測行動</div>
+      </details>
+    </div>
 
-      <div class="drill-card fw" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num fw">Drill 2</span>
-          <div class="drill-title">裏抜けタイミングの予測ドリル</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">パスが出るタイミングを予測して「1拍早く」動き出す。DFラインを予測的に突破する。</p>
-        <ul class="drill-steps">
-          <li>パスを出す選手の「予備動作（体の向き・視線）」を観察する</li>
-          <li>「今出る」と判断した根拠を声に出してから動き出す</li>
-          <li>オフサイドの場合は「どのタイミングが早すぎたか」を振り返る</li>
-          <li>DFラインの高さを事前にチェックし、走るコースを予測的に決める</li>
-        </ul>
-        <div class="drill-fep fw">🧠 FEP的ポイント：裏抜けは「DFと出し手の内部モデル両方を読んで、その隙間のタイミングを探す」二重の予測行動</div>
+    <div class="drill-card fw" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num fw">Drill 3</span>
+        <div class="drill-title">1対1フィニッシュ選択</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">GKと1対1の局面で「いつシュートを打つか・どのコースか」を意識的に判断する。</p>
+      <ul class="drill-steps">
+        <li>GKが前に出てきた「歩数」をカウントし、最適な打ち時を判断</li>
+        <li>「シュートを打つ」か「さらに持ち込む」かを事前に基準を決める</li>
+        <li>GKが倒れたら→浮かせる、GKが立っていたら→コースを狙う</li>
+        <li>成功・失敗後に「その時点でのGKの状態」を言語化する</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep fw">GKの状態を情報として取り込み、最も確率の高い結末に向けて行動を最適化する</div>
+      </details>
+    </div>
 
-      <div class="drill-card fw" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num fw">Drill 3</span>
-          <div class="drill-title">1対1フィニッシュ選択トレーニング</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">GKと1対1の局面で「いつシュートを打つか・どのコースか」を意識的に判断する。</p>
-        <ul class="drill-steps">
-          <li>GKが前に出てきた「歩数」をカウントし、最適な打ち時を判断</li>
-          <li>「シュートを打つ」か「さらに持ち込む」かを事前に基準を決める</li>
-          <li>GKが倒れたら→浮かせる、GKが立っていたら→コースを狙う</li>
-          <li>成功・失敗後に「その時点でのGKの状態」を言語化する</li>
-        </ul>
-        <div class="drill-fep fw">🧠 FEP的ポイント：1対1は「GKの状態を情報として取り込み、最も確率の高い結末に向けて行動を最適化する」場面</div>
+    <div class="drill-card fw" style="position:relative;">
+      <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
+      <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
+      <div class="drill-header">
+        <span class="drill-num fw">Drill 4</span>
+        <div class="drill-title">オフザボール動き出し予測</div>
       </div>
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールを持っていない時間に「次にボールが来るシーン」を予測して有利な位置を取る。</p>
+      <ul class="drill-steps">
+        <li>ボールが味方の足元に入った瞬間、「次に自分が受ける場面」を予測して動き出す</li>
+        <li>動き出す方向を指差しで宣言し、出し手に意思を伝える</li>
+        <li>「パスが来なかった場合」も、その原因を分析して次の動きに活かす</li>
+        <li>チームとして「FWが動き出したらMFが見る」という習慣を作る</li>
+      </ul>
+      <details class="drill-fep-details">
+        <summary>解説</summary>
+        <div class="drill-fep fw">オフザボールの動き出しは、チームの未来の状態を先に予測して形作る能動的な行動</div>
+      </details>
+    </div>
 
-      <div class="drill-card fw" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-        <div class="drill-header">
-          <span class="drill-num fw">Drill 4</span>
-          <div class="drill-title">オフザボール動き出し予測</div>
-        </div>
-        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">ボールを持っていない時間に「次にボールが来るシーン」を予測して有利な位置を取る。</p>
-        <ul class="drill-steps">
-          <li>ボールが味方の足元に入った瞬間、「次に自分が受ける場面を予測」して動き出す</li>
-          <li>動き出す方向を事前に指差しで宣言し、出し手に意思を伝える</li>
-          <li>「パスが来なかった場合」も、その原因を分析して次の動きに活かす</li>
-          <li>チームとして「FWが動き出したらMFが見る」という習慣を作る</li>
-        </ul>
-        <div class="drill-fep fw">🧠 FEP的ポイント：オフザボールの動き出しは「チームの未来の状態を先に予測して形作る」最も能動的な推論行動</div>
-      </div>
+    <div class="add-menu-section pos-edit-section">
+      <button class="btn btn-accent" onclick="openAddModal('pos','fw')">＋ メニューを追加</button>
+      <button class="btn btn-primary" onclick="savePosMenu('fw')" style="margin-top:12px;">💾 保存</button>
+    </div>
 
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="openAddModal('pos','fw')">＋ メニューを追加</button>
-        <div id="add-form-fw" class="add-menu-form" style="display:none;">
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">メニュー名</label><input type="text" id="new-menu-name-fw" placeholder="ドリル名" style="width:100%;margin-top:4px;"></div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">カテゴリ</label>
-            <select id="new-menu-cat-fw" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;">
-              <option value="warm">ウォームアップ</option><option value="tech">技術</option><option value="tactic">戦術</option><option value="phys">フィジカル</option><option value="cool">クールダウン</option>
-            </select>
-          </div>
-          <div style="margin-bottom:8px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">内容説明</label><textarea id="new-menu-desc-fw" placeholder="ドリルの内容" style="width:100%;margin-top:4px;padding:8px;border-radius:8px;border:1.5px solid var(--border);resize:vertical;min-height:60px;font-family:inherit;font-size:0.88rem;"></textarea></div>
-          <div style="margin-bottom:12px;"><label style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">時間（分）</label><input type="number" id="new-menu-time-fw" placeholder="15" min="1" max="60" style="width:100%;margin-top:4px;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="addPosMenuItem('fw')">追加</button>
-            <button class="btn btn-secondary" onclick="toggleAddMenuForm('fw')">キャンセル</button>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="savePosMenu('fw')" style="margin-top:12px;">💾 FW メニューを保存</button>
-      </div>
-
+    <details class="pos-eval-details">
+      <summary>評価ポイントを見る</summary>
       <div class="pos-eval-box">
-        <h4>🎯 FW ポジション別評価ポイント</h4>
         <ul style="padding-left:16px">
           <li>シュートゾーンを宣言してから打てているか</li>
           <li>裏抜けのタイミング根拠を言語化できているか</li>
@@ -468,10 +475,7 @@
           <li>ミスの後に「何の予測がズレたか」を自分で言えるか</li>
         </ul>
       </div>
-    </div>
-
+    </details>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════
-       EVALUATION SHEET PAGE
-  ═══════════════════════════════════════════════════════ -->
+</div><!-- /#pos-page-wrapper -->
