@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEP Soccer Training — Phase 1 画面設計モックアップ</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --accent: #059669;
+    --orange: #d97706;
+    --red: #dc2626;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --bg: #eef3fc;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    background: linear-gradient(180deg, #dce8fb 0%, #eef3fc 40%, #f1f5f9 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .app-shell { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar {
+    width: 220px; min-width: 220px;
+    background: linear-gradient(180deg, #1e3a5f 0%, #1d4ed8 100%);
+    display: flex; flex-direction: column;
+    padding: 0; overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 20px 18px 16px;
+    font-size: 1rem; font-weight: 800; color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar-nav { padding: 12px 8px; flex: 1; }
+  .nav-section-label {
+    font-size: 0.68rem; color: rgba(255,255,255,0.45);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 10px 10px 4px;
+  }
+  .nav-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 9px 12px; border-radius: 8px;
+    border: none; background: transparent; color: rgba(255,255,255,0.75);
+    font-size: 0.88rem; cursor: pointer; text-align: left;
+    transition: all 0.15s; margin-bottom: 2px;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+  .nav-btn.active { background: rgba(255,255,255,0.22); color: white; font-weight: 700; }
+  .nav-btn .badge {
+    margin-left: auto; background: #ef4444; color: white;
+    font-size: 0.65rem; font-weight: 700; padding: 1px 6px;
+    border-radius: 10px; min-width: 18px; text-align: center;
+  }
+  .main { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+  /* ── Screen selector ── */
+  .screen-selector {
+    background: white; border-radius: 12px; padding: 16px 20px;
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .screen-btn {
+    padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: white; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .screen-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .screen-btn.active {
+    background: var(--primary); border-color: var(--primary);
+    color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+
+  /* ── Screen container ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .page-title {
+    font-size: 1.25rem; font-weight: 800; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .page-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* ── Card ── */
+  .card {
+    background: white; border-radius: 14px; padding: 20px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .card-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+  .card-title .ico { margin-right: 6px; }
+
+  /* ── Form elements ── */
+  .form-row { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 0.82rem; font-weight: 600;
+    color: var(--text-muted); margin-bottom: 6px;
+  }
+  .slider-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+  }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--primary); }
+  .slider-val {
+    min-width: 28px; text-align: center; font-weight: 700;
+    font-size: 0.9rem; color: var(--primary);
+  }
+  .scale-ends {
+    display: flex; justify-content: space-between;
+    font-size: 0.72rem; color: var(--text-muted);
+  }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%; padding: 9px 12px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 0.9rem; font-family: inherit;
+    color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input[type=text]:focus, textarea:focus, select:focus { border-color: var(--primary); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* ── Toggle chips ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: white; cursor: pointer; font-size: 0.82rem;
+    color: var(--text-muted); transition: all 0.12s; user-select: none;
+  }
+  .chip:hover { border-color: var(--primary); color: var(--primary); }
+  .chip.selected {
+    background: var(--primary); border-color: var(--primary);
+    color: white; font-weight: 600;
+  }
+  .chip.green.selected { background: var(--accent); border-color: var(--accent); }
+  .chip.orange.selected { background: var(--orange); border-color: var(--orange); }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── Metric card ── */
+  .metric-card {
+    background: white; border-radius: 12px; padding: 16px 18px;
+    border: 1px solid var(--border); text-align: center;
+  }
+  .metric-card .val {
+    font-size: 2.2rem; font-weight: 800; line-height: 1.1;
+  }
+  .metric-card .label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+  .metric-card .sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+  .vfe-high .val { color: #dc2626; }
+  .vfe-mid .val { color: var(--orange); }
+  .vfe-low .val { color: var(--accent); }
+
+  /* ── Alert / info box ── */
+  .alert {
+    border-radius: 10px; padding: 13px 16px;
+    font-size: 0.88rem; margin-bottom: 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .alert.blue { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+  .alert.green { background: #f0fdf4; border: 1px solid #86efac; color: #065f46; }
+  .alert.orange { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+  .alert.red { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+  .alert-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 10px 20px; border-radius: 9px; border: none;
+    font-size: 0.9rem; font-weight: 700; cursor: pointer;
+    transition: all 0.15s; font-family: inherit;
+  }
+  .btn-primary { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: white; color: var(--text); border: 1.5px solid var(--border); }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-full { width: 100%; display: block; padding: 13px; font-size: 0.95rem; }
+
+  /* ── Progress / Step ── */
+  .progress-steps {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 24px; padding: 16px 20px;
+    background: white; border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .step {
+    flex: 1; text-align: center; font-size: 0.78rem;
+    color: var(--text-muted); position: relative;
+  }
+  .step::after {
+    content: ''; position: absolute; top: 14px; left: 60%;
+    width: 80%; height: 2px; background: var(--border);
+  }
+  .step:last-child::after { display: none; }
+  .step .dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--border); color: white; font-weight: 700;
+    font-size: 0.82rem; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 6px;
+  }
+  .step.done .dot { background: var(--accent); }
+  .step.active .dot { background: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.2); }
+  .step.done::after { background: var(--accent); }
+  .step.active { color: var(--primary); font-weight: 700; }
+
+  /* ── Recommendation card ── */
+  .rec-card {
+    border-radius: 12px; padding: 16px 18px;
+    margin-bottom: 12px; border-left: 4px solid;
+    background: white; border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+  }
+  .rec-card.orange { border-left-color: var(--orange); }
+  .rec-card.green { border-left-color: var(--accent); }
+  .rec-card .rec-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 6px; }
+  .rec-card .rec-body { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; }
+  .rec-card .rec-tag {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px; margin-right: 4px; margin-bottom: 6px;
+  }
+  .tag-blue { background: #eff6ff; color: var(--primary); }
+  .tag-green { background: #f0fdf4; color: var(--accent); }
+  .tag-orange { background: #fffbeb; color: var(--orange); }
+
+  /* ── Condition bar ── */
+  .cond-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .cond-item {
+    flex: 1; min-width: 80px; background: white;
+    border-radius: 10px; padding: 12px 10px; text-align: center;
+    border: 1px solid var(--border);
+  }
+  .cond-item .cond-val { font-size: 1.4rem; font-weight: 800; }
+  .cond-item .cond-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  .cond-good { color: var(--accent); }
+  .cond-warn { color: var(--orange); }
+  .cond-bad { color: var(--red); }
+
+  /* ── Followup ── */
+  .yes-no-row {
+    display: flex; gap: 10px; margin-top: 8px;
+  }
+  .yn-btn {
+    flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid var(--border);
+    background: white; cursor: pointer; font-size: 0.88rem; font-weight: 600;
+    text-align: center; color: var(--text-muted); transition: all 0.15s;
+  }
+  .yn-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .yn-btn.yes { background: #f0fdf4; border-color: var(--accent); color: var(--accent); }
+  .yn-btn.no { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+  /* ── Diff badge ── */
+  .diff-up { color: var(--red); font-weight: 700; }
+  .diff-down { color: var(--accent); font-weight: 700; }
+
+  /* ── Section header ── */
+  .section-label {
+    font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Separator ── */
+  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── Score ring (simple) ── */
+  .score-display {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    border-radius: 14px; padding: 20px;
+    color: white; text-align: center; margin-bottom: 16px;
+  }
+  .score-display .score-num { font-size: 3rem; font-weight: 900; }
+  .score-display .score-label { font-size: 0.85rem; opacity: 0.85; }
+  .score-display .score-state {
+    display: inline-block; background: rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 4px 14px; font-size: 0.82rem;
+    margin-top: 8px; font-weight: 700;
+  }
+
+  /* ── Note ── */
+  .note { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Theory construct labels ── */
+  .theory-tag {
+    display: inline-block; font-size: 0.65rem; font-weight: 700;
+    padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+    vertical-align: middle; letter-spacing: 0.03em; line-height: 1.6;
+  }
+  .tag-vfe       { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+  .tag-efe       { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .tag-eu        { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; }
+  .tag-interv    { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+  .tag-serotonin { background: #f0fdf4; color: #059669; border: 1px solid #86efac; }
+  .tag-dopamine  { background: #fdf4ff; color: #9333ea; border: 1px solid #e9d5ff; }
+  .tag-oxytocin  { background: #fff0f9; color: #db2777; border: 1px solid #fbcfe8; }
+
+  /* ── Legend bar ── */
+  .theory-legend {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    background: white; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; margin-bottom: 20px; font-size: 0.78rem;
+  }
+  .theory-legend .leg-label { font-weight: 700; color: var(--text-muted); margin-right: 4px; }
+  .theory-legend .leg-item { display: flex; align-items: center; gap: 5px; color: var(--text-muted); }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">⚽ FEP Training</div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">選手</div>
+      <button class="nav-btn active">🏠 ホーム</button>
+      <button class="nav-btn">📋 前チェック</button>
+      <button class="nav-btn">▶️ セッション記録</button>
+      <button class="nav-btn">📊 後評価</button>
+      <button class="nav-btn">🔮 次回提案</button>
+      <button class="nav-btn">🔁 フォローアップ <span class="badge">1</span></button>
+      <div class="nav-section-label" style="margin-top:12px">管理</div>
+      <button class="nav-btn">🎯 全体トレーニング</button>
+      <button class="nav-btn">📐 ポジション別</button>
+      <button class="nav-btn">📈 評価シート（旧）</button>
+      <button class="nav-btn">👥 チームダッシュ</button>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <!-- 画面切替ボタン -->
+    <div class="screen-selector">
+      <span style="font-size:0.8rem;color:var(--text-muted);align-self:center;margin-right:4px">画面：</span>
+      <button class="screen-btn active" onclick="showScreen('s0',this)">🏠 ホーム</button>
+      <button class="screen-btn" onclick="showScreen('s1',this)">① 前チェック</button>
+      <button class="screen-btn" onclick="showScreen('s2',this)">② セッション記録</button>
+      <button class="screen-btn" onclick="showScreen('s3',this)">③ 後評価</button>
+      <button class="screen-btn" onclick="showScreen('s4',this)">④ 次回提案</button>
+      <button class="screen-btn" onclick="showScreen('s5',this)">⑤ フォローアップ</button>
+    </div>
+
+    <!-- 理論ラベル凡例 -->
+    <div class="theory-legend">
+      <span class="leg-label">開発用凡例：</span>
+      <span class="leg-item"><span class="theory-tag tag-vfe">VFE</span>complexity / accuracy → VFEスコア計算式への直接入力</span>
+      <span class="leg-item"><span class="theory-tag tag-efe">EFE</span>epistemic_raw / pragmatic_raw → EFEスコア計算式への直接入力</span>
+      <span class="leg-item"><span class="theory-tag tag-eu">EU / σ</span>F' + sigma → EU(sigma_display)計算への入力</span>
+      <span class="leg-item"><span class="theory-tag tag-serotonin">セロトニン系→σ</span>身体安定基盤。σ(精度重み)を上下させる</span>
+      <span class="leg-item"><span class="theory-tag tag-oxytocin">オキシトシン系→λ</span>安全感・接続。λ(感情反応性)・reactivityを下げる</span>
+      <span class="leg-item"><span class="theory-tag tag-dopamine">ドーパミン系→F'</span>報酬・動機。F'のポジティブ方向（Q1 hope_fear / Q2 happy_unhappy）に影響</span>
+    </div>
+
+    <!-- ═══ 画面0: ホーム ═══ -->
+    <div id="s0" class="screen active">
+      <div class="page-title">🏠 選手ホーム</div>
+      <div class="page-sub">おかえりなさい、Akada さん　　2026年4月1日（水）</div>
+
+      <!-- 今日の状態サマリ -->
+      <div class="alert orange">
+        <span class="alert-icon">⚠️</span>
+        <div>昨日のフォローアップが未回答です。<a href="#" style="color:inherit;font-weight:700">こちら</a>から入力してください。</div>
+      </div>
+
+      <div class="cond-bar">
+        <div class="cond-item"><div class="cond-val cond-warn">7</div><div class="cond-label">体調</div></div>
+        <div class="cond-item"><div class="cond-val cond-bad">8</div><div class="cond-label">疲労</div></div>
+        <div class="cond-item"><div class="cond-val cond-warn">5</div><div class="cond-label">不安</div></div>
+        <div class="cond-item"><div class="cond-val cond-good">8</div><div class="cond-label">集中</div></div>
+        <div class="cond-item"><div class="cond-val cond-good">1</div><div class="cond-label">痛み</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="ico">📊</span>前回のVFEスコア <span class="theory-tag tag-vfe">変分自由エネルギー</span></div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="font-size:2.6rem;font-weight:900;color:#d97706">62</div>
+              <div>
+                <div style="font-size:0.85rem;color:#d97706;font-weight:700">混乱が強い</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">前回比 <span class="diff-up">+8</span></div>
+                <div style="font-size:0.78rem;color:var(--text-muted)">2026/3/30</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="ico">🎯</span>今日の目標</div>
+            <div style="font-size:0.9rem;color:var(--text);line-height:1.6">
+              利き足ファーストタッチの成功率 60% 以上を維持する
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:8px">設定：3日前</div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="border-left:4px solid var(--primary)">
+            <div class="card-title"><span class="ico">🔮</span>今日の推奨アプローチ</div>
+            <div class="alert blue" style="margin-bottom:10px">
+              <span class="alert-icon">💡</span>
+              <div style="font-size:0.84rem">前回VFEが高めでした。今日はLayer 1〜2の単純課題から始めるのが効果的です。</div>
+            </div>
+            <div style="font-size:0.84rem;color:var(--text-muted);line-height:1.7">
+              ✅ 推奨レイヤー：<strong>Layer 1〜2</strong><br>
+              ✅ 感覚チャネル：<strong>体性感覚 + 視覚</strong><br>
+              ✅ 成功率目標：<strong>50〜60%</strong><br>
+              ✅ 声かけ：<strong>安心型優先</strong>
+            </div>
+            <div class="btn-row" style="margin-top:14px">
+              <button class="btn btn-primary" onclick="showScreen('s1',document.querySelectorAll('.screen-btn')[1])">今日のチェック開始 →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 画面1: セッション前チェック ═══ -->
+    <div id="s1" class="screen">
+      <div class="page-title">📋 セッション前チェック</div>
+      <div class="page-sub">今日の状態を記録して、最適な練習の入り口を整えます</div>
+
+      <div class="progress-steps">
+        <div class="step active"><div class="dot">1</div>前チェック</div>
+        <div class="step"><div class="dot">2</div>記録</div>
+        <div class="step"><div class="dot">3</div>後評価</div>
+        <div class="step"><div class="dot">4</div>提案</div>
+        <div class="step"><div class="dot">5</div>フォロー</div>
+      </div>
+
+      <div class="grid-2">
+        <!-- 左列 -->
+        <div>
+          <div class="card">
+            <div class="card-title">🩺 コンディション <span class="theory-tag tag-serotonin">セロトニン系→σ</span></div>
+            <div class="form-row">
+              <label class="form-label">今日のコンディション（体調・疲労・痛みを総合して）<span class="theory-tag tag-serotonin">セロトニン系→σ: 高いほどσ↑（精度重み上昇）</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="6" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">6</span>
+              </div>
+              <div class="scale-ends"><span>不調・痛みあり (0)</span><span>万全 (10)</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🌅 今日の期待感 <span class="theory-tag tag-dopamine">ドーパミン系→F': Q1 hope_fear</span></div>
+            <div class="form-row">
+              <label class="form-label">前回と比べて、今日の練習への期待感は？<span class="theory-tag tag-dopamine">F': Q1 hope_fear (weight=0.25, 過去→現在)</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="6" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">6</span>
+              </div>
+              <div class="scale-ends"><span>不安・恐れ (0)</span><span>希望・楽しみ (10)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右列 -->
+        <div>
+          <div class="card">
+            <div class="card-title">📊 EFE: 認識と目標 <span class="theory-tag tag-efe">EFE: epistemic_raw / pragmatic_raw + α / β重み</span></div>
+            <div class="form-row">
+              <label class="form-label">今の自分の状態（動き・感覚）はどれくらい理解できていますか？<span class="theory-tag tag-efe">epiQ1: 情報理解度（epistemic_raw入力）</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">5</span>
+              </div>
+              <div class="scale-ends"><span>全くわからない (0)</span><span>よく理解できている (10)</span></div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">今日は新しい気づきや感覚を積極的に探りたいですか？<span class="theory-tag tag-efe">epiQ2: 情報の必要性 → α（認識的重み）の算出に使用</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="7" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">7</span>
+              </div>
+              <div class="scale-ends"><span>求めていない (0)</span><span>積極的に探りたい (10)</span></div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">今日の練習目標は達成できそうですか？<span class="theory-tag tag-efe">praQ3: 報酬（pragmatic_raw入力）</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="6" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">6</span>
+              </div>
+              <div class="scale-ends"><span>難しそう (0)</span><span>達成できそう (10)</span></div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">今日の練習はきつそう・負担が大きそうですか？<span class="theory-tag tag-efe">praQ4: コスト → β（実用的重み）の算出に使用</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="4" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">4</span>
+              </div>
+              <div class="scale-ends"><span>楽そう (0)</span><span>かなりきつそう (10)</span></div>
+            </div>
+          </div>
+          <div class="alert blue">
+            <span class="alert-icon">🔮</span>
+            <div>
+              <strong>前回データから推奨：</strong><br>
+              前回VFE=62（混乱が強い）のため、今日はLayer 2以下の単純課題から始め、成功率50〜60%を目指すのが効果的です。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="showScreen('s2',document.querySelectorAll('.screen-btn')[2])">チェック完了 → セッション記録へ</button>
+        <button class="btn btn-secondary">下書き保存</button>
+      </div>
+    </div>
+
+    <!-- ═══ 画面2: セッション記録 ═══ -->
+    <div id="s2" class="screen">
+      <div class="page-title">▶️ セッション記録</div>
+      <div class="page-sub">「何を狙って、どういう条件でやったか」を記録します</div>
+
+      <div class="progress-steps">
+        <div class="step done"><div class="dot">✓</div>前チェック</div>
+        <div class="step active"><div class="dot">2</div>記録</div>
+        <div class="step"><div class="dot">3</div>後評価</div>
+        <div class="step"><div class="dot">4</div>提案</div>
+        <div class="step"><div class="dot">5</div>フォロー</div>
+      </div>
+
+      <div class="grid-2">
+        <!-- 左列 -->
+        <div>
+          <div class="card">
+            <div class="card-title">📊 VFE入力 <span class="theory-tag tag-vfe">VFE: complexity / accuracy 直接入力</span></div>
+            <div class="form-row">
+              <label class="form-label">難易度（主観）<span class="theory-tag tag-vfe">VFE: complexity (0-10) → sigmoid → w_c × norm_c</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">5</span>
+              </div>
+              <div class="scale-ends"><span>易しい (0)</span><span>非常に難しい (10)</span></div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">成功率（実績 %）<span class="theory-tag tag-vfe">VFE: accuracy (逆転して使用) → sigmoid → w_a × norm_a</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="100" step="5" value="55" oninput="this.nextElementSibling.textContent=this.value+'%'">
+                <span class="slider-val">55%</span>
+              </div>
+              <div class="scale-ends"><span>0%</span><span style="color:var(--accent);font-weight:600">30〜60%が理想ゾーン</span><span>100%</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📌 メニュー基本情報 <span class="theory-tag tag-interv" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe">介入記録</span></div>
+            <div class="form-row">
+              <label class="form-label">メニュー名</label>
+              <input type="text" value="ファーストタッチ前の選択宣言" placeholder="メニュー名を入力">
+            </div>
+            <div class="form-row">
+              <label class="form-label">目的</label>
+              <div class="chips">
+                <span class="chip selected">安定化</span>
+                <span class="chip">探索</span>
+                <span class="chip">精度向上</span>
+                <span class="chip">スピード</span>
+                <span class="chip">不安低減</span>
+                <span class="chip">適応</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">実施時間（分）</label>
+              <input type="text" value="20" style="width:100px">
+            </div>
+            <div class="form-row">
+              <label class="form-label">制限条件（あれば）</label>
+              <div class="chips">
+                <span class="chip selected">時間制限あり</span>
+                <span class="chip">視線制約</span>
+                <span class="chip">利き足縛り</span>
+                <span class="chip">コート制限</span>
+                <span class="chip">なし</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右列 -->
+        <div>
+          <div class="card">
+            <div class="card-title">🧠 レイヤー・感覚チャネル <span class="theory-tag tag-interv" style="background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe">介入記録（VFE計算とは独立）</span></div>
+            <div class="form-row">
+              <label class="form-label">レイヤー</label>
+              <div class="note" style="margin-bottom:6px">練習メニューの技術階層を記録。VFEのweight_valueはコーチプロファイルで別途設定。</div>
+              <div class="chips">
+                <span class="chip">L1 感覚・姿勢・基礎</span>
+                <span class="chip selected">L2 個別スキル</span>
+                <span class="chip">L3 相手あり判断</span>
+                <span class="chip">L4 全体・状況判断</span>
+              </div>
+            </div>
+            <div class="sep" style="margin:12px 0"></div>
+            <div class="form-row">
+              <label class="form-label">感覚チャネル（主軸）</label>
+              <div class="note" style="margin-bottom:6px">どの感覚を優先した介入かを記録。EU計算はF'とσから算出（チャネル選択は直接繋がらない）。</div>
+              <div class="chips">
+                <span class="chip selected">視覚</span>
+                <span class="chip">前庭</span>
+                <span class="chip selected green">体性感覚</span>
+                <span class="chip">内受容</span>
+                <span class="chip">聴覚</span>
+                <span class="chip">複合</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🗣️ コーチング <span class="theory-tag tag-oxytocin">オキシトシン系→λ</span><span class="theory-tag tag-dopamine">ドーパミン系→F'</span></div>
+            <div class="form-row">
+              <label class="form-label">声かけタイプ</label>
+              <div class="chips" style="flex-direction:column;align-items:flex-start;gap:6px">
+                <span class="chip selected green" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+                  <span>安心型</span>
+                  <span style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:400">オキシトシン→λ↓・reactivity↓・F'の振れ幅を抑制</span>
+                </span>
+                <span class="chip" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+                  <span>探索型</span>
+                  <span style="font-size:0.72rem;color:var(--text-muted);font-weight:400">EFE epistemic↑・好奇心促進・不確実性を許容</span>
+                </span>
+                <span class="chip" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+                  <span>挑戦型</span>
+                  <span style="font-size:0.72rem;color:var(--text-muted);font-weight:400">ドーパミン強→λ↑注意・安定選手のみ推奨</span>
+                </span>
+                <span class="chip" style="width:100%;display:flex;justify-content:space-between;align-items:center">
+                  <span>ポジティブ強化型</span>
+                  <span style="font-size:0.72rem;color:var(--text-muted);font-weight:400">ドーパミン→F' Q2(happy_unhappy)↑・成功体験を強化</span>
+                </span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">フィードバック回数（概算）</label>
+              <div class="chips">
+                <span class="chip">ほぼなし</span>
+                <span class="chip selected">数回</span>
+                <span class="chip">頻繁</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="showScreen('s3',document.querySelectorAll('.screen-btn')[3])">記録完了 → 後評価へ</button>
+        <button class="btn btn-secondary">+ もう一つメニューを追加</button>
+      </div>
+    </div>
+
+    <!-- ═══ 画面3: 後評価 ═══ -->
+    <div id="s3" class="screen">
+      <div class="page-title">📊 セッション後評価</div>
+      <div class="page-sub">今日の練習が終わったら、感覚を正直に記録してください</div>
+
+      <div class="progress-steps">
+        <div class="step done"><div class="dot">✓</div>前チェック</div>
+        <div class="step done"><div class="dot">✓</div>記録</div>
+        <div class="step active"><div class="dot">3</div>後評価</div>
+        <div class="step"><div class="dot">4</div>提案</div>
+        <div class="step"><div class="dot">5</div>フォロー</div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">💬 主観評価 <span class="theory-tag tag-vfe">VFE確認</span><span class="theory-tag tag-eu">F' (Q2/Q3)</span></div>
+
+            <div class="form-row">
+              <label class="form-label">やりやすさ<span class="theory-tag tag-vfe" style="font-size:0.62rem">記録のみ・VFE計算はセッション記録のcomplexity/accuracyを使用</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="6" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">6</span>
+              </div>
+              <div class="scale-ends"><span>全くやりにくい (0)</span><span>非常にやりやすい (10)</span></div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">難しさの感覚<span class="theory-tag tag-vfe" style="font-size:0.62rem">記録のみ・VFE計算はセッション記録のcomplexity/accuracyを使用</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">5</span>
+              </div>
+              <div class="scale-ends"><span>簡単すぎ (0)</span><span>難しすぎ (10)</span></div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">楽しさ<span class="theory-tag tag-eu">F': Q2 happy_unhappy (weight=0.50, 現在の状態・最重要)</span><span class="theory-tag tag-dopamine">ドーパミン系→F'↑</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="7" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">7</span>
+              </div>
+              <div class="scale-ends"><span>全く楽しくない (0)</span><span>とても楽しい (10)</span></div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">やって良かったですか？（スッキリした ↔ 物足りなかった）<span class="theory-tag tag-eu">F': Q3 relief_disappoint (weight=0.25, 現在→未来)</span><span class="theory-tag tag-efe">EFE: pragmatic_raw（目標達成の実感）</span></label>
+              <div class="slider-row">
+                <input type="range" min="0" max="10" value="7" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="slider-val">7</span>
+              </div>
+              <div class="scale-ends"><span>物足りない・期待外れ (0)</span><span>スッキリ・ホッとした (10)</span></div>
+            </div>
+
+            <div class="form-row">
+              <label class="form-label">次回も再現できそうか<span class="theory-tag tag-eu">σ (sigma) 自己評価: できそう→σ安定→EU↓ / できなそう→σ不安定→EU↑</span></label>
+              <div class="chips" style="margin-top:6px">
+                <span class="chip selected green">できそう</span>
+                <span class="chip">少し不安</span>
+                <span class="chip">難しい</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="score-display">
+            <div class="score-label">今日の VFE スコア（変分自由エネルギー）</div>
+            <div class="score-num">54</div>
+            <div class="score-state">やや混乱</div>
+          </div>
+
+          <div class="grid-3" style="margin-bottom:16px">
+            <div class="metric-card vfe-mid">
+              <div class="val">54</div>
+              <div class="label">VFE</div>
+              <div class="sub diff-down">↓ −8</div>
+            </div>
+            <div class="metric-card">
+              <div class="val" style="color:var(--primary);font-size:1.8rem">3.2</div>
+              <div class="label">EFE</div>
+              <div class="sub">期待自由エネルギー</div>
+              <div class="sub">目標明確</div>
+            </div>
+            <div class="metric-card">
+              <div class="val" style="color:var(--orange);font-size:1.8rem">6.1</div>
+              <div class="label">EU</div>
+              <div class="sub">認識的不確実性</div>
+              <div class="sub diff-up">↑ やや高め</div>
+            </div>
+          </div>
+
+          <div class="alert green">
+            <span class="alert-icon">✅</span>
+            <div><strong>前回比で改善：</strong>VFEが62→54に低下。ファーストタッチの練習が安定化に貢献しています。</div>
+          </div>
+
+          <div class="alert orange">
+            <span class="alert-icon">⚠️</span>
+            <div><strong>EU（不確実性）が高め：</strong>プレッシャー下での判断がまだ不安定です。次回は予測可能な環境を確保することを推奨します。</div>
+          </div>
+
+          <div class="card" style="margin-top:0">
+            <div class="card-title">📈 過去5回のVFE推移</div>
+            <div style="display:flex;align-items:flex-end;gap:8px;height:80px;padding-bottom:4px">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:100%;background:#bfdbfe;border-radius:4px 4px 0 0" title="VFE=70" data-h="70"></div>
+                <div style="font-size:0.68rem;color:var(--text-muted)">3/20</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:100%;background:#93c5fd;border-radius:4px 4px 0 0" data-h="58"></div>
+                <div style="font-size:0.68rem;color:var(--text-muted)">3/22</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:100%;background:#60a5fa;border-radius:4px 4px 0 0" data-h="65"></div>
+                <div style="font-size:0.68rem;color:var(--text-muted)">3/25</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:100%;background:#3b82f6;border-radius:4px 4px 0 0" data-h="62"></div>
+                <div style="font-size:0.68rem;color:var(--text-muted)">3/30</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:100%;background:#2563eb;border-radius:4px 4px 0 0" data-h="54"></div>
+                <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;color:var(--primary)">今日</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="showScreen('s4',document.querySelectorAll('.screen-btn')[4])">保存 → 次回提案を見る</button>
+        <button class="btn btn-secondary">印刷</button>
+      </div>
+    </div>
+
+    <!-- ═══ 画面4: 次回提案 ═══ -->
+    <div id="s4" class="screen">
+      <div class="page-title">🔮 次回への提案</div>
+      <div class="page-sub">今日の結果をもとに、次の一手を提案します</div>
+
+      <div class="progress-steps">
+        <div class="step done"><div class="dot">✓</div>前チェック</div>
+        <div class="step done"><div class="dot">✓</div>記録</div>
+        <div class="step done"><div class="dot">✓</div>後評価</div>
+        <div class="step active"><div class="dot">4</div>提案</div>
+        <div class="step"><div class="dot">5</div>フォロー</div>
+      </div>
+
+      <div class="alert blue" style="margin-bottom:20px">
+        <span class="alert-icon">📊</span>
+        <div>
+          <strong>今日のまとめ：</strong>VFE=54（やや混乱）/ EU=6.1（やや高め）/ 成功率55%<br>
+          前回から改善傾向ですが、プレッシャー下での不確実性が残っています。
+        </div>
+      </div>
+
+      <div class="section-label">次回セッションへの提案</div>
+
+      <div class="rec-card">
+        <div><span class="rec-tag tag-blue">📐 レイヤー</span><span class="theory-tag tag-vfe">VFE基準</span></div>
+        <div class="rec-title">Layer 2 を継続。Layer 3 への移行はまだ早い</div>
+        <div class="rec-body">今日の成果でLayer 2が定着しつつあります。ただしEUが高いため、次回もLayer 2で安定化を優先。Layer 3（相手あり）への移行はVFE50以下になってから。</div>
+      </div>
+
+      <div class="rec-card orange">
+        <div><span class="rec-tag tag-orange">⚡ 難易度</span><span class="theory-tag tag-vfe">VFE: accuracy調整</span></div>
+        <div class="rec-title">成功率は55%で適正ゾーン。今の難易度を維持</div>
+        <div class="rec-body">成功率30〜60%の理想ゾーン内に入っています。次回も同程度の難易度を維持しましょう。3回連続70%を超えたら難易度を上げます。</div>
+      </div>
+
+      <div class="rec-card">
+        <div><span class="rec-tag tag-blue">👁️ 感覚</span><span class="theory-tag tag-eu">EU: 入力モダリティ調整</span></div>
+        <div class="rec-title">視覚負荷を少し下げ、体性感覚に集中</div>
+        <div class="rec-body">EUが高い状態では、視覚情報が多すぎると判断が過負荷になります。次回は視覚制約を外した状態での体性感覚トレーニングから入るのが効果的です。</div>
+      </div>
+
+      <div class="rec-card green">
+        <div><span class="rec-tag tag-green">🗣️ 声かけ</span><span class="theory-tag tag-vfe">VFE・EFE 介入調整</span></div>
+        <div class="rec-title">安心型フィードバックを継続。挑戦型は控える</div>
+        <div class="rec-body">疲労感6、不安5のため、挑戦型の声かけはVFEをさらに上げるリスクがあります。今はポジティブな強化と安心感の提供を優先してください。</div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="section-label">次回セッションの推奨構成（テンプレート）</div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:start">
+          <div style="background:#f0fdf4;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:0.7rem;color:var(--accent);font-weight:700">前半</div>
+            <div style="font-size:1.6rem">🌿</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">整える</div>
+          </div>
+          <div style="font-size:0.86rem;line-height:1.7">
+            <strong>5〜8分：</strong>呼吸・リズム・基礎感覚確認<br>
+            <span style="color:var(--text-muted)">セロトニン的な安定から入る</span>
+          </div>
+          <div style="background:#eff6ff;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:0.7rem;color:var(--primary);font-weight:700">中盤</div>
+            <div style="font-size:1.6rem">🤝</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">つながる</div>
+          </div>
+          <div style="font-size:0.86rem;line-height:1.7">
+            <strong>10〜15分：</strong>ファーストタッチ宣言ドリル（Layer 2）<br>
+            <span style="color:var(--text-muted)">体性感覚チャネル、安心型声かけ</span>
+          </div>
+          <div style="background:#fffbeb;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:0.7rem;color:var(--orange);font-weight:700">後半</div>
+            <div style="font-size:1.6rem">🎯</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">挑戦</div>
+          </div>
+          <div style="font-size:0.86rem;line-height:1.7">
+            <strong>15〜20分：</strong>成功率50〜60%の制限ありドリル<br>
+            <span style="color:var(--text-muted)">達成感を設計。時間制限のみ追加</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary">この提案を保存してホームに戻る</button>
+        <button class="btn btn-secondary">コーチにも共有する</button>
+      </div>
+    </div>
+
+    <!-- ═══ 画面5: フォローアップ ═══ -->
+    <div id="s5" class="screen">
+      <div class="page-title">🔁 翌日フォローアップ</div>
+      <div class="page-sub">昨日の練習が「定着」したかを確認します（1〜2分）</div>
+
+      <div class="progress-steps">
+        <div class="step done"><div class="dot">✓</div>前チェック</div>
+        <div class="step done"><div class="dot">✓</div>記録</div>
+        <div class="step done"><div class="dot">✓</div>後評価</div>
+        <div class="step done"><div class="dot">✓</div>提案</div>
+        <div class="step active"><div class="dot">5</div>フォロー</div>
+      </div>
+
+      <div class="alert orange">
+        <span class="alert-icon">📅</span>
+        <div>
+          <strong>3月30日（月）のセッション</strong> に関する確認です<br>
+          メニュー：ファーストタッチ前の選択宣言 / Layer 2 / 成功率55%
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">🔄 再現・転移の確認 <span class="theory-tag tag-eu">EU: σ安定確認</span><span class="theory-tag tag-efe">EFE: pragmatic_raw</span></div>
+
+            <div class="form-row">
+              <label class="form-label">昨日学んだことを今日再現できましたか？<span class="theory-tag tag-eu">EU / σ: 再現=σ安定（精度が定着した証拠）→sigma_display↓</span></label>
+              <div class="yes-no-row">
+                <div class="yn-btn yes">✅ できた</div>
+                <div class="yn-btn">△ 少しできた</div>
+                <div class="yn-btn no">❌ できなかった</div>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top:14px">
+              <label class="form-label">試合や別の場面で活かせそうですか？<span class="theory-tag tag-efe">EFE: pragmatic_raw（優先状態への到達が別文脈でも成立するか）</span></label>
+              <div class="yes-no-row">
+                <div class="yn-btn yes">✅ 活かせた・活かせそう</div>
+                <div class="yn-btn">わからない</div>
+                <div class="yn-btn no">❌ まだ難しい</div>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top:14px">
+              <label class="form-label">また同じメニューをやりたいですか？<span class="theory-tag tag-dopamine">ドーパミン系→F': Q1 hope_fear（次回への期待=ドーパミン強化の証拠）</span></label>
+              <div class="yes-no-row">
+                <div class="yn-btn yes">✅ またやりたい</div>
+                <div class="yn-btn no">⬜ 別の課題が良い</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-title">🌡️ 変化の確認 <span class="theory-tag tag-efe">EFE変化</span><span class="theory-tag tag-oxytocin">オキシトシン系→λ変化</span></div>
+            <div class="form-row">
+              <label class="form-label">今日の不安レベル（昨日と比較して）<span class="theory-tag tag-efe">EFE: epistemic_raw変化（介入後の不確実性の推移）</span><span class="theory-tag tag-oxytocin">オキシトシン系→λ: 不安減=λ↓→次回reactivity↓</span></label>
+              <div class="chips">
+                <span class="chip green selected">減った</span>
+                <span class="chip">変わらない</span>
+                <span class="chip">増えた</span>
+              </div>
+            </div>
+            <div class="form-row" style="margin-top:12px">
+              <label class="form-label">痛みの変化（あれば）<span class="theory-tag tag-serotonin">セロトニン系→σ: 痛み増=σ強制↓（翌日の精度重み設定に反映）</span></label>
+              <div class="chips">
+                <span class="chip green">なくなった</span>
+                <span class="chip selected">変わらない</span>
+                <span class="chip">少し増えた</span>
+                <span class="chip">かなり増えた</span>
+              </div>
+            </div>
+            <div class="form-row" style="margin-top:12px">
+              <label class="form-label">気づいたこと・補足（任意）</label>
+              <textarea placeholder="例：試合中に自然と宣言する癖がついてきた" style="min-height:60px"></textarea>
+            </div>
+          </div>
+
+          <div class="alert green" style="margin-top:0">
+            <span class="alert-icon">📊</span>
+            <div>
+              <strong>即時効果 vs 定着の比較</strong><br>
+              直後評価：VFE=54 / 納得感=7<br>
+              翌日確認：再現度（入力待ち）
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary btn-full" style="max-width:320px">フォローアップを保存 → 次回提案を更新</button>
+      </div>
+    </div>
+
+  </div><!-- /.main -->
+</div><!-- /.app-shell -->
+
+<script>
+// ── バーチャートの高さを設定
+document.querySelectorAll('[data-h]').forEach(el => {
+  const h = parseInt(el.dataset.h);
+  el.style.height = (h * 0.8) + 'px';
+});
+
+// ── 画面切替
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ── チップの選択トグル
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    // シングル選択グループ以外はマルチ選択
+    this.classList.toggle('selected');
+  });
+});
+</script>
+</body>
+</html>
