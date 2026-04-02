@@ -290,11 +290,8 @@ function completePreCheck() {
   preCheckSliderChanged();
 
   // 次のステップへ (② セッション記録)
-  // TODO: Step 2 実装後に有効化
-  alert('✅ 前チェックを保存しました。\n\nセッション記録画面は次のフェーズで実装します。');
-
-  // SessionFlow.nextStep();
-  // showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page="session-record"]'));
+  SessionFlow.nextStep();
+  showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page="session-record"]'));
 }
 
 // ── 下書き保存 ──────────────────────────────────────────────

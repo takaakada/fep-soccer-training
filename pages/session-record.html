@@ -1,0 +1,408 @@
+<!-- ══════════════════════════════════════════════════════════
+     SESSION RECORD — ② セッション記録
+     練習内容と観察結果を記録し、VFEをリアルタイム算出
+═══════════════════════════════════════════════════════════ -->
+
+<div class="sf-page">
+  <div class="sf-header">
+    <div class="sf-page-title">▶️ セッション記録</div>
+    <p class="sf-page-sub">練習内容と観察結果を記録し、VFEをリアルタイムに算出します</p>
+  </div>
+
+  <!-- プログレスバー -->
+  <div id="sf-progress-bar"></div>
+
+  <!-- 前チェックサマリー -->
+  <div id="sr-precheck-summary" class="sf-alert sf-alert-blue">
+    <span class="sf-alert-icon">📋</span>
+    <div id="sr-precheck-text">前チェックデータを読み込み中…</div>
+  </div>
+
+  <div class="sf-grid-2">
+    <!-- ══ 左列：練習内容 ══ -->
+    <div>
+      <!-- メニュー情報 -->
+      <div class="sf-card">
+        <div class="sf-card-title">📝 練習メニュー</div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">メニュー名</label>
+          <input type="text" id="sr-menu-name" class="sf-input"
+                 placeholder="例：3v3ポゼッション、ドリブルコース"
+                 oninput="recordFieldChanged()">
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">練習の目的（複数選択可）</label>
+          <div class="sf-chip-group" id="sr-purpose">
+            <button class="sf-chip" data-value="安定化" onclick="toggleChip(this, 'purpose')">安定化</button>
+            <button class="sf-chip" data-value="探索" onclick="toggleChip(this, 'purpose')">探索</button>
+            <button class="sf-chip" data-value="修正" onclick="toggleChip(this, 'purpose')">修正</button>
+            <button class="sf-chip" data-value="強化" onclick="toggleChip(this, 'purpose')">強化</button>
+            <button class="sf-chip" data-value="統合" onclick="toggleChip(this, 'purpose')">統合</button>
+          </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">練習時間（分）</label>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-duration" min="5" max="90" value="20" step="5"
+                   oninput="this.nextElementSibling.textContent=this.value+'分'; recordFieldChanged()">
+            <span class="sf-slider-val">20分</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>5分</span><span>90分</span>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">レイヤー（難易度段階）</label>
+          <p class="sf-note">L1=単純反復 → L4=実戦的・複雑</p>
+          <div class="sf-radio-group" id="sr-layer">
+            <label class="sf-radio"><input type="radio" name="sr-layer" value="L1" onchange="recordFieldChanged()"> L1 単純</label>
+            <label class="sf-radio"><input type="radio" name="sr-layer" value="L2" onchange="recordFieldChanged()"> L2 応用</label>
+            <label class="sf-radio"><input type="radio" name="sr-layer" value="L3" onchange="recordFieldChanged()"> L3 複合</label>
+            <label class="sf-radio"><input type="radio" name="sr-layer" value="L4" onchange="recordFieldChanged()"> L4 実戦</label>
+          </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">使用チャネル（複数選択可）</label>
+          <p class="sf-note">どの感覚情報を主に使ったか</p>
+          <div class="sf-chip-group" id="sr-channels">
+            <button class="sf-chip" data-value="視覚" onclick="toggleChip(this, 'channels')">👁 視覚</button>
+            <button class="sf-chip" data-value="体性感覚" onclick="toggleChip(this, 'channels')">🦶 体性感覚</button>
+            <button class="sf-chip" data-value="聴覚" onclick="toggleChip(this, 'channels')">👂 聴覚</button>
+            <button class="sf-chip" data-value="前庭覚" onclick="toggleChip(this, 'channels')">⚖️ 前庭覚</button>
+          </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">制約条件（複数選択可）</label>
+          <div class="sf-chip-group" id="sr-constraints">
+            <button class="sf-chip" data-value="時間制限あり" onclick="toggleChip(this, 'constraints')">⏱ 時間制限あり</button>
+            <button class="sf-chip" data-value="人数制限" onclick="toggleChip(this, 'constraints')">👥 人数制限</button>
+            <button class="sf-chip" data-value="スペース制限" onclick="toggleChip(this, 'constraints')">📐 スペース制限</button>
+            <button class="sf-chip" data-value="タッチ制限" onclick="toggleChip(this, 'constraints')">🦶 タッチ制限</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 右列：VFE入力 + コーチング ══ -->
+    <div>
+      <!-- VFE 入力 -->
+      <div class="sf-card">
+        <div class="sf-card-title">
+          📊 VFE 入力
+          <span class="sf-theory-tag tag-vfe">VFE</span>
+        </div>
+
+        <!-- 難易度 (complexity) -->
+        <div class="sf-form-row">
+          <label class="sf-label">課題の難易度</label>
+          <p class="sf-note">選手にとっての主観的な難しさ（VFE complexity）</p>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-complexity" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; recordSliderChanged()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>とても簡単 (0)</span><span>とても難しい (10)</span>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <!-- 成功率 (accuracy) -->
+        <div class="sf-form-row">
+          <label class="sf-label">成功率（観察値）</label>
+          <p class="sf-note">練習中の成功率を推定（VFE accuracy）</p>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-accuracy" min="0" max="100" value="50" step="5"
+                   oninput="this.nextElementSibling.textContent=this.value+'%'; recordSliderChanged()">
+            <span class="sf-slider-val">50%</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>0%</span><span>100%</span>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <!-- 重みバイアス (weightValue) -->
+        <div class="sf-form-row">
+          <label class="sf-label">処理バイアス</label>
+          <p class="sf-note">難易度と成功率のどちらを重視するか（VFE weight bias）</p>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-weight" min="-20" max="20" value="0"
+                   oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1); recordSliderChanged()">
+            <span class="sf-slider-val">0.0</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>成功率重視 (-2)</span><span>難易度重視 (+2)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- コーチング環境（オキシトシン系） -->
+      <div class="sf-card">
+        <div class="sf-card-title">
+          🤝 コーチング環境
+          <span class="sf-theory-tag tag-oxytocin">オキシトシン系→λ</span>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">コーチングタイプ</label>
+          <p class="sf-note">選手への声かけ・環境設定の方針。λ（社会的調節）に影響します</p>
+          <div class="sf-radio-group sf-radio-cards" id="sr-coaching">
+            <label class="sf-radio-card">
+              <input type="radio" name="sr-coaching" value="safe" onchange="recordFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">🛡️</span>
+                <span class="sf-radio-card-label">安全重視</span>
+                <span class="sf-radio-card-desc">失敗OK、安心できる環境</span>
+                <span class="sf-radio-card-effect">λ = −2（安定寄り）</span>
+              </div>
+            </label>
+            <label class="sf-radio-card">
+              <input type="radio" name="sr-coaching" value="explore" onchange="recordFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">🔍</span>
+                <span class="sf-radio-card-label">探索促進</span>
+                <span class="sf-radio-card-desc">自由に試行錯誤を奨励</span>
+                <span class="sf-radio-card-effect">λ = −1（やや安定）</span>
+              </div>
+            </label>
+            <label class="sf-radio-card">
+              <input type="radio" name="sr-coaching" value="positive" onchange="recordFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">👍</span>
+                <span class="sf-radio-card-label">ポジティブ</span>
+                <span class="sf-radio-card-desc">成功を褒め、前向きに</span>
+                <span class="sf-radio-card-effect">λ = 0（中立）</span>
+              </div>
+            </label>
+            <label class="sf-radio-card">
+              <input type="radio" name="sr-coaching" value="challenge" onchange="recordFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">🔥</span>
+                <span class="sf-radio-card-label">チャレンジ</span>
+                <span class="sf-radio-card-desc">高い基準・競争的環境</span>
+                <span class="sf-radio-card-effect">λ = +2（変化寄り）</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">フィードバック頻度</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="sr-feedback" value="none" onchange="recordFieldChanged()"> なし（自律的）</label>
+            <label class="sf-radio"><input type="radio" name="sr-feedback" value="few" onchange="recordFieldChanged()"> 少なめ（要所のみ）</label>
+            <label class="sf-radio"><input type="radio" name="sr-feedback" value="frequent" onchange="recordFieldChanged()"> 多め（頻繁に声かけ）</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- リアルタイムプレビュー -->
+  <div class="sf-card sf-preview-card">
+    <div class="sf-card-title">📐 VFE リアルタイムプレビュー</div>
+    <div class="sf-preview-grid" id="sr-preview">
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">VFE</div>
+        <div class="sf-preview-val" id="pv-vfe">—</div>
+        <div class="sf-preview-sub">変分自由エネルギー</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">難易度(正規化)</div>
+        <div class="sf-preview-val" id="pv-complexity">0.50</div>
+        <div class="sf-preview-sub">sigmoid(complexity)</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">成功率(正規化)</div>
+        <div class="sf-preview-val" id="pv-accuracy">0.50</div>
+        <div class="sf-preview-sub">sigmoid(accuracy)</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">λ 修飾</div>
+        <div class="sf-preview-val" id="pv-lambda">—</div>
+        <div class="sf-preview-sub">オキシトシン→社会的調節</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">バンド</div>
+        <div class="sf-preview-val" id="pv-band">—</div>
+        <div class="sf-preview-sub">VFEゾーン判定</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ボタン -->
+  <div class="sf-btn-row">
+    <button class="sf-btn sf-btn-secondary" onclick="backToPreCheck()">
+      ← 前チェックに戻る
+    </button>
+    <button class="sf-btn sf-btn-primary" onclick="completeRecord()">
+      記録完了 → 後評価へ
+    </button>
+  </div>
+</div>
+
+<script>
+// ── セッション記録 初期化 ────────────────────────────────────
+function initRecordPage() {
+  // プログレスバー描画（ステップ2 = index 1）
+  const progEl = document.getElementById('sf-progress-bar');
+  if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(1);
+
+  // 前チェックサマリー表示
+  showPreCheckSummary();
+
+  // 初回プレビュー更新
+  recordSliderChanged();
+}
+
+// ── 前チェックサマリー表示 ──────────────────────────────────
+function showPreCheckSummary() {
+  const textEl = document.getElementById('sr-precheck-text');
+  if (!textEl) return;
+
+  const state = SessionFlow.getState();
+  const pc = state.preCheck;
+  const computed = state.computed;
+
+  if (!state.startedAt) {
+    textEl.innerHTML = '⚠️ 前チェックが未実施です。<a href="#" onclick="showPage(\'session-pre-check\', document.querySelector(\'.sidebar-nav-btn[data-page=session-pre-check]\'))">前チェックを先に行う</a>';
+    return;
+  }
+
+  const sigmaMod = computed.sigmaModifier || FepCalc.serotoninToSigma(pc.condition);
+  const efe = computed.efe;
+
+  textEl.innerHTML = `<strong>前チェック結果：</strong>
+    コンディション=${pc.condition}/10（σ修飾: ${sigmaMod >= 0 ? '+' : ''}${sigmaMod.toFixed(1)}）、
+    期待感=${pc.expectation}/10、
+    ${efe ? `EFE=${efe.efe_display.toFixed(1)}（α=${efe.alpha.toFixed(2)}, β=${efe.beta.toFixed(2)}）` : 'EFE=未計算'}`;
+}
+
+// ── チップ選択トグル ────────────────────────────────────────
+function toggleChip(btn, field) {
+  btn.classList.toggle('active');
+  recordFieldChanged();
+}
+
+function getSelectedChips(groupId) {
+  const group = document.getElementById('sr-' + groupId);
+  if (!group) return [];
+  return Array.from(group.querySelectorAll('.sf-chip.active'))
+    .map(c => c.dataset.value);
+}
+
+// ── フィールド変更時の状態更新 ──────────────────────────────
+function recordFieldChanged() {
+  const data = {
+    menuName: document.getElementById('sr-menu-name')?.value || '',
+    purpose: getSelectedChips('purpose'),
+    duration: parseInt(document.getElementById('sr-duration')?.value ?? 20),
+    layer: document.querySelector('input[name="sr-layer"]:checked')?.value || '',
+    channels: getSelectedChips('channels'),
+    constraints: getSelectedChips('constraints'),
+    coachingType: document.querySelector('input[name="sr-coaching"]:checked')?.value || '',
+    feedbackFreq: document.querySelector('input[name="sr-feedback"]:checked')?.value || '',
+    complexity: parseInt(document.getElementById('sr-complexity')?.value ?? 5),
+    accuracy: parseInt(document.getElementById('sr-accuracy')?.value ?? 50),
+    weightValue: parseInt(document.getElementById('sr-weight')?.value ?? 0) / 10,
+  };
+  SessionFlow.updateRecord(data);
+  recordSliderChanged();
+}
+
+// ── スライダー変更時のリアルタイムVFE更新 ────────────────────
+function recordSliderChanged() {
+  const complexity = parseInt(document.getElementById('sr-complexity')?.value ?? 5);
+  const accuracy   = parseInt(document.getElementById('sr-accuracy')?.value ?? 50);
+  const weightRaw  = parseInt(document.getElementById('sr-weight')?.value ?? 0);
+  const weightValue = weightRaw / 10;
+
+  // SessionFlow 状態更新
+  SessionFlow.updateRecord({ complexity, accuracy, weightValue });
+
+  // VFE 計算
+  const accuracyScale = accuracy / 10; // 0-100% → 0-10
+  const vfe = FepCalc.calcVFE(complexity, accuracyScale, weightValue);
+
+  // VFE display
+  const vfeEl = document.getElementById('pv-vfe');
+  if (vfeEl) {
+    vfeEl.textContent = vfe.vfe_display.toFixed(1);
+    const band = FepCalc.getBand(vfe.vfe_display);
+    vfeEl.className = 'sf-preview-val ' +
+      (vfe.vfe_display < 40 ? 'val-good' : vfe.vfe_display < 60 ? '' : 'val-warn');
+  }
+
+  // 正規化値
+  const compEl = document.getElementById('pv-complexity');
+  if (compEl) compEl.textContent = vfe.norm_c.toFixed(3);
+
+  const accEl = document.getElementById('pv-accuracy');
+  if (accEl) accEl.textContent = vfe.norm_a.toFixed(3);
+
+  // λ 修飾（コーチングタイプ）
+  const coachingType = document.querySelector('input[name="sr-coaching"]:checked')?.value || '';
+  const lambdaMod = FepCalc.oxytocinToLambda(coachingType);
+  const lambdaEl = document.getElementById('pv-lambda');
+  if (lambdaEl) {
+    if (coachingType) {
+      lambdaEl.textContent = (lambdaMod >= 0 ? '+' : '') + lambdaMod.toFixed(1);
+      lambdaEl.className = 'sf-preview-val ' +
+        (Math.abs(lambdaMod) <= 1 ? 'val-good' : 'val-warn');
+    } else {
+      lambdaEl.textContent = '—';
+      lambdaEl.className = 'sf-preview-val';
+    }
+  }
+
+  // バンド判定
+  const bandEl = document.getElementById('pv-band');
+  if (bandEl) {
+    const band = FepCalc.getBand(vfe.vfe_display);
+    bandEl.textContent = band.label;
+    bandEl.className = 'sf-preview-val ' +
+      (band.zone === 'low' ? 'val-good' : band.zone === 'mid' ? '' : 'val-warn');
+  }
+}
+
+// ── 前チェックに戻る ────────────────────────────────────────
+function backToPreCheck() {
+  showPage('session-pre-check', document.querySelector('.sidebar-nav-btn[data-page="session-pre-check"]'));
+}
+
+// ── 記録完了 → 後評価へ ──────────────────────────────────────
+function completeRecord() {
+  // 最終状態を更新
+  recordFieldChanged();
+
+  const state = SessionFlow.getState();
+  const rec = state.record;
+
+  // 最低限の入力チェック
+  if (!rec.menuName.trim()) {
+    alert('メニュー名を入力してください。');
+    document.getElementById('sr-menu-name')?.focus();
+    return;
+  }
+
+  // 次のステップへ (③ 後評価)
+  SessionFlow.nextStep();
+  showPage('session-post-eval', document.querySelector('.sidebar-nav-btn[data-page="session-post-eval"]'));
+}
+
+// ── ページ初期化呼び出し
+initRecordPage();
+</script>

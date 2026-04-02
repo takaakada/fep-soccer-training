@@ -1,0 +1,382 @@
+<!-- ══════════════════════════════════════════════════════════
+     SESSION RECOMMEND — ④ 次回提案
+     全スコアを統合し、次回セッションの方向性を提案
+═══════════════════════════════════════════════════════════ -->
+
+<div class="sf-page">
+  <div class="sf-header">
+    <div class="sf-page-title">🔮 次回提案</div>
+    <p class="sf-page-sub">全スコアを統合して、次回セッションの方向性を提案します</p>
+  </div>
+
+  <div id="sf-progress-bar"></div>
+
+  <!-- スコアダッシュボード -->
+  <div class="sf-card sf-preview-card">
+    <div class="sf-card-title">📊 セッションスコア総合</div>
+    <div class="sf-preview-grid">
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">VFE</div>
+        <div class="sf-preview-val" id="rc-vfe">—</div>
+        <div class="sf-preview-sub" id="rc-vfe-band">—</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">EFE</div>
+        <div class="sf-preview-val" id="rc-efe">—</div>
+        <div class="sf-preview-sub" id="rc-efe-band">—</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">F'</div>
+        <div class="sf-preview-val" id="rc-fp">—</div>
+        <div class="sf-preview-sub" id="rc-fp-label">—</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">EU</div>
+        <div class="sf-preview-val" id="rc-eu">—</div>
+        <div class="sf-preview-sub" id="rc-eu-band">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sf-grid-2">
+    <!-- ══ 左列：分析 ══ -->
+    <div>
+      <!-- VFE 分析 -->
+      <div class="sf-card">
+        <div class="sf-card-title">
+          📈 VFE 分析
+          <span class="sf-theory-tag tag-vfe">VFE</span>
+        </div>
+        <div id="rc-vfe-analysis" class="sf-analysis-body">計算中…</div>
+      </div>
+
+      <!-- EFE 分析 -->
+      <div class="sf-card">
+        <div class="sf-card-title">
+          🔭 EFE 分析
+          <span class="sf-theory-tag tag-efe">EFE</span>
+        </div>
+        <div id="rc-efe-analysis" class="sf-analysis-body">計算中…</div>
+      </div>
+    </div>
+
+    <!-- ══ 右列：提案 ══ -->
+    <div>
+      <!-- F' / EU 分析 -->
+      <div class="sf-card">
+        <div class="sf-card-title">
+          🧠 F' / EU 分析
+          <span class="sf-theory-tag tag-eu">EU</span>
+        </div>
+        <div id="rc-fpeu-analysis" class="sf-analysis-body">計算中…</div>
+      </div>
+
+      <!-- 次回への提案 -->
+      <div class="sf-card sf-card-highlight">
+        <div class="sf-card-title">💡 次回セッションへの提案</div>
+        <div id="rc-recommendation" class="sf-analysis-body">計算中…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 神経修飾系サマリー -->
+  <div class="sf-card">
+    <div class="sf-card-title">🧬 神経修飾系サマリー</div>
+    <div class="sf-preview-grid">
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">σ セロトニン</div>
+        <div class="sf-preview-val" id="rc-sigma">—</div>
+        <div class="sf-preview-sub">精度重み</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">λ オキシトシン</div>
+        <div class="sf-preview-val" id="rc-lambda">—</div>
+        <div class="sf-preview-sub">社会的調節</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">F' ドーパミン</div>
+        <div class="sf-preview-val" id="rc-dopamine">—</div>
+        <div class="sf-preview-sub">報酬・動機</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sf-btn-row">
+    <button class="sf-btn sf-btn-secondary" onclick="backToPostEval()">
+      ← 後評価に戻る
+    </button>
+    <button class="sf-btn sf-btn-primary" onclick="completeRecommend()">
+      確認完了 → フォローアップへ
+    </button>
+    <button class="sf-btn sf-btn-secondary" onclick="saveSessionData()">
+      💾 セッションを保存
+    </button>
+  </div>
+</div>
+
+<script>
+function initRecommendPage() {
+  const progEl = document.getElementById('sf-progress-bar');
+  if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(3);
+  generateRecommendation();
+}
+
+function generateRecommendation() {
+  const state = SessionFlow.getState();
+  const c = state.computed;
+
+  // スコアダッシュボード
+  updateScoreDashboard(c);
+  // 分析テキスト
+  analyzeVFE(c);
+  analyzeEFE(c);
+  analyzeFPrimeEU(c);
+  generateNextSessionPlan(state, c);
+  updateNeuroSummary(c);
+}
+
+function updateScoreDashboard(c) {
+  const set = (id, val, bandFn) => {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    el.textContent = val.toFixed(1);
+    const band = bandFn ? bandFn(val) : null;
+    if (band) {
+      el.className = 'sf-preview-val ' +
+        (band.zone === 'low' ? 'val-good' : band.zone === 'high' ? 'val-warn' : '');
+    }
+  };
+  const setBand = (id, val, bandFn) => {
+    const el = document.getElementById(id);
+    if (!el || val == null) return;
+    const band = bandFn(val);
+    el.textContent = band.label;
+  };
+
+  if (c.vfe) {
+    set('rc-vfe', c.vfe.vfe_display, FepCalc.getBand);
+    setBand('rc-vfe-band', c.vfe.vfe_display, FepCalc.getBand);
+  }
+  if (c.efe) {
+    set('rc-efe', c.efe.efe_display, FepCalc.getBand);
+    setBand('rc-efe-band', c.efe.efe_display, FepCalc.getBand);
+  }
+  if (c.fPrime) {
+    const fpEl = document.getElementById('rc-fp');
+    if (fpEl) {
+      fpEl.textContent = c.fPrime.f_prime_display.toFixed(1);
+      fpEl.className = 'sf-preview-val ' +
+        (c.fPrime.f_prime_effective > 0.3 ? 'val-good' : c.fPrime.f_prime_effective < -0.3 ? 'val-warn' : '');
+    }
+    const fpLabel = document.getElementById('rc-fp-label');
+    if (fpLabel) fpLabel.textContent = c.fPrime.f_prime_effective > 0 ? 'ポジティブ' : c.fPrime.f_prime_effective < 0 ? 'ネガティブ' : '中立';
+  }
+  if (c.eu) {
+    set('rc-eu', c.eu.eu_display, FepCalc.getBand);
+    setBand('rc-eu-band', c.eu.eu_display, FepCalc.getBand);
+  }
+}
+
+function analyzeVFE(c) {
+  const el = document.getElementById('rc-vfe-analysis');
+  if (!el || !c.vfe) { if (el) el.textContent = 'VFEデータなし'; return; }
+  const v = c.vfe.vfe_display;
+  let text = '';
+  if (v >= 60) {
+    text = `<p><strong>VFE = ${v.toFixed(1)}（高い）</strong></p>
+      <p>課題と選手の能力の間にギャップがあります。難易度を下げるか、成功率を上げる工夫が必要です。</p>
+      <p class="sf-note">→ レイヤーを1段下げる、制約を緩める、フィードバックを増やすことを検討</p>`;
+  } else if (v >= 40) {
+    text = `<p><strong>VFE = ${v.toFixed(1)}（適正範囲）</strong></p>
+      <p>適度な挑戦レベルです。学習効果が最も高い「フロー」ゾーンに近い状態です。</p>
+      <p class="sf-note">→ この難易度設定を維持しつつ、少しずつ変化を加えると効果的</p>`;
+  } else {
+    text = `<p><strong>VFE = ${v.toFixed(1)}（低い）</strong></p>
+      <p>課題が選手にとって簡単すぎる可能性があります。もう少し挑戦的な設定にできます。</p>
+      <p class="sf-note">→ レイヤーを上げる、制約を追加する、成功基準を厳しくする</p>`;
+  }
+  el.innerHTML = text;
+}
+
+function analyzeEFE(c) {
+  const el = document.getElementById('rc-efe-analysis');
+  if (!el || !c.efe) { if (el) el.textContent = 'EFEデータなし'; return; }
+  const e = c.efe;
+  let text = `<p><strong>α（認識的重み）= ${e.alpha.toFixed(2)}</strong>
+    <strong>β（実用的重み）= ${e.beta.toFixed(2)}</strong></p>`;
+
+  if (e.alpha > e.beta + 0.3) {
+    text += `<p>認識的ニーズが高い状態：新しい気づきや感覚の探索を重視しています。</p>
+      <p class="sf-note">→ 探索型メニュー、多様なチャネルの活用が効果的</p>`;
+  } else if (e.beta > e.alpha + 0.3) {
+    text += `<p>実用的ニーズが高い状態：目標達成やコスト管理を重視しています。</p>
+      <p class="sf-note">→ 具体的な目標設定、段階的な負荷調整が効果的</p>`;
+  } else {
+    text += `<p>認識的・実用的ニーズがバランスしています。</p>
+      <p class="sf-note">→ 探索と安定化を交互に組み合わせたメニューが効果的</p>`;
+  }
+  el.innerHTML = text;
+}
+
+function analyzeFPrimeEU(c) {
+  const el = document.getElementById('rc-fpeu-analysis');
+  if (!el) return;
+  let text = '';
+
+  if (c.fPrime) {
+    const fp = c.fPrime.f_prime_effective;
+    if (fp > 0.5) {
+      text += `<p><strong>F' = ${fp.toFixed(2)}（ポジティブ）</strong></p>
+        <p>良い感情体験ができています。この環境設定は選手に合っています。</p>`;
+    } else if (fp < -0.5) {
+      text += `<p><strong>F' = ${fp.toFixed(2)}（ネガティブ）</strong></p>
+        <p>ストレスや不満が蓄積している可能性があります。環境やアプローチの調整が必要です。</p>`;
+    } else {
+      text += `<p><strong>F' = ${fp.toFixed(2)}（中立）</strong></p>
+        <p>特に強い感情変化はありません。安定した状態です。</p>`;
+    }
+  }
+
+  if (c.eu) {
+    const eu = c.eu.eu_display;
+    if (eu > 60) {
+      text += `<p class="sf-note">EU = ${eu.toFixed(1)}（高い不確実性）→ 安定化を優先するメニューを推奨</p>`;
+    } else if (eu < 40) {
+      text += `<p class="sf-note">EU = ${eu.toFixed(1)}（低い不確実性）→ 新しい挑戦や探索を推奨</p>`;
+    } else {
+      text += `<p class="sf-note">EU = ${eu.toFixed(1)}（適正範囲）→ 現在のアプローチを継続</p>`;
+    }
+  }
+
+  el.innerHTML = text || 'データなし';
+}
+
+function generateNextSessionPlan(state, c) {
+  const el = document.getElementById('rc-recommendation');
+  if (!el) return;
+
+  const rec = state.record;
+  const vfe = c.vfe ? c.vfe.vfe_display : 50;
+  const fp = c.fPrime ? c.fPrime.f_prime_effective : 0;
+  const eu = c.eu ? c.eu.eu_display : 50;
+
+  let suggestions = [];
+
+  // VFE ベースの難易度提案
+  if (vfe >= 60) {
+    suggestions.push('難易度を1段階下げる（現在のレイヤーを維持しつつ制約を緩和）');
+  } else if (vfe < 35) {
+    suggestions.push('難易度を1段階上げる（レイヤーアップまたは制約追加）');
+  } else {
+    suggestions.push('現在の難易度設定を維持（適正範囲内）');
+  }
+
+  // F' ベースの環境提案
+  if (fp < -0.3) {
+    suggestions.push('コーチングを「安全重視」か「探索促進」に変更してストレスを軽減');
+    suggestions.push('成功体験を増やすメニュー構成に調整');
+  } else if (fp > 0.5) {
+    suggestions.push('ポジティブな状態を活かして、少しチャレンジングな課題を追加');
+  }
+
+  // EU ベースの方向性
+  if (eu > 60) {
+    suggestions.push('反復練習で安定性を高める（同じメニューの繰り返し）');
+  } else if (eu < 40) {
+    suggestions.push('新しいチャネルや視点を取り入れた探索型メニューを導入');
+  }
+
+  // レイヤー提案
+  const currentLayer = rec.layer || 'L2';
+  if (vfe >= 60 && currentLayer !== 'L1') {
+    const prevLayer = 'L' + (parseInt(currentLayer.replace('L','')) - 1);
+    suggestions.push(`推奨レイヤー: ${prevLayer}（現在${currentLayer}から1段下げ）`);
+  } else if (vfe < 35 && currentLayer !== 'L4') {
+    const nextLayer = 'L' + (parseInt(currentLayer.replace('L','')) + 1);
+    suggestions.push(`推奨レイヤー: ${nextLayer}（現在${currentLayer}から1段上げ）`);
+  }
+
+  const html = suggestions.map(s => `<div class="sf-suggestion-item">• ${s}</div>`).join('');
+  el.innerHTML = html || '<p>データ不足のため提案を生成できません。</p>';
+
+  // 提案をセッション状態に保存
+  SessionFlow.getState().recommendation = { suggestions, generatedAt: new Date().toISOString() };
+}
+
+function updateNeuroSummary(c) {
+  const signed = (v) => (v >= 0 ? '+' : '') + v.toFixed(1);
+
+  const sigmaEl = document.getElementById('rc-sigma');
+  if (sigmaEl) {
+    sigmaEl.textContent = signed(c.sigmaModifier);
+    sigmaEl.className = 'sf-preview-val ' + (c.sigmaModifier >= 0 ? 'val-good' : 'val-warn');
+  }
+
+  const lambdaEl = document.getElementById('rc-lambda');
+  if (lambdaEl) {
+    lambdaEl.textContent = signed(c.lambdaModifier);
+  }
+
+  const dopEl = document.getElementById('rc-dopamine');
+  if (dopEl && c.fPrime) {
+    dopEl.textContent = signed(c.fPrime.f_prime_effective);
+    dopEl.className = 'sf-preview-val ' +
+      (c.fPrime.f_prime_effective > 0 ? 'val-good' : c.fPrime.f_prime_effective < 0 ? 'val-warn' : '');
+  }
+}
+
+function backToPostEval() {
+  showPage('session-post-eval', document.querySelector('.sidebar-nav-btn[data-page="session-post-eval"]'));
+}
+
+function completeRecommend() {
+  SessionFlow.nextStep();
+  showPage('session-followup', document.querySelector('.sidebar-nav-btn[data-page="session-followup"]'));
+}
+
+async function saveSessionData() {
+  const state = SessionFlow.getState();
+  const c = state.computed;
+
+  const record = {
+    sheetId: 'session-flow',
+    role: 'player',
+    grade: 'session',
+    playerName: currentUser?.user_metadata?.full_name || 'Unknown',
+    date: new Date().toISOString().split('T')[0],
+    theme: state.record.menuName,
+    scores: [
+      c.vfe?.vfe_display || 0,
+      c.efe?.efe_display || 0,
+      c.fPrime?.f_prime_display || 0,
+      c.eu?.eu_display || 0,
+    ],
+    total: c.vfe?.vfe_display || 0,
+    maxScore: 100,
+    notes: {
+      preCheck: state.preCheck,
+      record: state.record,
+      postEval: state.postEval,
+      computed: {
+        vfe: c.vfe?.vfe_display,
+        efe: c.efe?.efe_display,
+        fPrime: c.fPrime?.f_prime_effective,
+        eu: c.eu?.eu_display,
+        sigmaModifier: c.sigmaModifier,
+        lambdaModifier: c.lambdaModifier,
+      },
+      recommendation: state.recommendation,
+    },
+  };
+
+  try {
+    await persistSession(record);
+    alert('💾 セッションデータを保存しました。');
+  } catch (e) {
+    console.error('Save error:', e);
+    alert('保存に失敗しました: ' + e.message);
+  }
+}
+
+initRecommendPage();
+</script>

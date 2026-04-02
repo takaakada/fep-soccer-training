@@ -200,8 +200,20 @@ async function showPage(id, btn) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
     containerEl.innerHTML = html;
-    
-    // Run page-specific init functions
+
+    // innerHTML で挿入された <script> は自動実行されないため、
+    // 手動で再生成して実行する
+    containerEl.querySelectorAll('script').forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+
+    // 既存ページの初期化（スクリプトが外部ファイルの場合）
     if (id === 'eval' && typeof initEvalPage === 'function') {
       initEvalPage();
     }
@@ -211,8 +223,6 @@ async function showPage(id, btn) {
     if (id === 'position' && typeof initPositionPage === 'function') {
       initPositionPage();
     }
-    // session-pre-check の初期化は pages/session-pre-check.html 内の
-    // インラインスクリプトで自動実行される（initPreCheckPage()）
   } catch(e) {
     console.error('Page load error:', e);
     if (containerEl) {
