@@ -55,7 +55,10 @@
       <button class="sidebar-nav-btn active" data-page="home" onclick="showPage('home',this)">🏠 ホーム</button>
       <button class="sidebar-nav-btn" data-page="menu" onclick="showPage('menu',this)">📋 全体トレーニング</button>
       <button class="sidebar-nav-btn" data-page="position" onclick="showPage('position',this)">⚽ ポジション別</button>
-      <button class="sidebar-nav-btn" data-page="eval" onclick="showPage('eval',this)">📊 評価シート</button>
+      <div class="sidebar-nav-section">セッションフロー</div>
+      <button class="sidebar-nav-btn" data-page="session-pre-check" onclick="showPage('session-pre-check',this)">📋 前チェック</button>
+      <div class="sidebar-nav-section">管理</div>
+      <button class="sidebar-nav-btn" data-page="eval" onclick="showPage('eval',this)">📊 評価シート（旧）</button>
       <button class="sidebar-nav-btn" data-page="about" onclick="showPage('about',this)">📚 指導理論</button>
       <button class="sidebar-nav-btn sidebar-nav-kadai" data-page="kadai" onclick="showPage('kadai',this)">🎯 課題チャレンジ</button>
     </nav>
@@ -110,6 +113,8 @@
 
 <!-- Core scripts -->
 <script src="js/core.js"></script>
+<script src="js/fep-calc.js"></script>
+<script src="js/session-flow.js"></script>
 <script src="js/api-client.js"></script>
 <script src="js/drill-library.js"></script>
 <script src="js/data-loader.js"></script>

@@ -211,6 +211,8 @@ async function showPage(id, btn) {
     if (id === 'position' && typeof initPositionPage === 'function') {
       initPositionPage();
     }
+    // session-pre-check の初期化は pages/session-pre-check.html 内の
+    // インラインスクリプトで自動実行される（initPreCheckPage()）
   } catch(e) {
     console.error('Page load error:', e);
     if (containerEl) {
