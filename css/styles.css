@@ -2919,6 +2919,100 @@
 }
 .sf-analysis-body p { margin: 0 0 8px; }
 
+/* ── Menu Select Row ── */
+.sf-menu-select-row {
+  display: flex;
+  gap: 8px;
+}
+.sf-menu-select-row .sf-input { flex: 1; }
+.sf-menu-pick-btn { white-space: nowrap; padding: 8px 14px !important; font-size: 0.82rem !important; }
+
+.sf-menu-info {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: rgba(37,99,235,0.04);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.sf-menu-info-desc { width: 100%; color: var(--muted); margin-top: 4px; }
+.sf-menu-info-fep { width: 100%; color: var(--primary); font-size: 0.78rem; font-weight: 600; }
+
+.sf-chip-small {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--border);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ── Modal ── */
+.sf-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+.sf-modal-box {
+  background: var(--bg);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.sf-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.sf-modal-title { font-weight: 700; font-size: 1rem; }
+.sf-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px 8px;
+}
+.sf-modal-filters { padding: 12px 20px; border-bottom: 1px solid var(--border); }
+.sf-modal-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 8px 12px;
+}
+.sf-modal-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+.sf-modal-item:hover { background: rgba(37,99,235,0.06); }
+.sf-modal-item:last-child { border-bottom: none; }
+.sf-modal-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.sf-modal-item-name { font-weight: 700; font-size: 0.9rem; }
+.sf-modal-item-meta { display: flex; gap: 4px; flex-shrink: 0; }
+.sf-modal-item-desc { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.sf-modal-item-tag { font-size: 0.72rem; color: var(--primary); margin-top: 4px; font-weight: 600; }
+.sf-modal-empty { padding: 40px; text-align: center; color: var(--muted); }
+
 /* ── Highlight Card ── */
 .sf-card-highlight {
   border-left: 4px solid var(--primary);

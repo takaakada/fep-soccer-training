@@ -285,9 +285,14 @@ async function loadLastSessionRecommendation() {
 }
 
 // ── 前チェック完了 ──────────────────────────────────────────
-function completePreCheck() {
+async function completePreCheck() {
   // 入力値を最終確定
   preCheckSliderChanged();
+
+  // DB にセッション作成
+  const state = SessionFlow.getState();
+  const dbId = await createFlowSession(state.preCheck);
+  if (dbId) state.dbSessionId = dbId;
 
   // 次のステップへ (② セッション記録)
   SessionFlow.nextStep();

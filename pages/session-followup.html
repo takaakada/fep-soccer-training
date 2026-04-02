@@ -173,46 +173,14 @@ function backToRecommend() {
 async function completeFollowup() {
   followupChanged();
 
-  // セッションデータを保存
   const state = SessionFlow.getState();
-  const c = state.computed;
-
-  const record = {
-    sheetId: 'session-flow',
-    role: 'player',
-    grade: 'vfe',
-    playerName: currentUser?.user_metadata?.full_name || 'Unknown',
-    date: new Date().toISOString().split('T')[0],
-    theme: state.record.menuName || 'セッション',
-    scores: [
-      c.vfe?.vfe_display || 0,
-      c.efe?.efe_display || 0,
-      c.fPrime?.f_prime_display || 0,
-      c.eu?.eu_display || 0,
-    ],
-    total: c.vfe?.vfe_display || 0,
-    maxScore: 100,
-    notes: {
-      preCheck: state.preCheck,
-      record: state.record,
-      postEval: state.postEval,
-      followup: state.followup,
-      computed: {
-        vfe: c.vfe?.vfe_display,
-        efe: c.efe?.efe_display,
-        fPrime: c.fPrime?.f_prime_effective,
-        eu: c.eu?.eu_display,
-        sigmaModifier: c.sigmaModifier,
-        lambdaModifier: c.lambdaModifier,
-      },
-      recommendation: state.recommendation,
-    },
-  };
 
   try {
-    await persistSession(record);
+    if (state.dbSessionId) {
+      // フォローアップ保存 + セッション完了
+      await completeFlowSession(state.dbSessionId, state.followup);
+    }
     alert('🎉 セッションが完了しました！\n\nデータを保存しました。お疲れさまでした。');
-    // ホームに戻る
     showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
   } catch (e) {
     console.error('Save error:', e);

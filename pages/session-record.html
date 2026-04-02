@@ -27,9 +27,15 @@
 
         <div class="sf-form-row">
           <label class="sf-label">メニュー名</label>
-          <input type="text" id="sr-menu-name" class="sf-input"
-                 placeholder="例：3v3ポゼッション、ドリブルコース"
-                 oninput="recordFieldChanged()">
+          <div class="sf-menu-select-row">
+            <input type="text" id="sr-menu-name" class="sf-input"
+                   placeholder="メニューを選択または手入力"
+                   oninput="recordFieldChanged()">
+            <button class="sf-btn sf-btn-secondary sf-menu-pick-btn" onclick="openMenuPicker()">
+              📋 選択
+            </button>
+          </div>
+          <div id="sr-menu-info" class="sf-menu-info" style="display:none"></div>
         </div>
 
         <div class="sf-form-row">
@@ -254,6 +260,28 @@
   </div>
 </div>
 
+<!-- メニュー選択モーダル -->
+<div id="menu-picker-overlay" class="sf-modal-overlay" style="display:none" onclick="closeMenuPicker()">
+  <div class="sf-modal-box" onclick="event.stopPropagation()">
+    <div class="sf-modal-header">
+      <div class="sf-modal-title">📋 メニューを選択</div>
+      <button class="sf-modal-close" onclick="closeMenuPicker()">✕</button>
+    </div>
+    <div class="sf-modal-filters">
+      <input type="text" id="mp-search" class="sf-input" placeholder="🔍 メニュー名で検索" oninput="filterMenuList()">
+      <div class="sf-chip-group" id="mp-cat-filters" style="margin-top:8px">
+        <button class="sf-chip active" data-cat="all" onclick="filterByCat('all', this)">全て</button>
+        <button class="sf-chip" data-cat="warm" onclick="filterByCat('warm', this)">ウォームアップ</button>
+        <button class="sf-chip" data-cat="tech" onclick="filterByCat('tech', this)">技術</button>
+        <button class="sf-chip" data-cat="tactic" onclick="filterByCat('tactic', this)">戦術</button>
+        <button class="sf-chip" data-cat="phys" onclick="filterByCat('phys', this)">フィジカル</button>
+        <button class="sf-chip" data-cat="cool" onclick="filterByCat('cool', this)">クールダウン</button>
+      </div>
+    </div>
+    <div class="sf-modal-list" id="mp-menu-list"></div>
+  </div>
+</div>
+
 <script>
 // ── セッション記録 初期化 ────────────────────────────────────
 function initRecordPage() {
@@ -384,7 +412,7 @@ function backToPreCheck() {
 }
 
 // ── 記録完了 → 後評価へ ──────────────────────────────────────
-function completeRecord() {
+async function completeRecord() {
   // 最終状態を更新
   recordFieldChanged();
 
@@ -398,9 +426,122 @@ function completeRecord() {
     return;
   }
 
+  // DB にメニュー保存
+  if (state.dbSessionId) {
+    await saveFlowMenu(state.dbSessionId, {
+      ...rec,
+      vfeDisplay: state.computed.vfe?.vfe_display,
+    });
+  }
+
   // 次のステップへ (③ 後評価)
   SessionFlow.nextStep();
   showPage('session-post-eval', document.querySelector('.sidebar-nav-btn[data-page="session-post-eval"]'));
+}
+
+// ── メニュー選択モーダル ────────────────────────────────────
+let _menuData = [];
+let _currentCatFilter = 'all';
+
+function openMenuPicker() {
+  // DRILL_PRESETS（スプレッドシートから読み込み済み）を使用
+  _menuData = (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS))
+    ? DRILL_PRESETS : [];
+
+  if (_menuData.length === 0) {
+    alert('メニューデータが読み込まれていません。\nしばらく待ってから再試行してください。');
+    return;
+  }
+
+  _currentCatFilter = 'all';
+  document.getElementById('mp-search').value = '';
+  // カテゴリフィルターリセット
+  document.querySelectorAll('#mp-cat-filters .sf-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('#mp-cat-filters .sf-chip[data-cat="all"]')?.classList.add('active');
+
+  renderMenuList(_menuData);
+  document.getElementById('menu-picker-overlay').style.display = 'flex';
+}
+
+function closeMenuPicker() {
+  document.getElementById('menu-picker-overlay').style.display = 'none';
+}
+
+function filterByCat(cat, btn) {
+  _currentCatFilter = cat;
+  document.querySelectorAll('#mp-cat-filters .sf-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filterMenuList();
+}
+
+function filterMenuList() {
+  const search = (document.getElementById('mp-search')?.value || '').toLowerCase();
+  const filtered = _menuData.filter(m => {
+    const catMatch = _currentCatFilter === 'all' || m.cat === _currentCatFilter;
+    const searchMatch = !search || m.name.toLowerCase().includes(search) || (m.desc || '').toLowerCase().includes(search);
+    return catMatch && searchMatch;
+  });
+  renderMenuList(filtered);
+}
+
+function renderMenuList(menus) {
+  const listEl = document.getElementById('mp-menu-list');
+  if (!listEl) return;
+
+  if (menus.length === 0) {
+    listEl.innerHTML = '<div class="sf-modal-empty">該当するメニューがありません</div>';
+    return;
+  }
+
+  const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
+
+  listEl.innerHTML = menus.map(m => `
+    <div class="sf-modal-item" onclick="selectMenu('${m.menu_id || ''}', '${(m.name || '').replace(/'/g, "\\'")}')">
+      <div class="sf-modal-item-header">
+        <span class="sf-modal-item-name">${m.name}</span>
+        <span class="sf-modal-item-meta">
+          <span class="sf-chip-small">${CAT_LABEL[m.cat] || m.cat}</span>
+          ${m.time ? `<span class="sf-chip-small">${m.time}分</span>` : ''}
+        </span>
+      </div>
+      <div class="sf-modal-item-desc">${m.desc || ''}</div>
+      ${m.purpose ? `<div class="sf-modal-item-tag">目的: ${m.purpose}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function selectMenu(menuId, menuName) {
+  const menu = _menuData.find(m => m.menu_id === menuId || m.name === menuName);
+
+  // メニュー名を設定
+  const nameEl = document.getElementById('sr-menu-name');
+  if (nameEl) nameEl.value = menu ? menu.name : menuName;
+
+  // 時間を設定
+  if (menu && menu.time) {
+    const durEl = document.getElementById('sr-duration');
+    if (durEl) {
+      durEl.value = menu.time;
+      durEl.nextElementSibling.textContent = menu.time + '分';
+    }
+  }
+
+  // メニュー情報を表示
+  const infoEl = document.getElementById('sr-menu-info');
+  if (infoEl && menu) {
+    const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
+    infoEl.innerHTML = `
+      <span class="sf-chip-small">${CAT_LABEL[menu.cat] || menu.cat}</span>
+      ${menu.purpose ? `<span class="sf-chip-small">${menu.purpose}</span>` : ''}
+      ${menu.level ? `<span class="sf-chip-small">${menu.level}</span>` : ''}
+      ${menu.desc ? `<div class="sf-menu-info-desc">${menu.desc}</div>` : ''}
+      ${menu.fep ? `<div class="sf-menu-info-fep">FEP: ${menu.fep}</div>` : ''}
+    `;
+    infoEl.style.display = 'block';
+  }
+
+  closeMenuPicker();
+  recordFieldChanged();
 }
 
 // ── ページ初期化呼び出し

@@ -329,48 +329,30 @@ function backToPostEval() {
   showPage('session-post-eval', document.querySelector('.sidebar-nav-btn[data-page="session-post-eval"]'));
 }
 
-function completeRecommend() {
+async function completeRecommend() {
+  // DB に提案保存
+  const state = SessionFlow.getState();
+  if (state.dbSessionId && state.recommendation) {
+    await updateFlowRecommendation(state.dbSessionId, state.recommendation);
+  }
+
   SessionFlow.nextStep();
   showPage('session-followup', document.querySelector('.sidebar-nav-btn[data-page="session-followup"]'));
 }
 
 async function saveSessionData() {
   const state = SessionFlow.getState();
-  const c = state.computed;
-
-  const record = {
-    sheetId: 'session-flow',
-    role: 'player',
-    grade: 'session',
-    playerName: currentUser?.user_metadata?.full_name || 'Unknown',
-    date: new Date().toISOString().split('T')[0],
-    theme: state.record.menuName,
-    scores: [
-      c.vfe?.vfe_display || 0,
-      c.efe?.efe_display || 0,
-      c.fPrime?.f_prime_display || 0,
-      c.eu?.eu_display || 0,
-    ],
-    total: c.vfe?.vfe_display || 0,
-    maxScore: 100,
-    notes: {
-      preCheck: state.preCheck,
-      record: state.record,
-      postEval: state.postEval,
-      computed: {
-        vfe: c.vfe?.vfe_display,
-        efe: c.efe?.efe_display,
-        fPrime: c.fPrime?.f_prime_effective,
-        eu: c.eu?.eu_display,
-        sigmaModifier: c.sigmaModifier,
-        lambdaModifier: c.lambdaModifier,
-      },
-      recommendation: state.recommendation,
-    },
-  };
+  if (!state.dbSessionId) {
+    alert('セッションが開始されていません。前チェックから始めてください。');
+    return;
+  }
 
   try {
-    await persistSession(record);
+    // 後評価スコアを再保存（最新値で更新）
+    await updateFlowPostEval(state.dbSessionId, state.postEval, state.computed);
+    if (state.recommendation) {
+      await updateFlowRecommendation(state.dbSessionId, state.recommendation);
+    }
     alert('💾 セッションデータを保存しました。');
   } catch (e) {
     console.error('Save error:', e);

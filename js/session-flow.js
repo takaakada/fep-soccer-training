@@ -27,6 +27,7 @@ const SessionFlow = (() => {
   function createEmptyState() {
     return {
       id: null,
+      dbSessionId: null,  // Supabase sessions テーブルの UUID
       startedAt: null,
       currentStep: 0,
 

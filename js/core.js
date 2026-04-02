@@ -419,6 +419,155 @@ async function removeWeekly(id) {
   localStorage.setItem('fep_weeklies', JSON.stringify(weeklies.filter(w => w.id !== id)));
 }
 
+// ══════════════════════════════════════════════════════════
+// SESSION FLOW PERSISTENCE — sessions / session_menus / session_followups
+// 新テーブル構造（FEP Soccer Training Supabase）
+// ══════════════════════════════════════════════════════════
+
+// ── セッション作成（① 前チェック完了時）──
+async function createFlowSession(preCheck) {
+  if (!sbFep || !currentUser) {
+    // ローカル fallback
+    const id = 'local_' + Date.now();
+    const session = { id, ...preCheck, status: 'in_progress', current_step: 1 };
+    const stored = JSON.parse(localStorage.getItem('fep_flow_sessions') || '[]');
+    stored.unshift(session);
+    localStorage.setItem('fep_flow_sessions', JSON.stringify(stored));
+    return id;
+  }
+
+  const row = {
+    user_id:          currentUser.id,
+    session_date:     new Date().toISOString().split('T')[0],
+    status:           'in_progress',
+    current_step:     1,
+    pre_condition:    preCheck.condition,
+    pre_expectation:  preCheck.expectation,
+    pre_epi_q1:       preCheck.epiQ1,
+    pre_epi_q2:       preCheck.epiQ2,
+    pre_pra_q3:       preCheck.praQ3,
+    pre_pra_q4:       preCheck.praQ4,
+  };
+  const { data, error } = await sbFep.from('sessions').insert(row).select('id').single();
+  if (error) { console.error('createFlowSession:', error); return null; }
+  return data.id;
+}
+
+// ── セッションメニュー保存（② セッション記録完了時）──
+async function saveFlowMenu(sessionId, record) {
+  if (!sbFep || !currentUser) {
+    const stored = JSON.parse(localStorage.getItem('fep_flow_menus') || '[]');
+    stored.push({ session_id: sessionId, ...record });
+    localStorage.setItem('fep_flow_menus', JSON.stringify(stored));
+    return;
+  }
+
+  const row = {
+    session_id:     sessionId,
+    menu_name:      record.menuName,
+    purpose:        record.purpose,
+    duration_min:   record.duration,
+    layer:          record.layer,
+    channels:       record.channels,
+    constraints:    record.constraints,
+    complexity:     record.complexity,
+    accuracy:       record.accuracy,
+    weight_value:   record.weightValue,
+    coaching_type:  record.coachingType,
+    feedback_freq:  record.feedbackFreq,
+    vfe_display:    record.vfeDisplay,
+  };
+  const { error } = await sbFep.from('session_menus').insert(row);
+  if (error) console.error('saveFlowMenu:', error);
+}
+
+// ── セッション後評価 + スコア更新（③ 後評価完了時）──
+async function updateFlowPostEval(sessionId, postEval, computed) {
+  if (!sbFep || !currentUser) {
+    const stored = JSON.parse(localStorage.getItem('fep_flow_sessions') || '[]');
+    const session = stored.find(s => s.id === sessionId);
+    if (session) Object.assign(session, { postEval, computed, current_step: 3 });
+    localStorage.setItem('fep_flow_sessions', JSON.stringify(stored));
+    return;
+  }
+
+  const row = {
+    current_step:         3,
+    post_ease:            postEval.ease,
+    post_difficulty:      postEval.difficulty,
+    post_enjoyment:       postEval.enjoyment,
+    post_satisfaction:    postEval.satisfaction,
+    post_reproducibility: postEval.reproducibility,
+    score_vfe:            computed.vfe?.vfe_display,
+    score_efe:            computed.efe?.efe_display,
+    score_f_prime:        computed.fPrime?.f_prime_effective,
+    score_f_prime_display: computed.fPrime?.f_prime_display,
+    score_eu:             computed.eu?.eu_display,
+    score_sigma_mod:      computed.sigmaModifier,
+    score_lambda_mod:     computed.lambdaModifier,
+    score_alpha:          computed.efe?.alpha,
+    score_beta:           computed.efe?.beta,
+  };
+  const { error } = await sbFep.from('sessions').update(row).eq('id', sessionId);
+  if (error) console.error('updateFlowPostEval:', error);
+}
+
+// ── 次回提案保存（④ 次回提案時）──
+async function updateFlowRecommendation(sessionId, recommendation) {
+  if (!sbFep || !currentUser) return;
+  const { error } = await sbFep.from('sessions')
+    .update({ current_step: 4, recommendation })
+    .eq('id', sessionId);
+  if (error) console.error('updateFlowRecommendation:', error);
+}
+
+// ── フォローアップ保存 + セッション完了（⑤ フォローアップ完了時）──
+async function completeFlowSession(sessionId, followup) {
+  if (!sbFep || !currentUser) {
+    const stored = JSON.parse(localStorage.getItem('fep_flow_sessions') || '[]');
+    const session = stored.find(s => s.id === sessionId);
+    if (session) { session.status = 'completed'; session.followup = followup; }
+    localStorage.setItem('fep_flow_sessions', JSON.stringify(stored));
+    return;
+  }
+
+  // フォローアップレコード作成
+  const fuRow = {
+    session_id:     sessionId,
+    reproduced:     followup.reproduced,
+    transferable:   followup.transferable,
+    want_repeat:    followup.wantRepeat,
+    anxiety_change: followup.anxietyChange,
+    pain_change:    followup.painChange,
+    notes:          followup.notes,
+  };
+  const { error: fuErr } = await sbFep.from('session_followups').insert(fuRow);
+  if (fuErr) console.error('completeFlowSession (followup):', fuErr);
+
+  // セッションステータス更新
+  const { error: sErr } = await sbFep.from('sessions')
+    .update({ status: 'completed', current_step: 5, completed_at: new Date().toISOString() })
+    .eq('id', sessionId);
+  if (sErr) console.error('completeFlowSession (session):', sErr);
+}
+
+// ── セッション履歴取得 ──
+async function fetchFlowSessions(limit = 20) {
+  if (!sbFep || !currentUser) {
+    const stored = JSON.parse(localStorage.getItem('fep_flow_sessions') || '[]');
+    return stored.slice(0, limit);
+  }
+
+  const { data, error } = await sbFep
+    .from('sessions')
+    .select('*, session_menus(*), session_followups(*)')
+    .eq('user_id', currentUser.id)
+    .order('started_at', { ascending: false })
+    .limit(limit);
+  if (error) { console.error('fetchFlowSessions:', error); return []; }
+  return data || [];
+}
+
 // ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
   // ログイン確認後に showApp() + showPage() を呼ぶため、ここでは initSupabase のみ

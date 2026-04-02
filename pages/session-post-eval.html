@@ -275,8 +275,15 @@ function backToRecord() {
   showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page="session-record"]'));
 }
 
-function completePostEval() {
+async function completePostEval() {
   postEvalSliderChanged();
+
+  // DB に後評価 + 計算スコア保存
+  const state = SessionFlow.getState();
+  if (state.dbSessionId) {
+    await updateFlowPostEval(state.dbSessionId, state.postEval, state.computed);
+  }
+
   SessionFlow.nextStep();
   showPage('session-recommend', document.querySelector('.sidebar-nav-btn[data-page="session-recommend"]'));
 }
