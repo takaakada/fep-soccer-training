@@ -1,0 +1,285 @@
+<!-- ══════════════════════════════════════════════════════════
+     SESSION POST-EVAL — ③ 後評価
+     セッション後の主観評価を記録し、F' を算出
+═══════════════════════════════════════════════════════════ -->
+
+<div class="sf-page">
+  <div class="sf-header">
+    <div class="sf-page-title">📊 後評価</div>
+    <p class="sf-page-sub">セッション後の主観評価を記録し、F'（感情変化率）を算出します</p>
+  </div>
+
+  <div id="sf-progress-bar"></div>
+
+  <!-- セッション記録サマリー -->
+  <div id="pe-record-summary" class="sf-alert sf-alert-blue">
+    <span class="sf-alert-icon">▶️</span>
+    <div id="pe-record-text">セッション記録を読み込み中…</div>
+  </div>
+
+  <div class="sf-grid-2">
+    <!-- ══ 左列：主観評価 ══ -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">
+          😊 主観的な感覚
+          <span class="sf-theory-tag tag-dopamine">ドーパミン系→F'</span>
+        </div>
+
+        <!-- やりやすさ -->
+        <div class="sf-form-row">
+          <label class="sf-label">やりやすさ</label>
+          <p class="sf-note">練習がスムーズにできたか（身体的・技術的）</p>
+          <div class="sf-slider-row">
+            <input type="range" id="pe-ease" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; postEvalSliderChanged()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>とても困難 (0)</span><span>とてもスムーズ (10)</span>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <!-- 難しさの感覚 -->
+        <div class="sf-form-row">
+          <label class="sf-label">難しさの感覚</label>
+          <p class="sf-note">主観的にどれくらい難しく感じたか</p>
+          <div class="sf-slider-row">
+            <input type="range" id="pe-difficulty" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; postEvalSliderChanged()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>簡単すぎた (0)</span><span>難しすぎた (10)</span>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <!-- 楽しさ (F' Q2) -->
+        <div class="sf-form-row">
+          <label class="sf-label">楽しさ・満足感</label>
+          <p class="sf-note">F' Q2 (happy_unhappy) に対応。練習を楽しめたか</p>
+          <div class="sf-slider-row">
+            <input type="range" id="pe-enjoyment" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; postEvalSliderChanged()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>つまらなかった (0)</span><span>とても楽しかった (10)</span>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <!-- 納得感 (F' Q3) -->
+        <div class="sf-form-row">
+          <label class="sf-label">納得感・達成感</label>
+          <p class="sf-note">F' Q3 (relief_disappoint) に対応。結果に納得できたか</p>
+          <div class="sf-slider-row">
+            <input type="range" id="pe-satisfaction" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; postEvalSliderChanged()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>不満・がっかり (0)</span><span>納得・安心 (10)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 右列：再現性 + プレビュー ══ -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">🔄 再現性の見通し</div>
+        <div class="sf-form-row">
+          <label class="sf-label">今日の練習内容を、次回も再現できそうですか？</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="pe-repro" value="できそう" onchange="postEvalFieldChanged()"> できそう</label>
+            <label class="sf-radio"><input type="radio" name="pe-repro" value="少し不安" onchange="postEvalFieldChanged()"> 少し不安</label>
+            <label class="sf-radio"><input type="radio" name="pe-repro" value="難しい" onchange="postEvalFieldChanged()"> 難しい</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- F' 計算結果 -->
+      <div class="sf-card">
+        <div class="sf-card-title">
+          🧠 F' 計算結果
+          <span class="sf-theory-tag tag-dopamine">F' v2</span>
+        </div>
+        <div class="sf-form-row">
+          <div class="sf-fprime-breakdown">
+            <div class="sf-fprime-row">
+              <span class="sf-fprime-label">Q1 期待感（前チェック）</span>
+              <span class="sf-fprime-val" id="pv-fq1">—</span>
+            </div>
+            <div class="sf-fprime-row">
+              <span class="sf-fprime-label">Q2 楽しさ（後評価）</span>
+              <span class="sf-fprime-val" id="pv-fq2">—</span>
+            </div>
+            <div class="sf-fprime-row">
+              <span class="sf-fprime-label">Q3 納得感（後評価）</span>
+              <span class="sf-fprime-val" id="pv-fq3">—</span>
+            </div>
+            <div class="sf-separator"></div>
+            <div class="sf-fprime-row">
+              <span class="sf-fprime-label">F'_raw（加重平均）</span>
+              <span class="sf-fprime-val" id="pv-fpraw">—</span>
+            </div>
+            <div class="sf-fprime-row">
+              <span class="sf-fprime-label">Reactivity（λ+不確実性）</span>
+              <span class="sf-fprime-val" id="pv-reactivity">—</span>
+            </div>
+            <div class="sf-fprime-row sf-fprime-total">
+              <span class="sf-fprime-label">F'_effective</span>
+              <span class="sf-fprime-val" id="pv-fpeff">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 統合プレビュー -->
+  <div class="sf-card sf-preview-card">
+    <div class="sf-card-title">📐 統合スコアプレビュー</div>
+    <div class="sf-preview-grid" id="pe-preview">
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">VFE</div>
+        <div class="sf-preview-val" id="pv-vfe2">—</div>
+        <div class="sf-preview-sub">変分自由エネルギー</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">EFE</div>
+        <div class="sf-preview-val" id="pv-efe2">—</div>
+        <div class="sf-preview-sub">期待自由エネルギー</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">F'</div>
+        <div class="sf-preview-val" id="pv-fp2">—</div>
+        <div class="sf-preview-sub">感情変化率</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">EU</div>
+        <div class="sf-preview-val" id="pv-eu2">—</div>
+        <div class="sf-preview-sub">推定不確実性</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sf-btn-row">
+    <button class="sf-btn sf-btn-secondary" onclick="backToRecord()">
+      ← セッション記録に戻る
+    </button>
+    <button class="sf-btn sf-btn-primary" onclick="completePostEval()">
+      評価完了 → 次回提案へ
+    </button>
+  </div>
+</div>
+
+<script>
+function initPostEvalPage() {
+  const progEl = document.getElementById('sf-progress-bar');
+  if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(2);
+  showRecordSummary();
+  postEvalSliderChanged();
+}
+
+function showRecordSummary() {
+  const textEl = document.getElementById('pe-record-text');
+  if (!textEl) return;
+  const state = SessionFlow.getState();
+  const rec = state.record;
+  const computed = state.computed;
+
+  if (!rec.menuName) {
+    textEl.innerHTML = '⚠️ セッション記録が未入力です。<a href="#" onclick="showPage(\'session-record\', document.querySelector(\'.sidebar-nav-btn[data-page=session-record]\'))">記録を先に行う</a>';
+    return;
+  }
+
+  const vfeText = computed.vfe ? `VFE=${computed.vfe.vfe_display.toFixed(1)}` : 'VFE=未計算';
+  textEl.innerHTML = `<strong>セッション記録：</strong>
+    ${rec.menuName}（${rec.duration}分）、
+    難易度=${rec.complexity}/10、成功率=${rec.accuracy}%、
+    ${vfeText}`;
+}
+
+function postEvalSliderChanged() {
+  const enjoyment    = parseInt(document.getElementById('pe-enjoyment')?.value ?? 5);
+  const satisfaction = parseInt(document.getElementById('pe-satisfaction')?.value ?? 5);
+  const ease         = parseInt(document.getElementById('pe-ease')?.value ?? 5);
+  const difficulty   = parseInt(document.getElementById('pe-difficulty')?.value ?? 5);
+
+  SessionFlow.updatePostEval({ enjoyment, satisfaction, ease, difficulty });
+  updateFPrimeDisplay();
+  updateIntegratedPreview();
+}
+
+function postEvalFieldChanged() {
+  const reproducibility = document.querySelector('input[name="pe-repro"]:checked')?.value || '';
+  SessionFlow.updatePostEval({ reproducibility });
+}
+
+function updateFPrimeDisplay() {
+  const state = SessionFlow.getState();
+  const fp = state.computed.fPrime;
+  if (!fp) return;
+
+  const setVal = (id, val, fmt) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = fmt ? fmt(val) : val;
+  };
+
+  const signed = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+  setVal('pv-fq1', fp.q1, signed);
+  setVal('pv-fq2', fp.q2, signed);
+  setVal('pv-fq3', fp.q3, signed);
+  setVal('pv-fpraw', fp.f_prime_raw, signed);
+  setVal('pv-reactivity', fp.reactivity, v => 'x' + v.toFixed(2));
+  setVal('pv-fpeff', fp.f_prime_effective, signed);
+
+  const effEl = document.getElementById('pv-fpeff');
+  if (effEl) {
+    effEl.className = 'sf-fprime-val ' +
+      (fp.f_prime_effective > 0.3 ? 'val-good' : fp.f_prime_effective < -0.3 ? 'val-warn' : '');
+  }
+}
+
+function updateIntegratedPreview() {
+  const state = SessionFlow.getState();
+  const c = state.computed;
+
+  const setPreview = (id, val, cls) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val != null ? val.toFixed(1) : '—';
+    if (cls) el.className = 'sf-preview-val ' + cls;
+  };
+
+  if (c.vfe) setPreview('pv-vfe2', c.vfe.vfe_display,
+    c.vfe.vfe_display < 40 ? 'val-good' : c.vfe.vfe_display > 60 ? 'val-warn' : '');
+
+  if (c.efe) setPreview('pv-efe2', c.efe.efe_display,
+    c.efe.efe_display < 40 ? 'val-good' : c.efe.efe_display > 60 ? 'val-warn' : '');
+
+  if (c.fPrime) setPreview('pv-fp2', c.fPrime.f_prime_display);
+
+  if (c.eu) setPreview('pv-eu2', c.eu.eu_display,
+    c.eu.eu_display < 40 ? 'val-good' : c.eu.eu_display > 60 ? 'val-warn' : '');
+}
+
+function backToRecord() {
+  showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page="session-record"]'));
+}
+
+function completePostEval() {
+  postEvalSliderChanged();
+  SessionFlow.nextStep();
+  showPage('session-recommend', document.querySelector('.sidebar-nav-btn[data-page="session-recommend"]'));
+}
+
+initPostEvalPage();
+</script>

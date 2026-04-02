@@ -1,0 +1,224 @@
+<!-- ══════════════════════════════════════════════════════════
+     SESSION FOLLOWUP — ⑤ フォローアップ
+     次回セッション前の振り返りと確認
+═══════════════════════════════════════════════════════════ -->
+
+<div class="sf-page">
+  <div class="sf-header">
+    <div class="sf-page-title">🔁 フォローアップ</div>
+    <p class="sf-page-sub">前回セッションの振り返りと、次回に向けた確認を行います</p>
+  </div>
+
+  <div id="sf-progress-bar"></div>
+
+  <div class="sf-grid-2">
+    <!-- ══ 左列：振り返り ══ -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">🔄 再現性の確認</div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">前回の練習内容を再現できましたか？</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="fu-reproduced" value="yes" onchange="followupChanged()"> はい、できた</label>
+            <label class="sf-radio"><input type="radio" name="fu-reproduced" value="partial" onchange="followupChanged()"> 部分的にできた</label>
+            <label class="sf-radio"><input type="radio" name="fu-reproduced" value="no" onchange="followupChanged()"> できなかった</label>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">前回の学びを他の場面に転用できそうですか？</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="fu-transferable" value="yes" onchange="followupChanged()"> はい</label>
+            <label class="sf-radio"><input type="radio" name="fu-transferable" value="unknown" onchange="followupChanged()"> わからない</label>
+            <label class="sf-radio"><input type="radio" name="fu-transferable" value="no" onchange="followupChanged()"> いいえ</label>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">同じメニューをもう一度やりたいですか？</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="fu-repeat" value="yes" onchange="followupChanged()"> はい</label>
+            <label class="sf-radio"><input type="radio" name="fu-repeat" value="no" onchange="followupChanged()"> いいえ、次に進みたい</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 右列：状態変化 ══ -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">📉 セッション後の状態変化</div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">不安・緊張の変化</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="fu-anxiety" value="decreased" onchange="followupChanged()"> 減った</label>
+            <label class="sf-radio"><input type="radio" name="fu-anxiety" value="same" onchange="followupChanged()"> 変わらない</label>
+            <label class="sf-radio"><input type="radio" name="fu-anxiety" value="increased" onchange="followupChanged()"> 増えた</label>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">痛み・違和感の変化</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="fu-pain" value="gone" onchange="followupChanged()"> なくなった</label>
+            <label class="sf-radio"><input type="radio" name="fu-pain" value="same" onchange="followupChanged()"> 変わらない</label>
+            <label class="sf-radio"><input type="radio" name="fu-pain" value="slight" onchange="followupChanged()"> 少し増えた</label>
+            <label class="sf-radio"><input type="radio" name="fu-pain" value="worse" onchange="followupChanged()"> 悪化した</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sf-card">
+        <div class="sf-card-title">📝 メモ・気づき</div>
+        <div class="sf-form-row">
+          <textarea id="fu-notes" class="sf-textarea"
+                    placeholder="自由に記入（次回に活かしたいこと、気づいたことなど）"
+                    oninput="followupChanged()"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- フォローアップ分析 -->
+  <div id="fu-analysis-box" class="sf-alert sf-alert-green" style="display:none">
+    <span class="sf-alert-icon">✅</span>
+    <div id="fu-analysis-text"></div>
+  </div>
+
+  <div class="sf-btn-row">
+    <button class="sf-btn sf-btn-secondary" onclick="backToRecommend()">
+      ← 次回提案に戻る
+    </button>
+    <button class="sf-btn sf-btn-primary" onclick="completeFollowup()">
+      セッション完了 🎉
+    </button>
+  </div>
+</div>
+
+<script>
+function initFollowupPage() {
+  const progEl = document.getElementById('sf-progress-bar');
+  if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(4);
+}
+
+function followupChanged() {
+  const data = {
+    reproduced: document.querySelector('input[name="fu-reproduced"]:checked')?.value || '',
+    transferable: document.querySelector('input[name="fu-transferable"]:checked')?.value || '',
+    wantRepeat: document.querySelector('input[name="fu-repeat"]:checked')?.value || '',
+    anxietyChange: document.querySelector('input[name="fu-anxiety"]:checked')?.value || '',
+    painChange: document.querySelector('input[name="fu-pain"]:checked')?.value || '',
+    notes: document.getElementById('fu-notes')?.value || '',
+  };
+  SessionFlow.updateFollowup(data);
+  updateFollowupAnalysis(data);
+}
+
+function updateFollowupAnalysis(data) {
+  const box = document.getElementById('fu-analysis-box');
+  const textEl = document.getElementById('fu-analysis-text');
+  if (!box || !textEl) return;
+
+  // 少なくとも2つ入力されたら分析表示
+  const filled = [data.reproduced, data.transferable, data.anxietyChange].filter(v => v).length;
+  if (filled < 2) { box.style.display = 'none'; return; }
+
+  let insights = [];
+
+  if (data.reproduced === 'yes') {
+    insights.push('再現性が確認できました。学習が定着しつつあります。');
+  } else if (data.reproduced === 'no') {
+    insights.push('再現が難しい状態です。次回は同じメニューをもう少し簡易な設定で反復しましょう。');
+  }
+
+  if (data.transferable === 'yes') {
+    insights.push('汎用性の高い学びが得られています。');
+  }
+
+  if (data.anxietyChange === 'decreased') {
+    insights.push('不安が減少 → セッションが安心感をもたらしています（セロトニン系の安定化）。');
+  } else if (data.anxietyChange === 'increased') {
+    insights.push('不安が増加 → 次回はコーチングを「安全重視」に調整することを推奨します。');
+  }
+
+  if (data.painChange === 'worse') {
+    insights.push('⚠️ 痛みが悪化しています。負荷の見直しや休養を検討してください。');
+    box.className = 'sf-alert sf-alert-orange';
+  } else {
+    box.className = 'sf-alert sf-alert-green';
+  }
+
+  if (data.wantRepeat === 'yes') {
+    insights.push('同じメニューの反復希望 → 安定化フェーズとして効果的です。');
+  } else if (data.wantRepeat === 'no') {
+    insights.push('新しいメニューへの意欲 → 探索フェーズへの移行を検討。');
+  }
+
+  box.style.display = 'flex';
+  textEl.innerHTML = '<strong>フォローアップ分析：</strong><br>' + insights.join('<br>');
+}
+
+function backToRecommend() {
+  showPage('session-recommend', document.querySelector('.sidebar-nav-btn[data-page="session-recommend"]'));
+}
+
+async function completeFollowup() {
+  followupChanged();
+
+  // セッションデータを保存
+  const state = SessionFlow.getState();
+  const c = state.computed;
+
+  const record = {
+    sheetId: 'session-flow',
+    role: 'player',
+    grade: 'vfe',
+    playerName: currentUser?.user_metadata?.full_name || 'Unknown',
+    date: new Date().toISOString().split('T')[0],
+    theme: state.record.menuName || 'セッション',
+    scores: [
+      c.vfe?.vfe_display || 0,
+      c.efe?.efe_display || 0,
+      c.fPrime?.f_prime_display || 0,
+      c.eu?.eu_display || 0,
+    ],
+    total: c.vfe?.vfe_display || 0,
+    maxScore: 100,
+    notes: {
+      preCheck: state.preCheck,
+      record: state.record,
+      postEval: state.postEval,
+      followup: state.followup,
+      computed: {
+        vfe: c.vfe?.vfe_display,
+        efe: c.efe?.efe_display,
+        fPrime: c.fPrime?.f_prime_effective,
+        eu: c.eu?.eu_display,
+        sigmaModifier: c.sigmaModifier,
+        lambdaModifier: c.lambdaModifier,
+      },
+      recommendation: state.recommendation,
+    },
+  };
+
+  try {
+    await persistSession(record);
+    alert('🎉 セッションが完了しました！\n\nデータを保存しました。お疲れさまでした。');
+    // ホームに戻る
+    showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
+  } catch (e) {
+    console.error('Save error:', e);
+    alert('保存に失敗しました: ' + e.message);
+  }
+}
+
+initFollowupPage();
+</script>
