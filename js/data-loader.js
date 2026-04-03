@@ -33,61 +33,63 @@ function _writeCache(data) {
 }
 
 // ── Sheet データを DRILL_PRESETS / POS_PRESETS 形式に変換 ────
+function _normalizeMenu(m) {
+  // 新テンプレート（scope, name, cat, ...）と旧テンプレート（position_group, menu_name, category, ...）の両方に対応
+  return {
+    menu_id:     m.menu_id || '',
+    name:        m.name || m.menu_name || '',
+    cat:         m.cat || m.category || '',
+    scope:       m.scope || m.position_group || 'team',
+    age:         m.age || m.age_group || 'all',
+    layer:       m.layer || '',
+    purpose:     m.purpose || m.purpose_group || '',
+    purpose_list: m.purpose_list || [],
+    channels:    m.channels || '',
+    channels_list: m.channels_list || [],
+    coaching:    m.coaching || '',
+    vfe_target:  m.vfe_target || '',
+    time:        parseInt(m.time || m.duration_min) || 0,
+    desc:        m.desc || m.summary || '',
+    fep:         m.fep || m.fep_focus || '',
+    steps:       m.steps_list || [],
+    coaching_points: m.coaching_points_list || [],
+    // 旧テンプレート互換
+    theme:       m.theme || '',
+    level:       m.level || '',
+  };
+}
+
 function _applyMenuData(menus) {
   if (!menus || menus.length === 0) return;
 
-  // 汎用メニュー（position_group = 'all'）→ DRILL_PRESETS
-  const generalMenus = menus.filter(m => m.position_group === 'all');
+  // 全メニューを正規化
+  const normalized = menus.map(_normalizeMenu);
+
+  // 汎用メニュー（scope = 'team' or position_group = 'all'）→ DRILL_PRESETS
+  const generalMenus = normalized.filter(m => m.scope === 'team' || m.scope === 'all');
   if (generalMenus.length > 0) {
-    window.DRILL_PRESETS = generalMenus
-      .sort((a, b) => (parseInt(a.sort_order) || 0) - (parseInt(b.sort_order) || 0))
-      .map(m => ({
-        menu_id:  m.menu_id,
-        name:     m.menu_name,
-        cat:      m.category,
-        time:     parseInt(m.duration_min) || 0,
-        desc:     m.summary,
-        theme:    m.theme || '',
-        purpose:  m.purpose_group || '',
-        problem:  m.problem_main || '',
-        level:    m.level || '',
-        steps:    m.steps_list || [],
-        coaching: m.coaching_points || '',
-        fep:      m.fep_focus || '',
-      }));
+    window.DRILL_PRESETS = generalMenus;
   }
 
   // ポジション別メニュー → POS_PRESETS
   const positions = ['gk', 'df', 'mf', 'fw'];
   const posUpdates = {};
   positions.forEach(pos => {
-    const posMenus = menus
-      .filter(m => m.position_group === pos)
-      .sort((a, b) => (parseInt(a.sort_order) || 0) - (parseInt(b.sort_order) || 0));
+    const posMenus = normalized.filter(m => m.scope === pos);
     if (posMenus.length > 0) {
-      posUpdates[pos] = posMenus.map(m => ({
-        menu_id:  m.menu_id,
-        name:     m.menu_name,
-        desc:     m.summary,
-        theme:    m.theme || '',
-        purpose:  m.purpose_group || '',
-        problem:  m.problem_main || '',
-        level:    m.level || '',
-        steps:    m.steps_list || [],
-        coaching: m.coaching_points || '',
-        eval:     m.evaluation_points || '',
-        fep:      m.fep_focus || '',
-      }));
+      posUpdates[pos] = posMenus;
     }
   });
 
   if (Object.keys(posUpdates).length > 0) {
-    // 既存の POS_PRESETS をベースに上書き
     if (typeof window.POS_PRESETS === 'undefined') window.POS_PRESETS = {};
     Object.assign(window.POS_PRESETS, posUpdates);
   }
 
-  console.log(`[data-loader] Applied: ${generalMenus.length} general + ${
+  // 全メニュー統合リストも保持（セッション記録のピッカー用）
+  window.ALL_MENU_PRESETS = normalized;
+
+  console.log(`[data-loader] Applied: ${generalMenus.length} team + ${
     Object.values(posUpdates).reduce((s, a) => s + a.length, 0)} position menus`);
 }
 
@@ -128,6 +130,31 @@ async function loadMenuData() {
     } else if (!cached) {
       console.warn('[data-loader] Offline and no cache: using hardcoded defaults');
     }
+  }
+
+  // ALL_MENU_PRESETS がまだ空なら、ハードコードの DRILL_PRESETS + POS_PRESETS から構築
+  if (!window.ALL_MENU_PRESETS || window.ALL_MENU_PRESETS.length === 0) {
+    _buildAllMenuFromHardcoded();
+  }
+}
+
+function _buildAllMenuFromHardcoded() {
+  const all = [];
+  // DRILL_PRESETS（汎用）
+  if (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS)) {
+    DRILL_PRESETS.forEach(m => all.push(_normalizeMenu({ ...m, scope: m.scope || 'team' })));
+  }
+  // POS_PRESETS（ポジション別）
+  if (typeof POS_PRESETS !== 'undefined' && POS_PRESETS) {
+    ['gk', 'df', 'mf', 'fw'].forEach(pos => {
+      if (Array.isArray(POS_PRESETS[pos])) {
+        POS_PRESETS[pos].forEach(m => all.push(_normalizeMenu({ ...m, scope: pos, cat: m.cat || 'tech' })));
+      }
+    });
+  }
+  if (all.length > 0) {
+    window.ALL_MENU_PRESETS = all;
+    console.log(`[data-loader] Built ALL_MENU_PRESETS from hardcoded: ${all.length} menus`);
   }
 }
 

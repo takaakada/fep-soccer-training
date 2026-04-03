@@ -80,7 +80,7 @@
           <div class="sf-chip-group" id="sr-channels">
             <button class="sf-chip" data-value="視覚" onclick="toggleChip(this, 'channels')">👁 視覚</button>
             <button class="sf-chip" data-value="体性感覚" onclick="toggleChip(this, 'channels')">🦶 体性感覚</button>
-            <button class="sf-chip" data-value="聴覚" onclick="toggleChip(this, 'channels')">👂 聴覚</button>
+            <button class="sf-chip" data-value="呼吸・心拍" onclick="toggleChip(this, 'channels')">💓 呼吸・心拍</button>
             <button class="sf-chip" data-value="前庭覚" onclick="toggleChip(this, 'channels')">⚖️ 前庭覚</button>
           </div>
         </div>
@@ -269,8 +269,16 @@
     </div>
     <div class="sf-modal-filters">
       <input type="text" id="mp-search" class="sf-input" placeholder="🔍 メニュー名で検索" oninput="filterMenuList()">
-      <div class="sf-chip-group" id="mp-cat-filters" style="margin-top:8px">
-        <button class="sf-chip active" data-cat="all" onclick="filterByCat('all', this)">全て</button>
+      <div class="sf-chip-group" id="mp-scope-filters" style="margin-top:8px">
+        <button class="sf-chip active" data-scope="all" onclick="filterByScope('all', this)">全て</button>
+        <button class="sf-chip" data-scope="team" onclick="filterByScope('team', this)">全体</button>
+        <button class="sf-chip" data-scope="gk" onclick="filterByScope('gk', this)">GK</button>
+        <button class="sf-chip" data-scope="df" onclick="filterByScope('df', this)">DF</button>
+        <button class="sf-chip" data-scope="mf" onclick="filterByScope('mf', this)">MF</button>
+        <button class="sf-chip" data-scope="fw" onclick="filterByScope('fw', this)">FW</button>
+      </div>
+      <div class="sf-chip-group" id="mp-cat-filters" style="margin-top:4px">
+        <button class="sf-chip active" data-cat="all" onclick="filterByCat('all', this)">全カテゴリ</button>
         <button class="sf-chip" data-cat="warm" onclick="filterByCat('warm', this)">ウォームアップ</button>
         <button class="sf-chip" data-cat="tech" onclick="filterByCat('tech', this)">技術</button>
         <button class="sf-chip" data-cat="tactic" onclick="filterByCat('tactic', this)">戦術</button>
@@ -442,11 +450,14 @@ async function completeRecord() {
 // ── メニュー選択モーダル ────────────────────────────────────
 let _menuData = [];
 let _currentCatFilter = 'all';
+let _currentScopeFilter = 'all';
 
 function openMenuPicker() {
-  // DRILL_PRESETS（スプレッドシートから読み込み済み）を使用
-  _menuData = (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS))
-    ? DRILL_PRESETS : [];
+  // ALL_MENU_PRESETS（全メニュー統合）> DRILL_PRESETS をフォールバックに使用
+  _menuData = (typeof ALL_MENU_PRESETS !== 'undefined' && Array.isArray(ALL_MENU_PRESETS) && ALL_MENU_PRESETS.length > 0)
+    ? ALL_MENU_PRESETS
+    : (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS))
+      ? DRILL_PRESETS : [];
 
   if (_menuData.length === 0) {
     alert('メニューデータが読み込まれていません。\nしばらく待ってから再試行してください。');
@@ -454,10 +465,13 @@ function openMenuPicker() {
   }
 
   _currentCatFilter = 'all';
+  _currentScopeFilter = 'all';
   document.getElementById('mp-search').value = '';
-  // カテゴリフィルターリセット
+  // フィルターリセット
   document.querySelectorAll('#mp-cat-filters .sf-chip').forEach(c => c.classList.remove('active'));
   document.querySelector('#mp-cat-filters .sf-chip[data-cat="all"]')?.classList.add('active');
+  document.querySelectorAll('#mp-scope-filters .sf-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('#mp-scope-filters .sf-chip[data-scope="all"]')?.classList.add('active');
 
   renderMenuList(_menuData);
   document.getElementById('menu-picker-overlay').style.display = 'flex';
@@ -465,6 +479,13 @@ function openMenuPicker() {
 
 function closeMenuPicker() {
   document.getElementById('menu-picker-overlay').style.display = 'none';
+}
+
+function filterByScope(scope, btn) {
+  _currentScopeFilter = scope;
+  document.querySelectorAll('#mp-scope-filters .sf-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filterMenuList();
 }
 
 function filterByCat(cat, btn) {
@@ -478,8 +499,9 @@ function filterMenuList() {
   const search = (document.getElementById('mp-search')?.value || '').toLowerCase();
   const filtered = _menuData.filter(m => {
     const catMatch = _currentCatFilter === 'all' || m.cat === _currentCatFilter;
+    const scopeMatch = _currentScopeFilter === 'all' || m.scope === _currentScopeFilter;
     const searchMatch = !search || m.name.toLowerCase().includes(search) || (m.desc || '').toLowerCase().includes(search);
-    return catMatch && searchMatch;
+    return catMatch && scopeMatch && searchMatch;
   });
   renderMenuList(filtered);
 }
@@ -494,31 +516,42 @@ function renderMenuList(menus) {
   }
 
   const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
+  const SCOPE_LABEL = { team: '全体', gk: 'GK', df: 'DF', mf: 'MF', fw: 'FW' };
 
   listEl.innerHTML = menus.map(m => `
     <div class="sf-modal-item" onclick="selectMenu('${m.menu_id || ''}', '${(m.name || '').replace(/'/g, "\\'")}')">
       <div class="sf-modal-item-header">
         <span class="sf-modal-item-name">${m.name}</span>
         <span class="sf-modal-item-meta">
+          <span class="sf-chip-small">${SCOPE_LABEL[m.scope] || m.scope || '全体'}</span>
           <span class="sf-chip-small">${CAT_LABEL[m.cat] || m.cat}</span>
           ${m.time ? `<span class="sf-chip-small">${m.time}分</span>` : ''}
+          ${m.layer ? `<span class="sf-chip-small">${m.layer}</span>` : ''}
         </span>
       </div>
       <div class="sf-modal-item-desc">${m.desc || ''}</div>
-      ${m.purpose ? `<div class="sf-modal-item-tag">目的: ${m.purpose}</div>` : ''}
+      <div class="sf-modal-item-tags">
+        ${m.purpose ? `<span class="sf-modal-item-tag">目的: ${m.purpose}</span>` : ''}
+        ${m.coaching ? `<span class="sf-modal-item-tag">コーチング: ${m.coaching}</span>` : ''}
+        ${m.vfe_target ? `<span class="sf-modal-item-tag">VFE: ${m.vfe_target}</span>` : ''}
+      </div>
     </div>
   `).join('');
 }
 
 function selectMenu(menuId, menuName) {
-  const menu = _menuData.find(m => m.menu_id === menuId || m.name === menuName);
+  const menu = (menuId && menuId !== '')
+    ? _menuData.find(m => m.menu_id === menuId)
+    : _menuData.find(m => m.name === menuName);
 
   // メニュー名を設定
   const nameEl = document.getElementById('sr-menu-name');
   if (nameEl) nameEl.value = menu ? menu.name : menuName;
 
+  if (!menu) { closeMenuPicker(); recordFieldChanged(); return; }
+
   // 時間を設定
-  if (menu && menu.time) {
+  if (menu.time) {
     const durEl = document.getElementById('sr-duration');
     if (durEl) {
       durEl.value = menu.time;
@@ -526,14 +559,47 @@ function selectMenu(menuId, menuName) {
     }
   }
 
+  // レイヤーを自動選択
+  if (menu.layer) {
+    const layerRadio = document.querySelector(`input[name="sr-layer"][value="${menu.layer}"]`);
+    if (layerRadio) layerRadio.checked = true;
+  }
+
+  // コーチングタイプを自動選択
+  if (menu.coaching) {
+    const coachRadio = document.querySelector(`input[name="sr-coaching"][value="${menu.coaching}"]`);
+    if (coachRadio) coachRadio.checked = true;
+  }
+
+  // 目的チップを自動選択
+  const purposes = menu.purpose_list && menu.purpose_list.length > 0
+    ? menu.purpose_list
+    : (menu.purpose || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (purposes.length > 0) {
+    document.querySelectorAll('#sr-purpose .sf-chip').forEach(chip => {
+      chip.classList.toggle('active', purposes.includes(chip.dataset.value));
+    });
+  }
+
+  // チャネルチップを自動選択
+  const channels = menu.channels_list && menu.channels_list.length > 0
+    ? menu.channels_list
+    : (menu.channels || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (channels.length > 0) {
+    document.querySelectorAll('#sr-channels .sf-chip').forEach(chip => {
+      chip.classList.toggle('active', channels.includes(chip.dataset.value));
+    });
+  }
+
   // メニュー情報を表示
   const infoEl = document.getElementById('sr-menu-info');
-  if (infoEl && menu) {
+  if (infoEl) {
     const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
     infoEl.innerHTML = `
       <span class="sf-chip-small">${CAT_LABEL[menu.cat] || menu.cat}</span>
       ${menu.purpose ? `<span class="sf-chip-small">${menu.purpose}</span>` : ''}
-      ${menu.level ? `<span class="sf-chip-small">${menu.level}</span>` : ''}
+      ${menu.layer ? `<span class="sf-chip-small">${menu.layer}</span>` : ''}
+      ${menu.vfe_target ? `<span class="sf-chip-small">VFE: ${menu.vfe_target}</span>` : ''}
       ${menu.desc ? `<div class="sf-menu-info-desc">${menu.desc}</div>` : ''}
       ${menu.fep ? `<div class="sf-menu-info-fep">FEP: ${menu.fep}</div>` : ''}
     `;

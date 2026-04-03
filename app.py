@@ -49,17 +49,37 @@ def _fetch_menus_from_sheet():
     reader = csv.DictReader(io.StringIO(r.text))
     menus = []
     for row in reader:
-        # is_active = FALSE の行は除外
-        if row.get("is_active", "").strip().upper() != "TRUE":
+        # is_active 列がある場合のみチェック（新テンプレートでは省略可）
+        is_active = row.get("is_active", "").strip().upper()
+        if is_active and is_active != "TRUE":
             continue
-        # steps を | 区切りでリストに変換
+
+        # steps をセミコロン区切りでリストに変換（旧: | 区切りもサポート）
         raw_steps = row.get("steps", "")
-        row["steps_list"] = [s.strip() for s in raw_steps.split("|") if s.strip()]
-        # duration_min を数値に
+        delimiter = ";" if ";" in raw_steps else "|"
+        row["steps_list"] = [s.strip() for s in raw_steps.split(delimiter) if s.strip()]
+
+        # coaching_points もセミコロン区切りでリストに変換
+        raw_cp = row.get("coaching_points", "")
+        cp_delim = ";" if ";" in raw_cp else "|"
+        row["coaching_points_list"] = [s.strip() for s in raw_cp.split(cp_delim) if s.strip()]
+
+        # channels をカンマ区切りでリストに変換
+        raw_ch = row.get("channels", "")
+        row["channels_list"] = [s.strip() for s in raw_ch.split(",") if s.strip()]
+
+        # purpose をカンマ区切りでリストに変換
+        raw_purpose = row.get("purpose", "")
+        row["purpose_list"] = [s.strip() for s in raw_purpose.split(",") if s.strip()]
+
+        # time (新) / duration_min (旧) を数値に統一
+        time_val = row.get("time", "") or row.get("duration_min", "")
         try:
-            row["duration_min"] = int(row.get("duration_min", "") or 0)
+            row["time"] = int(time_val or 0)
         except ValueError:
-            row["duration_min"] = 0
+            row["time"] = 0
+        row["duration_min"] = row["time"]  # 後方互換
+
         menus.append(row)
     return menus
 

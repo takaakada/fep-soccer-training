@@ -18,46 +18,46 @@ const CAT_LABEL = {
 // ── 汎用プリセットライブラリ（レベル別メニュー用）─────────
 const DRILL_PRESETS = [
   // ウォームアップ
-  { name: 'ランニング', cat: 'warm', time: 10, desc: '軽いジョグでウォームアップ。フォームを意識しながら走る。' },
-  { name: 'ダイナミックストレッチ', cat: 'warm', time: 10, desc: '動きながら股関節・肩甲骨などをほぐすストレッチ。' },
-  { name: 'ミラーリング遊び', cat: 'warm', time: 10, desc: '2人1組、前の子の動きを後ろが真似する。身体感覚の入口。' },
-  { name: '鬼ごっこ変形版', cat: 'warm', time: 10, desc: 'タグ鬼。逃げる際のルート選択・方向転換を意識させる。' },
-  { name: 'ボールタッチ（足裏・インサイド）', cat: 'warm', time: 8, desc: '止まった状態でリズミカルにボールタッチ。感覚を研ぎ澄ます。' },
-  { name: 'パス＆ムーブ（2人組）', cat: 'warm', time: 10, desc: 'パスを出したら動く。動き続けることを習慣化。' },
+  { name: 'ランニング', cat: 'warm', scope: 'team', layer: 'L1', purpose: '安定化', channels: '視覚,体性感覚', coaching: 'safe', vfe_target: 'low', time: 10, desc: '軽いジョグでウォームアップ。フォームを意識しながら走る。', fep: '単調リズム運動によりセロトニン系を活性化しσを安定させる。' },
+  { name: 'ダイナミックストレッチ', cat: 'warm', scope: 'team', layer: 'L1', purpose: '安定化', channels: '体性感覚,前庭覚', coaching: 'safe', vfe_target: 'low', time: 10, desc: '動きながら股関節・肩甲骨などをほぐすストレッチ。' },
+  { name: 'ミラーリング遊び', cat: 'warm', scope: 'team', layer: 'L1', purpose: '探索', channels: '視覚,体性感覚', coaching: 'safe', vfe_target: 'low', time: 10, desc: '2人1組、前の子の動きを後ろが真似する。身体感覚の入口。' },
+  { name: '鬼ごっこ変形版', cat: 'warm', scope: 'team', layer: 'L2', purpose: '探索', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'low', time: 10, desc: 'タグ鬼。逃げる際のルート選択・方向転換を意識させる。' },
+  { name: 'ボールタッチ（足裏・インサイド）', cat: 'warm', scope: 'team', layer: 'L1', purpose: '安定化', channels: '体性感覚,呼吸・心拍', coaching: 'safe', vfe_target: 'low', time: 8, desc: '止まった状態でリズミカルにボールタッチ。感覚を研ぎ澄ます。' },
+  { name: 'パス＆ムーブ（2人組）', cat: 'warm', scope: 'team', layer: 'L2', purpose: '安定化', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'low', time: 10, desc: 'パスを出したら動く。動き続けることを習慣化。' },
 
   // 技術
-  { name: 'ドリブルコース', cat: 'tech', time: 15, desc: 'コーンを使ったジグザグドリブル。スピードと正確さのバランスを学ぶ。' },
-  { name: '的当てパス', cat: 'tech', time: 15, desc: '近・中・遠の距離にマーカー。予測してから蹴り、誤差を確認。' },
-  { name: 'ファーストタッチ練習', cat: 'tech', time: 15, desc: '投げてもらったボールを次のプレーにつながるトラップ。' },
-  { name: 'シュート精度トレーニング', cat: 'tech', time: 20, desc: '枠内シュートの精度向上。コース・高さを意識して蹴る。' },
-  { name: '1v1ドリブル突破', cat: 'tech', time: 15, desc: '対面DF相手にドリブルで突破する。フェイントと方向転換。' },
-  { name: 'ヘディング練習', cat: 'tech', time: 12, desc: 'クロスボールへのヘディング。タイミングと方向を意識。' },
-  { name: 'インステップキック', cat: 'tech', time: 15, desc: '正確なインステップでの中長距離パス・シュート練習。' },
-  { name: 'ターン練習（クライフ・マシュー）', cat: 'tech', time: 12, desc: '各種ターンを反復練習。次の動きへの素早い転換を身につける。' },
+  { name: 'ドリブルコース', cat: 'tech', scope: 'team', layer: 'L2', purpose: '修正', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'mid', time: 15, desc: 'コーンを使ったジグザグドリブル。スピードと正確さのバランスを学ぶ。' },
+  { name: '的当てパス', cat: 'tech', scope: 'team', layer: 'L2', purpose: '修正', channels: '視覚,体性感覚', coaching: 'positive', vfe_target: 'mid', time: 15, desc: '近・中・遠の距離にマーカー。予測してから蹴り、誤差を確認。' },
+  { name: 'ファーストタッチ練習', cat: 'tech', scope: 'team', layer: 'L2', purpose: '修正', channels: '体性感覚,前庭覚', coaching: 'explore', vfe_target: 'mid', time: 15, desc: '投げてもらったボールを次のプレーにつながるトラップ。' },
+  { name: 'シュート精度トレーニング', cat: 'tech', scope: 'team', layer: 'L3', purpose: '強化', channels: '視覚,体性感覚', coaching: 'positive', vfe_target: 'mid', time: 20, desc: '枠内シュートの精度向上。コース・高さを意識して蹴る。' },
+  { name: '1v1ドリブル突破', cat: 'tech', scope: 'team', layer: 'L3', purpose: '強化', channels: '視覚,体性感覚', coaching: 'challenge', vfe_target: 'high', time: 15, desc: '対面DF相手にドリブルで突破する。フェイントと方向転換。' },
+  { name: 'ヘディング練習', cat: 'tech', scope: 'team', layer: 'L2', purpose: '修正', channels: '視覚,前庭覚', coaching: 'safe', vfe_target: 'mid', time: 12, desc: 'クロスボールへのヘディング。タイミングと方向を意識。' },
+  { name: 'インステップキック', cat: 'tech', scope: 'team', layer: 'L2', purpose: '修正', channels: '体性感覚,視覚', coaching: 'positive', vfe_target: 'mid', time: 15, desc: '正確なインステップでの中長距離パス・シュート練習。' },
+  { name: 'ターン練習（クライフ・マシュー）', cat: 'tech', scope: 'team', layer: 'L2', purpose: '探索', channels: '体性感覚,視覚', coaching: 'explore', vfe_target: 'mid', time: 12, desc: '各種ターンを反復練習。次の動きへの素早い転換を身につける。' },
 
   // 戦術
-  { name: 'ポジショニング確認', cat: 'tactic', time: 20, desc: '攻守それぞれのポジショニングを確認・修正するシャドートレーニング。' },
-  { name: '3対3ゲーム', cat: 'tactic', time: 15, desc: '小さいコートで条件を1つ変えて（例：3タッチ制限）行う。' },
-  { name: '4対2ロンド', cat: 'tactic', time: 20, desc: 'パスコースを予測する。ポゼッション練習の定番。' },
-  { name: 'ビルドアップ練習', cat: 'tactic', time: 20, desc: '後方からのボール前進。パスコースの作り方を学ぶ。' },
-  { name: 'プレッシング練習', cat: 'tactic', time: 15, desc: 'ボールを奪いに行くタイミングとコースを全体で合わせる。' },
-  { name: 'ポジション鬼', cat: 'tactic', time: 15, desc: '「ゴールの前を守る人」など役割を言語化。空間認知の訓練。' },
-  { name: 'セットプレー確認', cat: 'tactic', time: 15, desc: 'コーナー・フリーキックの動きを確認。役割分担を共有。' },
-  { name: '縦パスのタイミング練習', cat: 'tactic', time: 15, desc: '「いつ・どこへ」縦パスを入れるかタイミングを反復練習。' },
+  { name: 'ポジショニング確認', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '修正', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'mid', time: 20, desc: '攻守それぞれのポジショニングを確認・修正するシャドートレーニング。' },
+  { name: '3対3ゲーム', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '統合', channels: '視覚,体性感覚', coaching: 'challenge', vfe_target: 'mid', time: 15, desc: '小さいコートで条件を1つ変えて（例：3タッチ制限）行う。' },
+  { name: '4対2ロンド', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '探索', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'mid', time: 20, desc: 'パスコースを予測する。ポゼッション練習の定番。' },
+  { name: 'ビルドアップ練習', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '統合', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'mid', time: 20, desc: '後方からのボール前進。パスコースの作り方を学ぶ。' },
+  { name: 'プレッシング練習', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '強化', channels: '視覚,体性感覚', coaching: 'challenge', vfe_target: 'high', time: 15, desc: 'ボールを奪いに行くタイミングとコースを全体で合わせる。' },
+  { name: 'ポジション鬼', cat: 'tactic', scope: 'team', layer: 'L2', purpose: '探索', channels: '視覚,体性感覚', coaching: 'safe', vfe_target: 'mid', time: 15, desc: '「ゴールの前を守る人」など役割を言語化。空間認知の訓練。' },
+  { name: 'セットプレー確認', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '修正', channels: '視覚,体性感覚', coaching: 'positive', vfe_target: 'mid', time: 15, desc: 'コーナー・フリーキックの動きを確認。役割分担を共有。' },
+  { name: '縦パスのタイミング練習', cat: 'tactic', scope: 'team', layer: 'L3', purpose: '強化', channels: '視覚,体性感覚', coaching: 'explore', vfe_target: 'mid', time: 15, desc: '「いつ・どこへ」縦パスを入れるかタイミングを反復練習。' },
 
   // フィジカル
-  { name: 'スプリント練習', cat: 'phys', time: 15, desc: '短距離ダッシュを繰り返す。最大加速から減速までのコントロール。' },
-  { name: 'アジリティラダー', cat: 'phys', time: 12, desc: 'ラダーを使ったステップワーク。足の速さと正確さを鍛える。' },
-  { name: '予測ダッシュ', cat: 'phys', time: 10, desc: '何秒で行けるか予測→実走→誤差確認。自己認知精度を上げる。' },
-  { name: 'コアトレーニング', cat: 'phys', time: 10, desc: 'プランク・体幹系種目。軸の安定性を高める。' },
-  { name: 'ジャンプ力強化', cat: 'phys', time: 10, desc: 'ボックスジャンプ・連続ジャンプ。ヘディングや競り合いに活きる。' },
-  { name: 'インターバルランニング', cat: 'phys', time: 15, desc: '高強度と低強度を交互に繰り返す。試合体力を養う。' },
+  { name: 'スプリント練習', cat: 'phys', scope: 'team', layer: 'L2', purpose: '強化', channels: '体性感覚,呼吸・心拍', coaching: 'challenge', vfe_target: 'mid', time: 15, desc: '短距離ダッシュを繰り返す。最大加速から減速までのコントロール。' },
+  { name: 'アジリティラダー', cat: 'phys', scope: 'team', layer: 'L1', purpose: '安定化', channels: '体性感覚,前庭覚', coaching: 'positive', vfe_target: 'low', time: 12, desc: 'ラダーを使ったステップワーク。足の速さと正確さを鍛える。' },
+  { name: '予測ダッシュ', cat: 'phys', scope: 'team', layer: 'L2', purpose: '探索', channels: '体性感覚,呼吸・心拍', coaching: 'explore', vfe_target: 'mid', time: 10, desc: '何秒で行けるか予測→実走→誤差確認。自己認知精度を上げる。' },
+  { name: 'コアトレーニング', cat: 'phys', scope: 'team', layer: 'L1', purpose: '安定化', channels: '体性感覚,呼吸・心拍', coaching: 'safe', vfe_target: 'low', time: 10, desc: 'プランク・体幹系種目。軸の安定性を高める。' },
+  { name: 'ジャンプ力強化', cat: 'phys', scope: 'team', layer: 'L2', purpose: '強化', channels: '体性感覚,前庭覚', coaching: 'challenge', vfe_target: 'mid', time: 10, desc: 'ボックスジャンプ・連続ジャンプ。ヘディングや競り合いに活きる。' },
+  { name: 'インターバルランニング', cat: 'phys', scope: 'team', layer: 'L3', purpose: '強化', channels: '体性感覚,呼吸・心拍', coaching: 'challenge', vfe_target: 'high', time: 15, desc: '高強度と低強度を交互に繰り返す。試合体力を養う。' },
 
   // クールダウン
-  { name: 'スタティックストレッチ', cat: 'cool', time: 10, desc: '静的ストレッチ。主要筋群をゆっくり伸ばす。' },
-  { name: '振り返りシェア', cat: 'cool', time: 10, desc: '「今日一番驚いたこと」をチームでシェア。FEP的学習の定着。' },
-  { name: 'クールダウンジョグ', cat: 'cool', time: 8, desc: '軽いジョグで体を冷ます。心拍数を段階的に下げる。' },
-  { name: '次回テーマ確認', cat: 'cool', time: 5, desc: '次回の練習テーマを共有。予測を立てておく。' },
+  { name: 'スタティックストレッチ', cat: 'cool', scope: 'team', layer: 'L1', purpose: '安定化', channels: '体性感覚,呼吸・心拍', coaching: 'safe', vfe_target: 'low', time: 10, desc: '静的ストレッチ。主要筋群をゆっくり伸ばす。' },
+  { name: '振り返りシェア', cat: 'cool', scope: 'team', layer: 'L1', purpose: '安定化', channels: '視覚,体性感覚', coaching: 'safe', vfe_target: 'low', time: 10, desc: '「今日一番驚いたこと」をチームでシェア。FEP的学習の定着。' },
+  { name: 'クールダウンジョグ', cat: 'cool', scope: 'team', layer: 'L1', purpose: '安定化', channels: '体性感覚,呼吸・心拍', coaching: 'safe', vfe_target: 'low', time: 8, desc: '軽いジョグで体を冷ます。心拍数を段階的に下げる。' },
+  { name: '次回テーマ確認', cat: 'cool', scope: 'team', layer: 'L1', purpose: '探索', channels: '視覚,体性感覚', coaching: 'safe', vfe_target: 'low', time: 5, desc: '次回の練習テーマを共有。予測を立てておく。' },
 ];
 
 // ── ポジション別プリセット ────────────────────────────────
