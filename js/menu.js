@@ -1,43 +1,18 @@
 // ══════════════════════════════════════════════════════════
-// LEVEL MENU FUNCTIONS  (js/menu.js)
+// TEAM TRAINING PAGE  (js/menu.js)
 // ══════════════════════════════════════════════════════════
+// Phase-based view driven by ALL_MENU_PRESETS (from data-loader.js)
+// Coach can add/delete menus (persisted to localStorage as overlay)
 
-const LEVEL_KEYS = ['l1', 'l2', 'l3', 'custom'];
+// ─── Phase 定義 ─────────────────────────────────────────────
+const PHASES = [
+  { id: 'warm',   num: 1, label: 'Phase 1: ウォームアップ', color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🔥', vfeCurve: 'low',  desc: 'セロトニン活性化 / σ安定' },
+  { id: 'tech',   num: 2, label: 'Phase 2: 技術',           color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚽', vfeCurve: 'mid',  desc: '予測誤差の修正 / VFE中程度' },
+  { id: 'tactic', num: 3, label: 'Phase 3: 戦術',           color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🧩', vfeCurve: 'high', desc: '不確実性の統合 / VFEピーク' },
+  { id: 'phys',   num: 4, label: 'Phase 4: フィジカル',     color: '#dc2626', bg: 'linear-gradient(135deg,#fef2f2,#fecaca)', icon: '💪', vfeCurve: 'mid',  desc: '身体モデルの強化' },
+  { id: 'cool',   num: 5, label: 'Phase 5: クールダウン',   color: '#6366f1', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)', icon: '🧘', vfeCurve: 'low',  desc: '学習の定着 / σ回復' },
+];
 
-// ─── プランラベル（年代別）───────────────────────────────────
-const PLAN_LABELS = {
-  elem:   ['あそびながら', 'しっかり基礎', '試合につながる', 'カスタム'],
-  junior: ['基礎再現',     '判断強化',     '実戦発展',       'カスタム'],
-  pro:    ['ベース調整',   '実戦最適化',   '高強度対応',     'カスタム'],
-};
-
-// ─── 年代グループ管理 ───────────────────────────────────────
-let currentAgeGroup = 'elem'; // 'elem' | 'junior' | 'pro'
-let currentLevelId  = 'l1';
-let isEditMode      = false;
-
-function switchAgeGroup(ageId, btn) {
-  // 現在のデータを保存してから切り替え
-  LEVEL_KEYS.forEach(lvl => _saveLevelMenuSilent(lvl));
-
-  currentAgeGroup = ageId;
-  currentLevelId  = 'l1';
-
-  document.querySelectorAll('.age-tab-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-
-  loadSavedLevelMenus();
-  normalizeAllMenuCards();
-  updateLevelTabLabels();
-
-  // Level タブをリセット
-  switchLevelTab('l1', document.querySelector('#level-tabs .tab-btn[data-level="l1"]'));
-
-  renderPlanSelector();
-  renderSessionList();
-}
-
-// ─── カテゴリ定義 ───────────────────────────────────────────
 const CAT_OPTIONS = [
   { v: 'warm',   l: 'ウォームアップ' },
   { v: 'tech',   l: '技術' },
@@ -46,17 +21,13 @@ const CAT_OPTIONS = [
   { v: 'cool',   l: 'クールダウン' },
 ];
 
-function catSelectHtml(selected) {
-  return CAT_OPTIONS.map(c => {
-    const sel = (c.l === selected || c.v === selected) ? ' selected' : '';
-    return `<option value="${c.v}"${sel}>${c.l}</option>`;
-  }).join('');
-}
+// ─── 状態 ───────────────────────────────────────────────────
+let isEditMode = false;
+let activeFilters = { layer: 'all', purpose: 'all', coaching: 'all' };
 
-function catLabelFromValue(val) {
-  const found = CAT_OPTIONS.find(c => c.v === val);
-  return found ? found.l : val;
-}
+// localStorage keys
+const CUSTOM_MENUS_KEY = 'fep_custom_team_menus';
+const DELETED_MENUS_KEY = 'fep_deleted_team_menus';
 
 // ─── HTML エスケープ ────────────────────────────────────────
 function escHtml(str) {
@@ -67,631 +38,353 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ─── レベルタブラベル更新 ────────────────────────────────────
-function updateLevelTabLabels() {
-  const labels = PLAN_LABELS[currentAgeGroup] || PLAN_LABELS.elem;
-  LEVEL_KEYS.forEach((key, i) => {
-    const el = document.getElementById('lname-' + key);
-    if (el) el.textContent = labels[i];
+// ─── カテゴリラベル ─────────────────────────────────────────
+function catLabelFromValue(val) {
+  const found = CAT_OPTIONS.find(c => c.v === val);
+  return found ? found.l : val;
+}
+
+function catSelectHtml(selected) {
+  return CAT_OPTIONS.map(c => {
+    const sel = (c.l === selected || c.v === selected) ? ' selected' : '';
+    return `<option value="${c.v}"${sel}>${c.l}</option>`;
+  }).join('');
+}
+
+// ─── FEP属性のバッジ HTML ───────────────────────────────────
+function layerBadge(layer) {
+  if (!layer) return '';
+  const colors = { L1: '#3b82f6', L2: '#059669', L3: '#d97706', L4: '#dc2626' };
+  const c = colors[layer] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(layer)}</span>`;
+}
+
+function purposeBadge(purpose) {
+  if (!purpose) return '';
+  const colors = { '安定化': '#3b82f6', '探索': '#8b5cf6', '修正': '#d97706', '強化': '#dc2626', '統合': '#059669' };
+  const c = colors[purpose] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(purpose)}</span>`;
+}
+
+function coachingBadge(coaching) {
+  if (!coaching) return '';
+  const labels = { safe: 'Safe', explore: 'Explore', challenge: 'Challenge', positive: 'Positive' };
+  const colors = { safe: '#3b82f6', explore: '#8b5cf6', challenge: '#dc2626', positive: '#059669' };
+  const label = labels[coaching] || coaching;
+  const c = colors[coaching] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(label)}</span>`;
+}
+
+function vfeBadge(vfe) {
+  if (!vfe) return '';
+  const labels = { low: 'VFE: Low', mid: 'VFE: Mid', high: 'VFE: High' };
+  const colors = { low: '#059669', mid: '#d97706', high: '#dc2626' };
+  const label = labels[vfe] || `VFE: ${vfe}`;
+  const c = colors[vfe] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(label)}</span>`;
+}
+
+function channelChips(channels) {
+  if (!channels) return '';
+  const list = typeof channels === 'string' ? channels.split(',').map(s => s.trim()).filter(Boolean) : channels;
+  return list.map(ch => `<span class="channel-chip">${escHtml(ch)}</span>`).join('');
+}
+
+// ─── データ取得 ──────────────────────────────────────────────
+function _getTeamMenus() {
+  // Base data from ALL_MENU_PRESETS (or DRILL_PRESETS fallback)
+  let base = [];
+  if (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0) {
+    base = window.ALL_MENU_PRESETS.filter(m => m.scope === 'team' || m.scope === 'all');
+  } else if (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS)) {
+    base = DRILL_PRESETS.map(m => ({ ...m, scope: m.scope || 'team' }));
+  }
+
+  // Coach's custom additions
+  try {
+    const raw = localStorage.getItem(CUSTOM_MENUS_KEY);
+    if (raw) {
+      const custom = JSON.parse(raw);
+      base = base.concat(custom);
+    }
+  } catch(e) {}
+
+  // Coach's deletions
+  const deleted = _getDeletedNames();
+  if (deleted.length > 0) {
+    base = base.filter(m => !deleted.includes(m.name));
+  }
+
+  return base;
+}
+
+function _getDeletedNames() {
+  try {
+    const raw = localStorage.getItem(DELETED_MENUS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function _addDeletedName(name) {
+  const deleted = _getDeletedNames();
+  if (!deleted.includes(name)) {
+    deleted.push(name);
+    localStorage.setItem(DELETED_MENUS_KEY, JSON.stringify(deleted));
+  }
+}
+
+function _removeDeletedName(name) {
+  let deleted = _getDeletedNames();
+  deleted = deleted.filter(n => n !== name);
+  localStorage.setItem(DELETED_MENUS_KEY, JSON.stringify(deleted));
+}
+
+function _getCustomMenus() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_MENUS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function _saveCustomMenus(menus) {
+  localStorage.setItem(CUSTOM_MENUS_KEY, JSON.stringify(menus));
+}
+
+// ─── フィルター適用 ─────────────────────────────────────────
+function _applyFilters(menus) {
+  return menus.filter(m => {
+    if (activeFilters.layer !== 'all' && m.layer !== activeFilters.layer) return false;
+    if (activeFilters.purpose !== 'all') {
+      const purposes = m.purpose_list && m.purpose_list.length > 0
+        ? m.purpose_list
+        : (m.purpose ? [m.purpose] : []);
+      if (!purposes.includes(activeFilters.purpose)) return false;
+    }
+    if (activeFilters.coaching !== 'all' && m.coaching !== activeFilters.coaching) return false;
+    return true;
   });
 }
 
-// ─── レベル名（後方互換 - 使用しなくなったが残す）──────────────
-function loadLevelNames() {
-  updateLevelTabLabels();
+function setFilter(type, value, btn) {
+  activeFilters[type] = value;
+  const container = btn.closest('.filter-chips');
+  container.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPhases();
 }
 
-// ─── レベルタブ切替 ─────────────────────────────────────────
-function switchLevelTab(levelId, btn) {
-  document.querySelectorAll('.level-content').forEach(c => c.style.display = 'none');
-  document.querySelectorAll('#level-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById('level-' + levelId);
-  if (el) el.style.display = 'block';
-  // activate the clicked button (or find by data-level)
-  const targetBtn = btn || document.querySelector(`#level-tabs .tab-btn[data-level="${levelId}"]`);
-  if (targetBtn) targetBtn.classList.add('active');
+// ─── Phase描画 ───────────────────────────────────────────────
+function renderPhases() {
+  const container = document.getElementById('phase-container');
+  if (!container) return;
+
+  const allMenus = _getTeamMenus();
+  const filtered = _applyFilters(allMenus);
+
+  let html = '';
+  PHASES.forEach(phase => {
+    const phaseMenus = filtered.filter(m => m.cat === phase.id);
+
+    html += `
+      <div class="phase-section" data-phase="${phase.id}">
+        <div class="phase-header" style="background:${phase.bg};border-left:4px solid ${phase.color};">
+          <div class="phase-header-top">
+            <span class="phase-icon">${phase.icon}</span>
+            <div class="phase-header-info">
+              <div class="phase-title" style="color:${phase.color}">${phase.label}</div>
+              <div class="phase-desc">${phase.desc}</div>
+            </div>
+            <span class="phase-count">${phaseMenus.length}</span>
+          </div>
+          <div class="phase-vfe-indicator">
+            <div class="vfe-curve-bar">
+              <div class="vfe-curve-fill" style="width:${phase.vfeCurve === 'low' ? '25' : phase.vfeCurve === 'mid' ? '55' : '85'}%;background:${phase.color}"></div>
+            </div>
+            <span class="vfe-curve-label">VFE ${phase.vfeCurve}</span>
+          </div>
+        </div>
+        <div class="phase-cards">
+    `;
+
+    if (phaseMenus.length === 0) {
+      html += `<div class="phase-empty">このフェーズのメニューはありません</div>`;
+    } else {
+      phaseMenus.forEach(menu => {
+        html += _renderMenuCard(menu, phase);
+      });
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
 }
 
-// ─── 編集モード切替 ─────────────────────────────────────────
+function _renderMenuCard(menu, phase) {
+  const channels = menu.channels_list && menu.channels_list.length > 0
+    ? menu.channels_list
+    : (menu.channels ? menu.channels.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+  return `
+    <div class="menu-card" data-name="${escHtml(menu.name)}">
+      <div class="menu-card-top">
+        <div class="menu-card-title">${escHtml(menu.name)}</div>
+        <div class="menu-card-actions">
+          ${menu.time ? `<span class="time-badge">${menu.time}分</span>` : ''}
+          <button class="menu-card-del-btn" onclick="deleteTeamMenu('${escHtml(menu.name)}')" title="削除">✕</button>
+        </div>
+      </div>
+      ${menu.desc ? `<div class="menu-card-desc">${escHtml(menu.desc)}</div>` : ''}
+      <div class="menu-card-attrs">
+        ${layerBadge(menu.layer)}
+        ${purposeBadge(menu.purpose)}
+        ${coachingBadge(menu.coaching)}
+        ${vfeBadge(menu.vfe_target)}
+      </div>
+      ${channels.length > 0 ? `<div class="menu-card-channels">${channelChips(channels)}</div>` : ''}
+      ${menu.fep ? `
+        <details class="menu-card-fep">
+          <summary>FEP解説</summary>
+          <div class="menu-card-fep-text">${escHtml(menu.fep)}</div>
+        </details>
+      ` : ''}
+      ${menu.steps && menu.steps.length > 0 ? `
+        <details class="menu-card-steps">
+          <summary>ステップ (${menu.steps.length})</summary>
+          <ul class="menu-card-steps-list">
+            ${menu.steps.map(s => `<li>${escHtml(s)}</li>`).join('')}
+          </ul>
+        </details>
+      ` : ''}
+      ${menu.coaching_points && menu.coaching_points.length > 0 ? `
+        <details class="menu-card-coaching-pts">
+          <summary>コーチングポイント</summary>
+          <ul class="menu-card-steps-list">
+            ${menu.coaching_points.map(s => `<li>${escHtml(s)}</li>`).join('')}
+          </ul>
+        </details>
+      ` : ''}
+    </div>
+  `;
+}
+
+// ─── 編集モード切替 ──────────────────────────────────────────
 function toggleEditMode() {
   isEditMode = !isEditMode;
   const wrapper = document.getElementById('menu-page-wrapper');
-  const btn     = document.getElementById('edit-mode-btn');
+  const btn = document.getElementById('edit-mode-btn');
+  const addSection = document.getElementById('menu-add-section');
   if (!wrapper || !btn) return;
 
   if (isEditMode) {
     wrapper.classList.add('edit-mode');
     btn.textContent = '✓ 完了';
     btn.classList.add('is-active');
-    // 編集エリアをカレントレベルに合わせる
-    switchLevelTab(currentLevelId, null);
+    if (addSection) addSection.style.display = 'block';
   } else {
     wrapper.classList.remove('edit-mode');
     btn.textContent = '✏️ 編集';
     btn.classList.remove('is-active');
-    // 閲覧ビューをリフレッシュ
-    normalizeAllMenuCards();
-    renderSessionList();
-  }
-}
-
-// ─── プランセレクター描画 ────────────────────────────────────
-function renderPlanSelector() {
-  const container = document.getElementById('plan-selector');
-  if (!container) return;
-
-  const labels = PLAN_LABELS[currentAgeGroup] || PLAN_LABELS.elem;
-
-  // おすすめ（l1）
-  const recKey   = 'l1';
-  const recLabel = labels[0];
-  const recSel   = currentLevelId === recKey ? ' selected' : '';
-
-  // その他のプラン
-  const otherKeys   = ['l2', 'l3', 'custom'];
-  const otherCards  = otherKeys.map((key, i) => {
-    const label = labels[i + 1];
-    const sel   = currentLevelId === key ? ' plan-card-selected' : '';
-    return `<div class="plan-card${sel}" onclick="selectPlan('${key}')">${label}</div>`;
-  }).join('');
-
-  // 展開状態を保持
-  const wasExpanded = container.querySelector('.other-plans-grid')?.style.display === 'grid';
-
-  container.innerHTML = `
-    <div class="plan-selector-wrapper">
-      <div class="plan-recommended-card${recSel}" onclick="selectPlan('${recKey}')">
-        <span class="plan-recommended-badge">おすすめ</span>
-        <div class="plan-recommended-name">${recLabel}</div>
-        <div class="plan-recommended-hint">${currentLevelId === recKey ? '✓ 選択中' : 'このプランを使う →'}</div>
-      </div>
-      <button class="other-plans-toggle" onclick="toggleOtherPlans(this)">
-        他のプランを見る ${wasExpanded ? '▲' : '▾'}
-      </button>
-      <div class="other-plans-grid" style="display:${wasExpanded ? 'grid' : 'none'};">
-        ${otherCards}
-      </div>
-    </div>
-  `;
-}
-
-// ─── プラン選択 ─────────────────────────────────────────────
-function selectPlan(levelId) {
-  currentLevelId = levelId;
-  // 編集エリアのタブも同期
-  switchLevelTab(levelId, null);
-  renderPlanSelector();
-  renderSessionList();
-}
-
-// ─── 他のプラン展開/折りたたみ ──────────────────────────────
-function toggleOtherPlans(btn) {
-  const grid = btn.nextElementSibling;
-  if (!grid) return;
-  const isOpen = grid.style.display === 'grid';
-  grid.style.display = isOpen ? 'none' : 'grid';
-  btn.innerHTML = isOpen ? '他のプランを見る ▾' : '閉じる ▲';
-}
-
-// ─── セッションリスト描画（コンパクト表示）───────────────────
-function renderSessionList() {
-  const container = document.getElementById('session-list');
-  if (!container) return;
-
-  const levelEl = document.getElementById('level-' + currentLevelId);
-  if (!levelEl) { container.innerHTML = ''; return; }
-
-  normalizeAllMenuCards();
-  const cards = Array.from(levelEl.querySelectorAll('.menu-item-card'));
-
-  if (cards.length === 0) {
-    container.innerHTML = `<div class="session-list-empty">セッションがまだありません。<br>編集モード（✏️ 編集）で追加できます。</div>`;
-    return;
-  }
-
-  const cardsHtml = cards.map((card) => {
-    const name  = card.dataset.menuName  || '';
-    const cat   = card.dataset.menuCat   || '';
-    const time  = card.dataset.menuTime  || '';
-    const theme = card.dataset.menuTheme || '';
-    const items = JSON.parse(card.dataset.menuItems || '[]');
-
-    const preview   = items.slice(0, 3);
-    const remaining = items.slice(3);
-
-    const previewHtml   = preview.map(i => `<li>${escHtml(i)}</li>`).join('');
-    const remainingHtml = remaining.map(i => `<li>${escHtml(i)}</li>`).join('');
-
-    const moreBtn = remaining.length > 0
-      ? `<div class="session-card-detail" style="display:none;"><ul class="session-card-more-list">${remainingHtml}</ul></div>
-         <button class="session-detail-btn" onclick="toggleSessionDetail(this)">詳細を見る ▾</button>`
-      : '';
-
-    return `
-      <div class="session-card-compact">
-        <div class="session-card-header">
-          <div class="session-card-title">${escHtml(name)}</div>
-          <div class="session-card-tags">
-            ${cat  ? `<span class="tag">${escHtml(cat)}</span>`       : ''}
-            ${time ? `<span class="tag">${escHtml(time)}分</span>` : ''}
-          </div>
-        </div>
-        ${theme ? `<div class="session-card-theme">${escHtml(theme)}</div>` : ''}
-        ${previewHtml ? `<ul class="session-card-preview">${previewHtml}</ul>` : ''}
-        ${moreBtn}
-      </div>
-    `;
-  }).join('');
-
-  container.innerHTML = `<div class="session-list-wrapper">${cardsHtml}</div>`;
-}
-
-// ─── セッション詳細 展開/折りたたみ ─────────────────────────
-function toggleSessionDetail(btn) {
-  const card   = btn.closest('.session-card-compact');
-  const detail = card?.querySelector('.session-card-detail');
-  if (!detail) return;
-  const isOpen = detail.style.display !== 'none';
-  detail.style.display = isOpen ? 'none' : 'block';
-  btn.textContent = isOpen ? '詳細を見る ▾' : '閉じる ▲';
-}
-
-// ─── カードの正規化（data属性 + 編集ボタン付与）─────────────
-function normalizeAllMenuCards() {
-  document.querySelectorAll('.menu-item-card').forEach(card => {
-    if (!card.dataset.menuInit) {
-      const h3 = card.querySelector('h3');
-      const nameText = h3
-        ? Array.from(h3.childNodes)
-            .filter(n => n.nodeType === Node.TEXT_NODE)
-            .map(n => n.textContent.trim())
-            .filter(Boolean)
-            .join(' ')
-            .trim()
-        : '';
-      const tags = Array.from(h3?.querySelectorAll('.tag') || []).map(t => t.textContent.trim());
-      const time  = (tags.find(t => t.endsWith('分')) || '').replace('分', '');
-      const cat   = tags.find(t => !t.endsWith('分')) || '';
-
-      // テーマ（<p>タグ）
-      const pEl   = card.querySelector('p');
-      const theme = pEl ? pEl.textContent.replace(/^テーマ[：:]\s*/, '').trim() : '';
-
-      // 内容リスト（<li>タグ）
-      const items = Array.from(card.querySelectorAll('li')).map(li => li.textContent.trim());
-
-      card.dataset.menuName  = nameText;
-      card.dataset.menuCat   = cat;
-      card.dataset.menuTime  = time;
-      card.dataset.menuTheme = theme;
-      card.dataset.menuItems = JSON.stringify(items);
-      card.dataset.menuInit  = '1';
-    }
-
-    // 編集ボタンがなければ追加
-    if (!card.querySelector('.menu-edit-btn')) {
-      const editBtn = document.createElement('button');
-      editBtn.className = 'menu-edit-btn';
-      editBtn.title = '編集';
-      editBtn.textContent = '✏️';
-      editBtn.onclick = () => editMenuItem(editBtn);
-      card.style.position = 'relative';
-      const delBtn = card.querySelector('.menu-delete-btn');
-      if (delBtn) delBtn.insertAdjacentElement('afterend', editBtn);
-      else card.prepend(editBtn);
-    }
-  });
-}
-
-// ─── カード編集開始 ─────────────────────────────────────────
-function editMenuItem(btn) {
-  const card = btn.closest('.menu-item-card');
-  if (!card || card.querySelector('.menu-edit-form')) return;
-
-  const name  = card.dataset.menuName  || '';
-  const cat   = card.dataset.menuCat   || '';
-  const time  = card.dataset.menuTime  || '';
-  const theme = card.dataset.menuTheme || '';
-  const items = JSON.parse(card.dataset.menuItems || '[]');
-
-  card.dataset.originalHtml = card.innerHTML;
-
-  // 内容リストのHTML
-  const itemsHtml = items.map(item => `
-    <div class="item-row">
-      <span class="item-text">${escHtml(item)}</span>
-      <button class="item-del-btn" type="button" onclick="removeItemRow(this)" title="削除">✕</button>
-    </div>
-  `).join('');
-
-  // プリセット選択肢（drill-library.js の DRILL_PRESETS を利用）
-  // value = "name（time分）: desc" 形式（そのままli テキストになる）
-  const presetOptsHtml = (typeof DRILL_PRESETS !== 'undefined')
-    ? DRILL_PRESETS.map(p => {
-        const label   = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
-        const timeStr = p.time ? `${p.time}分` : '';
-        const paren   = timeStr ? `（${timeStr}）` : '';
-        const descPart = p.desc ? `: ${p.desc}` : '';
-        const itemText = `${p.name}${paren}${descPart}`;
-        const display  = `${p.name}（${label}${timeStr ? '・' + timeStr : ''}）`;
-        return `<option value="${escHtml(itemText)}">${escHtml(display)}</option>`;
-      }).join('')
-    : '';
-
-  card.innerHTML = `
-    <div class="menu-edit-form">
-      <div class="menu-edit-row">
-        <label>メニュー名</label>
-        <input type="text" class="edit-name" value="${escHtml(name)}" placeholder="例: セッション 1">
-      </div>
-      <div class="menu-edit-row" style="display:flex;gap:10px;">
-        <div style="flex:1;">
-          <label>カテゴリ</label>
-          <select class="edit-cat">${catSelectHtml(cat)}</select>
-        </div>
-        <div style="width:90px;">
-          <label>時間（分）</label>
-          <input type="number" class="edit-time" value="${escHtml(time)}" min="1" max="180" placeholder="60">
-        </div>
-      </div>
-      <div class="menu-edit-row">
-        <label>テーマ</label>
-        <input type="text" class="edit-theme" value="${escHtml(theme)}" placeholder="例: 「思った通りに動けるかな？」— 自分の身体を知る">
-      </div>
-      <div class="menu-edit-row">
-        <label>内容リスト</label>
-        <div class="items-editor">
-          <div class="items-list">
-            ${itemsHtml || '<div class="items-empty">内容がありません。下から追加してください。</div>'}
-          </div>
-          <div class="items-add-panel">
-            <div class="items-add-tabs">
-              <button class="items-tab-btn active" type="button" onclick="switchItemAddTab(this,'from-list')">リストから選ぶ</button>
-              <button class="items-tab-btn" type="button" onclick="switchItemAddTab(this,'custom')">カスタムで追加</button>
-            </div>
-            <div class="items-tab-content items-tab-from-list">
-              <select class="items-preset-select">
-                <option value="">── ドリルを選択 ──</option>
-                ${presetOptsHtml}
-              </select>
-              <button class="btn btn-accent" type="button" onclick="addItemFromPreset(this)">＋</button>
-            </div>
-            <div class="items-tab-content items-tab-custom" style="display:none;">
-              <input type="text" class="items-custom-input" placeholder="例: ミラーリング遊び（10分）">
-              <button class="btn btn-accent" type="button" onclick="addCustomItem(this)">＋</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="btn btn-primary" onclick="saveMenuEdit(this)">💾 保存</button>
-        <button class="btn btn-secondary" onclick="cancelMenuEdit(this)">キャンセル</button>
-      </div>
-    </div>
-  `;
-  card.querySelector('.edit-name')?.focus();
-}
-
-// ─── アイテム追加タブ切替 ─────────────────────────────────
-function switchItemAddTab(btn, tabId) {
-  const panel = btn.closest('.items-add-panel');
-  if (!panel) return;
-  panel.querySelectorAll('.items-tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  panel.querySelectorAll('.items-tab-content').forEach(c => c.style.display = 'none');
-  const target = panel.querySelector('.items-tab-' + tabId);
-  if (target) target.style.display = 'flex';
-}
-
-// ─── アイテム削除 ─────────────────────────────────────────
-function removeItemRow(btn) {
-  const row = btn.closest('.item-row');
-  if (row) row.remove();
-}
-
-// ─── プリセットからアイテム追加 ──────────────────────────
-function addItemFromPreset(btn) {
-  const panel  = btn.closest('.items-add-panel');
-  const select = panel?.querySelector('.items-preset-select');
-  const val    = select?.value?.trim();
-  if (!val) return;
-  const list = btn.closest('.items-editor')?.querySelector('.items-list');
-  if (!list) return;
-
-  // 空メッセージがあれば削除
-  list.querySelector('.items-empty')?.remove();
-
-  const row = document.createElement('div');
-  row.className = 'item-row';
-  row.innerHTML = `<span class="item-text">${escHtml(val)}</span><button class="item-del-btn" type="button" onclick="removeItemRow(this)" title="削除">✕</button>`;
-  list.appendChild(row);
-  select.value = '';
-}
-
-// ─── カスタムアイテム追加 ──────────────────────────────────
-function addCustomItem(btn) {
-  const panel = btn.closest('.items-add-panel');
-  const input = panel?.querySelector('.items-custom-input');
-  const val   = input?.value?.trim();
-  if (!val) return;
-  const list = btn.closest('.items-editor')?.querySelector('.items-list');
-  if (!list) return;
-
-  // 空メッセージがあれば削除
-  list.querySelector('.items-empty')?.remove();
-
-  const row = document.createElement('div');
-  row.className = 'item-row';
-  row.innerHTML = `<span class="item-text">${escHtml(val)}</span><button class="item-del-btn" type="button" onclick="removeItemRow(this)" title="削除">✕</button>`;
-  list.appendChild(row);
-  input.value = '';
-  input.focus();
-}
-
-// ─── 編集保存 ───────────────────────────────────────────────
-function saveMenuEdit(btn) {
-  const form = btn.closest('.menu-edit-form');
-  const card = btn.closest('.menu-item-card');
-  if (!form || !card) return;
-
-  const name     = form.querySelector('.edit-name')?.value?.trim()  || '';
-  const catVal   = form.querySelector('.edit-cat')?.value           || 'tech';
-  const catLabel = catLabelFromValue(catVal);
-  const time     = form.querySelector('.edit-time')?.value?.trim()  || '';
-  const theme    = form.querySelector('.edit-theme')?.value?.trim() || '';
-
-  // 内容リストを収集
-  const itemEls = form.querySelectorAll('.item-row .item-text');
-  const items   = Array.from(itemEls).map(el => el.textContent.trim()).filter(Boolean);
-
-  if (!name) { alert('メニュー名を入力してください'); return; }
-
-  card.dataset.menuName  = name;
-  card.dataset.menuCat   = catLabel;
-  card.dataset.menuTime  = time;
-  card.dataset.menuTheme = theme;
-  card.dataset.menuItems = JSON.stringify(items);
-  card.dataset.menuInit  = '1';
-
-  const itemsUlHtml = items.length
-    ? `<ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">${items.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>`
-    : '';
-
-  card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editMenuItem(this)" title="編集">✏️</button>
-    <h3>${escHtml(name)}
-      ${catLabel ? `<span class="tag">${escHtml(catLabel)}</span>` : ''}
-      ${time     ? `<span class="tag">${escHtml(time)}分</span>`   : ''}
-    </h3>
-    ${theme ? `<p><strong>テーマ：</strong>${escHtml(theme)}</p>` : ''}
-    ${itemsUlHtml}
-  `;
-}
-
-// ─── 編集キャンセル ─────────────────────────────────────────
-function cancelMenuEdit(btn) {
-  const card = btn.closest('.menu-item-card');
-  if (card?.dataset.originalHtml) {
-    card.innerHTML = card.dataset.originalHtml;
-    delete card.dataset.originalHtml;
+    if (addSection) addSection.style.display = 'none';
   }
 }
 
 // ─── メニュー削除 ───────────────────────────────────────────
-function deleteMenuItem(btn) {
-  if (!confirm('このメニューを削除しますか？')) return;
-  const card = btn.closest('.menu-item-card');
-  if (card) card.remove();
+function deleteTeamMenu(name) {
+  if (!confirm(`「${name}」を削除しますか？`)) return;
+
+  // Check if it's a custom menu
+  let customs = _getCustomMenus();
+  const customIdx = customs.findIndex(m => m.name === name);
+  if (customIdx >= 0) {
+    customs.splice(customIdx, 1);
+    _saveCustomMenus(customs);
+  } else {
+    // It's a base menu — add to deleted list
+    _addDeletedName(name);
+  }
+
+  renderPhases();
 }
 
-// ─── 追加モーダルを開く（drill-library.js の openAddModal を呼ぶ）────
+// ─── メニュー追加（drill-library.js の openAddModal 経由）────
+function addMenuItemFromPreset(levelId, preset) {
+  // Add as custom menu
+  const customs = _getCustomMenus();
+  const newMenu = {
+    menu_id: '',
+    name: preset.name || '',
+    cat: preset.cat || 'tech',
+    scope: 'team',
+    layer: preset.layer || '',
+    purpose: preset.purpose || '',
+    purpose_list: preset.purpose_list || [],
+    channels: preset.channels || '',
+    channels_list: preset.channels_list || [],
+    coaching: preset.coaching || '',
+    vfe_target: preset.vfe_target || '',
+    time: parseInt(preset.time) || 0,
+    desc: preset.desc || '',
+    fep: preset.fep || '',
+    steps: preset.steps || [],
+    coaching_points: preset.coaching_points || [],
+  };
+
+  // Remove from deleted list if was previously deleted
+  _removeDeletedName(newMenu.name);
+
+  // Avoid duplicates
+  if (!customs.find(m => m.name === newMenu.name)) {
+    customs.push(newMenu);
+    _saveCustomMenus(customs);
+  }
+
+  renderPhases();
+}
+
+// ─── 旧互換: toggleAddMenuForm ──────────────────────────────
 function toggleAddMenuForm(levelId) {
   if (typeof openAddModal === 'function') {
-    openAddModal('level', levelId);
+    openAddModal('level', 'team');
   }
 }
 
-// ─── ライブラリからカードを追加（drill-library.js から呼ばれる）────
-function addMenuItemFromPreset(levelId, preset) {
-  const catLabel = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[preset.cat])
-    ? CAT_LABEL[preset.cat]
-    : (catLabelFromValue(preset.cat) || preset.cat || '');
-  const container = document.getElementById('level-' + levelId)?.querySelector('.level-menu-list');
-  if (!container) return;
+// ─── 旧互換: saveLevelMenu (no-op, data auto-persists) ──────
+function saveLevelMenu() {}
 
-  // 空メッセージがあれば削除
-  container.querySelector('.empty-level-msg')?.remove();
-
-  const card = document.createElement('div');
-  card.className = 'concept-card menu-item-card';
-  card.style.position = 'relative';
-  card.dataset.menuName  = preset.name;
-  card.dataset.menuCat   = catLabel;
-  card.dataset.menuTime  = preset.time || '';
-  card.dataset.menuTheme = '';
-  card.dataset.menuItems = '[]';
-  card.dataset.menuInit  = '1';
-  card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editMenuItem(this)" title="編集">✏️</button>
-    <h3>${escHtml(preset.name)}
-      ${catLabel   ? `<span class="tag">${escHtml(catLabel)}</span>` : ''}
-      ${preset.time ? `<span class="tag">${preset.time}分</span>`    : ''}
-    </h3>
-    ${preset.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escHtml(preset.desc)}</p>` : ''}
-  `;
-  container.appendChild(card);
-}
-
-// ─── 新規メニュー追加（旧フォーム経由 — 後方互換のため残す）────
-function addMenuItem(levelId) {
-  const nameEl = document.getElementById('new-menu-name-' + levelId);
-  const catEl  = document.getElementById('new-menu-cat-'  + levelId);
-  const descEl = document.getElementById('new-menu-desc-' + levelId);
-  const timeEl = document.getElementById('new-menu-time-' + levelId);
-
-  const name = nameEl?.value?.trim() || '';
-  if (!name) { alert('メニュー名を入力してください'); return; }
-
-  const catVal   = catEl?.value || 'tech';
-  const catLabel = catLabelFromValue(catVal);
-  const desc     = descEl?.value?.trim() || '';
-  const time     = timeEl?.value?.trim() || '';
-
-  const container = document.getElementById('level-' + levelId)?.querySelector('.level-menu-list');
-  if (!container) return;
-
-  container.querySelector('.empty-level-msg')?.remove();
-
-  const card = document.createElement('div');
-  card.className = 'concept-card menu-item-card';
-  card.style.position = 'relative';
-  card.dataset.menuName  = name;
-  card.dataset.menuCat   = catLabel;
-  card.dataset.menuTime  = time;
-  card.dataset.menuTheme = '';
-  card.dataset.menuItems = '[]';
-  card.dataset.menuInit  = '1';
-  card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editMenuItem(this)" title="編集">✏️</button>
-    <h3>${escHtml(name)}
-      ${catLabel ? `<span class="tag">${escHtml(catLabel)}</span>` : ''}
-      ${time     ? `<span class="tag">${escHtml(time)}分</span>`   : ''}
-    </h3>
-    ${desc ? `<div class="menu-item-desc">${escHtml(desc)}</div>` : ''}
-  `;
-  container.appendChild(card);
-
-  if (nameEl) nameEl.value = '';
-  if (catEl)  catEl.selectedIndex = 0;
-  if (descEl) descEl.value = '';
-  if (timeEl) timeEl.value = '';
-  toggleAddMenuForm(levelId);
-}
-
-// ─── レベルメニュー保存（localStorage）─────────────────────
-function saveLevelMenu(levelId) {
-  _saveLevelMenuSilent(levelId);
-
-  const btn = document.querySelector(`[onclick*="saveLevelMenu('${levelId}')"]`);
-  if (btn) {
-    const orig = btn.textContent;
-    btn.textContent = '✅ 保存しました';
-    btn.disabled = true;
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+// ─── 旧互換: deleteMenuItem (for drill-library modal) ────────
+function deleteMenuItem(btn) {
+  const card = btn.closest('.menu-card');
+  if (!card) {
+    // fallback: old-style card
+    const oldCard = btn.closest('.drill-card') || btn.closest('.menu-item-card');
+    if (oldCard) oldCard.remove();
+    return;
   }
-}
-
-function _saveLevelMenuSilent(levelId) {
-  const container = document.getElementById('level-' + levelId);
-  if (!container) return;
-  normalizeAllMenuCards();
-  const cards = Array.from(container.querySelectorAll('.menu-item-card'));
-  const data = cards.map(card => ({
-    name:  card.dataset.menuName  || '',
-    cat:   card.dataset.menuCat   || '',
-    time:  card.dataset.menuTime  || '',
-    theme: card.dataset.menuTheme || '',
-    items: JSON.parse(card.dataset.menuItems || '[]'),
-  }));
-  const key = `fep_menus_${currentAgeGroup}_${levelId}`;
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-// ─── 保存済みメニューをDOM に復元 ───────────────────────────
-function loadSavedLevelMenus() {
-  LEVEL_KEYS.forEach(levelId => {
-    const key       = `fep_menus_${currentAgeGroup}_${levelId}`;
-    const raw       = localStorage.getItem(key);
-    // 旧キー（elem の後方互換）
-    const legacyRaw = (currentAgeGroup === 'elem')
-      ? localStorage.getItem('fep_menus_level_' + levelId)
-      : null;
-
-    const container = document.getElementById('level-' + levelId)?.querySelector('.level-menu-list');
-    if (!container) return;
-
-    if (!raw && !legacyRaw) {
-      // elem 以外かつデータなし → 既存カードを消してプレースホルダー
-      if (currentAgeGroup !== 'elem') {
-        container.querySelectorAll('.menu-item-card').forEach(c => c.remove());
-        if (!container.querySelector('.empty-level-msg')) {
-          const msg = document.createElement('div');
-          msg.className = 'empty-level-msg';
-          msg.innerHTML = '「＋ メニューを追加」からメニューを追加してください';
-          container.appendChild(msg);
-        }
-      }
-      return;
-    }
-
-    try {
-      const data = JSON.parse(raw || legacyRaw);
-
-      // 既存カード & プレースホルダーをクリア
-      container.querySelectorAll('.menu-item-card').forEach(c => c.remove());
-      container.querySelectorAll('.empty-level-msg').forEach(c => c.remove());
-
-      data.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'concept-card menu-item-card';
-        card.style.position = 'relative';
-        card.dataset.menuName  = item.name  || '';
-        card.dataset.menuCat   = item.cat   || '';
-        card.dataset.menuTime  = item.time  || '';
-        card.dataset.menuTheme = item.theme || '';
-        card.dataset.menuItems = JSON.stringify(item.items || []);
-        card.dataset.menuInit  = '1';
-
-        const items = item.items || [];
-        const itemsUlHtml = items.length
-          ? `<ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">${items.map(i => `<li>${escHtml(i)}</li>`).join('')}</ul>`
-          : '';
-
-        card.innerHTML = `
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <button class="menu-edit-btn" onclick="editMenuItem(this)" title="編集">✏️</button>
-          <h3>${escHtml(item.name)}
-            ${item.cat  ? `<span class="tag">${escHtml(item.cat)}</span>`   : ''}
-            ${item.time ? `<span class="tag">${escHtml(item.time)}分</span>` : ''}
-          </h3>
-          ${item.theme ? `<p><strong>テーマ：</strong>${escHtml(item.theme)}</p>` : ''}
-          ${itemsUlHtml}
-        `;
-        container.appendChild(card);
-      });
-    } catch(e) { console.error('loadSavedLevelMenus:', levelId, e); }
-  });
+  const name = card.dataset.name;
+  if (name) deleteTeamMenu(name);
 }
 
 // ─── 初期化 ─────────────────────────────────────────────────
 function initMenuPage() {
-  currentAgeGroup = 'elem';
-  currentLevelId  = 'l1';
-  isEditMode      = false;
+  isEditMode = false;
+  activeFilters = { layer: 'all', purpose: 'all', coaching: 'all' };
 
-  // 編集モードをリセット
+  // Reset edit mode UI
   const wrapper = document.getElementById('menu-page-wrapper');
   if (wrapper) wrapper.classList.remove('edit-mode');
   const editBtn = document.getElementById('edit-mode-btn');
   if (editBtn) { editBtn.textContent = '✏️ 編集'; editBtn.classList.remove('is-active'); }
+  const addSection = document.getElementById('menu-add-section');
+  if (addSection) addSection.style.display = 'none';
 
-  // データ復元とラベル設定
-  loadSavedLevelMenus();
-  normalizeAllMenuCards();
-  updateLevelTabLabels();
+  // Reset filter UI
+  document.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === 'all');
+  });
 
-  // 編集エリアのLevel タブを l1 に合わせる
-  switchLevelTab('l1', document.querySelector('#level-tabs .tab-btn[data-level="l1"]'));
-
-  // Age タブ初期化
-  document.querySelectorAll('.age-tab-btn').forEach(b => b.classList.remove('active'));
-  const firstAgeBtn = document.querySelector('.age-tab-btn');
-  if (firstAgeBtn) firstAgeBtn.classList.add('active');
-
-  // 閲覧ビューを描画
-  renderPlanSelector();
-  renderSessionList();
+  renderPhases();
 }

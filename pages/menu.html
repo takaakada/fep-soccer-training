@@ -4,205 +4,52 @@
   <div class="menu-page-header">
     <div>
       <h2 style="font-size:1.35rem; font-weight:800; color:var(--text);">全体トレーニング</h2>
-      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:3px;">年代に合ったプランを選びます</p>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:3px;">フェーズ別セッションプランを確認・編集</p>
     </div>
     <button class="edit-mode-btn" onclick="toggleEditMode()" id="edit-mode-btn">✏️ 編集</button>
   </div>
 
-  <!-- ── Age Group Tabs ── -->
-  <div id="age-group-tabs">
-    <button class="age-tab-btn active" onclick="switchAgeGroup('elem', this)">🎒 小学生</button>
-    <button class="age-tab-btn" onclick="switchAgeGroup('junior', this)">🏫 中高生</button>
-    <button class="age-tab-btn" onclick="switchAgeGroup('pro', this)">🎓 大学生・社会人</button>
+  <!-- ── Filter Bar ── -->
+  <div id="menu-filter-bar" class="menu-filter-bar">
+    <div class="filter-group">
+      <label>レイヤー</label>
+      <div class="filter-chips" id="filter-layer">
+        <button class="filter-chip active" data-val="all" onclick="setFilter('layer','all',this)">全て</button>
+        <button class="filter-chip" data-val="L1" onclick="setFilter('layer','L1',this)">L1</button>
+        <button class="filter-chip" data-val="L2" onclick="setFilter('layer','L2',this)">L2</button>
+        <button class="filter-chip" data-val="L3" onclick="setFilter('layer','L3',this)">L3</button>
+        <button class="filter-chip" data-val="L4" onclick="setFilter('layer','L4',this)">L4</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>目的</label>
+      <div class="filter-chips" id="filter-purpose">
+        <button class="filter-chip active" data-val="all" onclick="setFilter('purpose','all',this)">全て</button>
+        <button class="filter-chip" data-val="安定化" onclick="setFilter('purpose','安定化',this)">安定化</button>
+        <button class="filter-chip" data-val="探索" onclick="setFilter('purpose','探索',this)">探索</button>
+        <button class="filter-chip" data-val="修正" onclick="setFilter('purpose','修正',this)">修正</button>
+        <button class="filter-chip" data-val="強化" onclick="setFilter('purpose','強化',this)">強化</button>
+        <button class="filter-chip" data-val="統合" onclick="setFilter('purpose','統合',this)">統合</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>コーチング</label>
+      <div class="filter-chips" id="filter-coaching">
+        <button class="filter-chip active" data-val="all" onclick="setFilter('coaching','all',this)">全て</button>
+        <button class="filter-chip" data-val="safe" onclick="setFilter('coaching','safe',this)">Safe</button>
+        <button class="filter-chip" data-val="explore" onclick="setFilter('coaching','explore',this)">Explore</button>
+        <button class="filter-chip" data-val="challenge" onclick="setFilter('coaching','challenge',this)">Challenge</button>
+        <button class="filter-chip" data-val="positive" onclick="setFilter('coaching','positive',this)">Positive</button>
+      </div>
+    </div>
   </div>
 
-  <!-- ── Plan Selector (rendered by JS) ── -->
-  <div id="plan-selector"></div>
+  <!-- ── Phase Sections (rendered by JS) ── -->
+  <div id="phase-container"></div>
 
-  <!-- ── Session List: compact view (hidden in edit mode) ── -->
-  <div id="session-list"></div>
-
-  <!-- ── Edit Level Area: full edit UI (hidden in normal mode, shown in edit mode) ── -->
-  <div id="edit-level-area">
-
-    <!-- Level Tabs (simple, no rename buttons) -->
-    <div id="level-tabs" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; align-items:center;">
-      <button class="tab-btn active" data-level="l1" onclick="switchLevelTab('l1',this)"><span class="level-label" id="lname-l1">あそびながら</span></button>
-      <button class="tab-btn" data-level="l2" onclick="switchLevelTab('l2',this)"><span class="level-label" id="lname-l2">しっかり基礎</span></button>
-      <button class="tab-btn" data-level="l3" onclick="switchLevelTab('l3',this)"><span class="level-label" id="lname-l3">試合につながる</span></button>
-      <button class="tab-btn" data-level="custom" onclick="switchLevelTab('custom',this)"><span class="level-label" id="lname-custom">カスタム</span></button>
-    </div>
-
-    <!-- ===== LEVEL 1 ===== -->
-    <div id="level-l1" class="level-content">
-      <div class="age-header blue" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="このヘッダーを削除" style="top:8px;right:8px;">✕</button>
-        <div>
-          <div class="age-header-title blue" id="level-l1-title">プログラム概要</div>
-          <div class="age-header-sub">週3回 ／ 60〜75分 ／ 身体感覚の育成</div>
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap">
-          <span class="tag">身体感覚</span><span class="tag">同調</span><span class="tag">ミスを楽しむ</span>
-        </div>
-      </div>
-
-      <div class="level-menu-list">
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 1 <span class="tag">技術</span> <span class="tag">60分</span></h3>
-          <p><strong>テーマ：</strong>「思った通りに動けるかな？」— 自分の身体を知る</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>ミラーリング遊び（10分）: 2人1組、前の子の動きを後ろが真似</li>
-            <li>予想ダッシュ（10分）: 何秒で行けるか予想→実走→誤差確認</li>
-            <li>的当てパス（15分）: 近・中・遠の距離にマーカー、予想してから蹴る</li>
-            <li>3対3ゲーム（15分）: 小さいコート、条件1つ変える</li>
-            <li>振り返り（10分）: 「今日一番驚いたこと」をシェア</li>
-          </ul>
-        </div>
-
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 2 <span class="tag">戦術</span> <span class="tag">60分</span></h3>
-          <p><strong>テーマ：</strong>「どこに動けばいい？」— 空間認知の入門</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>鬼ごっこ変形版（15分）: タグ鬼、逃げる際のルート選択を意識</li>
-            <li>ポジション鬼（15分）: 「ゴールの前を守る人」など役割を言語化</li>
-            <li>4対2ロンド（20分）: パスコースを予測する</li>
-            <li>チームゲーム（10分）: 自由な4対4</li>
-          </ul>
-        </div>
-
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 3 <span class="tag">フィジカル</span> <span class="tag">60分</span></h3>
-          <p><strong>テーマ：</strong>「もっと速く・もっと正確に」— 動作の反復と改善</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>ラダードリル（10分）: 基本ステップパターン3種</li>
-            <li>ドリブル障害物コース（15分）: 予測して曲がる、止まる</li>
-            <li>1対1ライン突破（20分）: 守備者の動きを読む</li>
-            <li>ゲーム（15分）: 学んだことを活かす</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('l1')">＋ セッションを追加</button>
-        <button class="btn btn-primary" onclick="saveLevelMenu('l1')" style="margin-top:12px;">💾 保存</button>
-      </div>
-    </div><!-- /#level-l1 -->
-
-    <!-- ===== LEVEL 2 ===== -->
-    <div id="level-l2" class="level-content" style="display:none;">
-      <div class="age-header green" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
-        <div>
-          <div class="age-header-title green" id="level-l2-title">プログラム概要</div>
-          <div class="age-header-sub">週3〜4回 ／ 75〜90分 ／ 戦術理解・予測精度向上</div>
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap">
-          <span class="tag">予測精度</span><span class="tag">戦術判断</span><span class="tag">メタ認知</span>
-        </div>
-      </div>
-
-      <div class="level-menu-list">
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 1 <span class="tag">戦術</span> <span class="tag">75分</span></h3>
-          <p><strong>テーマ：</strong>「なぜその判断？」— 予測と選択の言語化</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>ポジショナルプレー分析（15分）: 映像or図解でポジション確認</li>
-            <li>4対4＋2フリーマン（25分）: フリーマンを使うタイミングを予測</li>
-            <li>プレスのトリガー練習（20分）: ボールが来る前に動くタイミング</li>
-            <li>振り返り（15分）: 「今日の一番の判断」を言語化</li>
-          </ul>
-        </div>
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 2 <span class="tag">技術</span> <span class="tag">75分</span></h3>
-          <p><strong>テーマ：</strong>「プレッシャー下での精度」— 制約下トレーニング</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>タイムプレッシャーパス（20分）: 時間制限付きコンビネーション</li>
-            <li>1対1＋サポート（20分）: 第3の動きを意識する</li>
-            <li>ゾーン守備の攻略（20分）: スペースを認知して動く</li>
-            <li>ゲーム（15分）: テーマを実戦で試す</li>
-          </ul>
-        </div>
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 3 <span class="tag">フィジカル</span> <span class="tag">75分</span></h3>
-          <p><strong>テーマ：</strong>「アジリティと判断の統合」</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>認知アジリティ（20分）: ランダム色/方向指示に反応</li>
-            <li>デュエルトレーニング（20分）: 攻守切り替えのスピード</li>
-            <li>シュート精度（20分）: 予測動作からのフィニッシュ</li>
-            <li>ゲーム（15分）: ハイプレスゲーム</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('l2')">＋ セッションを追加</button>
-        <button class="btn btn-primary" onclick="saveLevelMenu('l2')" style="margin-top:12px;">💾 保存</button>
-      </div>
-    </div><!-- /#level-l2 -->
-
-    <!-- ===== LEVEL 3 ===== -->
-    <div id="level-l3" class="level-content" style="display:none;">
-      <div class="age-header orange" style="position:relative;">
-        <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除" style="top:8px;right:8px;">✕</button>
-        <div>
-          <div class="age-header-title orange" id="level-l3-title">プログラム概要</div>
-          <div class="age-header-sub">週4〜5回 ／ 90〜120分 ／ 高強度・戦術的複雑性</div>
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap">
-          <span class="tag">高強度</span><span class="tag">複雑性</span><span class="tag">即興</span>
-        </div>
-      </div>
-
-      <div class="level-menu-list">
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 1 <span class="tag">戦術</span> <span class="tag">90分</span></h3>
-          <p><strong>テーマ：</strong>「能動的推論の実践」— 不確実性の中で決断する</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>ビデオ分析（20分）: 自分のプレー予測精度を数値で確認</li>
-            <li>8対8戦術トレーニング（35分）: ゾーン移行・プレス回避</li>
-            <li>セットプレー（20分）: 相手の予測を外す設計</li>
-            <li>振り返りミーティング（15分）: FEPログに記録</li>
-          </ul>
-        </div>
-        <div class="concept-card menu-item-card" style="position:relative;">
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <h3>セッション 2 <span class="tag">フィジカル</span> <span class="tag">90分</span></h3>
-          <p><strong>テーマ：</strong>「高強度反復とリカバリー」</p>
-          <ul style="margin:8px 0 0 18px; font-size:0.88rem; color:var(--text-muted);">
-            <li>HIT（高強度インターバル）（30分）: 認知課題付きスプリント</li>
-            <li>1対2守備（20分）: 数的不利でのディレイ判断</li>
-            <li>クロス＆フィニッシュ（25分）: GKの動きを読んでシュート</li>
-            <li>クールダウン（15分）: 身体感覚のフィードバック</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('l3')">＋ セッションを追加</button>
-        <button class="btn btn-primary" onclick="saveLevelMenu('l3')" style="margin-top:12px;">💾 保存</button>
-      </div>
-    </div><!-- /#level-l3 -->
-
-    <!-- ===== CUSTOM ===== -->
-    <div id="level-custom" class="level-content" style="display:none;">
-      <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
-        <div style="font-size:3rem; margin-bottom:16px;">✏️</div>
-        <p style="font-size:0.95rem; margin-bottom:20px;">カスタムプランです。下の「＋ セッションを追加」からオリジナルメニューを作成できます。</p>
-      </div>
-      <div class="level-menu-list"></div>
-      <div class="add-menu-section">
-        <button class="btn btn-accent" onclick="toggleAddMenuForm('custom')">＋ セッションを追加</button>
-        <button class="btn btn-primary" onclick="saveLevelMenu('custom')" style="margin-top:12px;">💾 保存</button>
-      </div>
-    </div><!-- /#level-custom -->
-
-  </div><!-- /#edit-level-area -->
+  <!-- ── Add Menu Button (edit mode) ── -->
+  <div id="menu-add-section" class="add-menu-section" style="display:none;">
+    <button class="btn btn-accent" onclick="openAddModal('level','team')">＋ メニューを追加</button>
+  </div>
 
 </div><!-- /#menu-page-wrapper -->

@@ -1,10 +1,27 @@
 // ══════════════════════════════════════════════════════════
 // POSITION MENU FUNCTIONS  (js/position.js)
 // ══════════════════════════════════════════════════════════
+// Data-driven from ALL_MENU_PRESETS with attribute-rich cards
 
 const POS_KEYS = ['gk', 'df', 'mf', 'fw'];
 
-// ─── HTML エスケープ（menu.js と共有、念のため再定義）──────
+const POS_META = {
+  gk: { icon: '🧤', label: 'GKメニュー', theme: '先読みと判断',     color: '#d97706', tags: ['予測のズレ', '更新速度', '声かけ'] },
+  df: { icon: '🛡️', label: 'DFメニュー', theme: '相手予測とライン調整', color: '#1d4ed8', tags: ['相手の意図', 'スペース管理', 'ライン共有'] },
+  mf: { icon: '⚙️', label: 'MFメニュー', theme: '情報整理と選択',     color: '#059669', tags: ['周囲確認', '選択肢準備', '切り替え'] },
+  fw: { icon: '🎯', label: 'FWメニュー', theme: '動き出しとフィニッシュ', color: '#dc2626', tags: ['動き出し', '打つ判断', 'ミス後の修正'] },
+};
+
+// ─── 状態 ───────────────────────────────────────────────────
+let currentPosId = 'gk';
+let isPosEditMode = false;
+let posFilters = { layer: 'all', purpose: 'all' };
+
+// localStorage keys
+const POS_CUSTOM_KEY_PREFIX = 'fep_custom_pos_';
+const POS_DELETED_KEY_PREFIX = 'fep_deleted_pos_';
+
+// ─── HTML エスケープ ────────────────────────────────────────
 function escPosHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -13,324 +30,235 @@ function escPosHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ─── ポジションタブ切替 ─────────────────────────────────
+// ─── Badge helpers (reuse from menu.js if loaded, otherwise define) ──
+function _posLayerBadge(layer) {
+  if (!layer) return '';
+  const colors = { L1: '#3b82f6', L2: '#059669', L3: '#d97706', L4: '#dc2626' };
+  const c = colors[layer] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escPosHtml(layer)}</span>`;
+}
+
+function _posPurposeBadge(purpose) {
+  if (!purpose) return '';
+  const colors = { '安定化': '#3b82f6', '探索': '#8b5cf6', '修正': '#d97706', '強化': '#dc2626', '統合': '#059669' };
+  const c = colors[purpose] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escPosHtml(purpose)}</span>`;
+}
+
+function _posCoachingBadge(coaching) {
+  if (!coaching) return '';
+  const labels = { safe: 'Safe', explore: 'Explore', challenge: 'Challenge', positive: 'Positive' };
+  const colors = { safe: '#3b82f6', explore: '#8b5cf6', challenge: '#dc2626', positive: '#059669' };
+  const label = labels[coaching] || coaching;
+  const c = colors[coaching] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escPosHtml(label)}</span>`;
+}
+
+function _posVfeBadge(vfe) {
+  if (!vfe) return '';
+  const labels = { low: 'VFE: Low', mid: 'VFE: Mid', high: 'VFE: High' };
+  const colors = { low: '#059669', mid: '#d97706', high: '#dc2626' };
+  const label = labels[vfe] || `VFE: ${vfe}`;
+  const c = colors[vfe] || '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escPosHtml(label)}</span>`;
+}
+
+function _posChannelChips(channels) {
+  if (!channels) return '';
+  const list = typeof channels === 'string' ? channels.split(',').map(s => s.trim()).filter(Boolean) : channels;
+  return list.map(ch => `<span class="channel-chip">${escPosHtml(ch)}</span>`).join('');
+}
+
+// ─── データ取得 ──────────────────────────────────────────────
+function _getPosMenus(posId) {
+  let base = [];
+
+  // From ALL_MENU_PRESETS
+  if (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0) {
+    base = window.ALL_MENU_PRESETS.filter(m => m.scope === posId);
+  }
+
+  // Fallback: POS_PRESETS (hardcoded, minimal data)
+  if (base.length === 0 && typeof POS_PRESETS !== 'undefined' && POS_PRESETS[posId]) {
+    base = POS_PRESETS[posId].map(m => ({
+      ...m,
+      scope: posId,
+      cat: m.cat || 'tech',
+      layer: m.layer || '',
+      purpose: m.purpose || '',
+      channels: m.channels || '',
+      coaching: m.coaching || '',
+      vfe_target: m.vfe_target || '',
+      fep: m.fep || '',
+      steps: m.steps || [],
+      coaching_points: m.coaching_points || [],
+    }));
+  }
+
+  // Coach's custom additions
+  try {
+    const raw = localStorage.getItem(POS_CUSTOM_KEY_PREFIX + posId);
+    if (raw) base = base.concat(JSON.parse(raw));
+  } catch(e) {}
+
+  // Coach's deletions
+  const deleted = _getPosDeletedNames(posId);
+  if (deleted.length > 0) {
+    base = base.filter(m => !deleted.includes(m.name));
+  }
+
+  return base;
+}
+
+function _getPosDeletedNames(posId) {
+  try {
+    const raw = localStorage.getItem(POS_DELETED_KEY_PREFIX + posId);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function _addPosDeletedName(posId, name) {
+  const deleted = _getPosDeletedNames(posId);
+  if (!deleted.includes(name)) {
+    deleted.push(name);
+    localStorage.setItem(POS_DELETED_KEY_PREFIX + posId, JSON.stringify(deleted));
+  }
+}
+
+function _getPosCustomMenus(posId) {
+  try {
+    const raw = localStorage.getItem(POS_CUSTOM_KEY_PREFIX + posId);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function _savePosCustomMenus(posId, menus) {
+  localStorage.setItem(POS_CUSTOM_KEY_PREFIX + posId, JSON.stringify(menus));
+}
+
+// ─── フィルター ──────────────────────────────────────────────
+function _applyPosFilters(menus) {
+  return menus.filter(m => {
+    if (posFilters.layer !== 'all' && m.layer !== posFilters.layer) return false;
+    if (posFilters.purpose !== 'all') {
+      const purposes = m.purpose_list && m.purpose_list.length > 0
+        ? m.purpose_list
+        : (m.purpose ? [m.purpose] : []);
+      if (!purposes.includes(posFilters.purpose)) return false;
+    }
+    return true;
+  });
+}
+
+function setPosFilter(type, value, btn) {
+  posFilters[type] = value;
+  const container = btn.closest('.filter-chips');
+  container.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosContent(currentPosId);
+}
+
+// ─── ポジションタブ切替 ─────────────────────────────────────
 function switchPosTab(posId, btn) {
+  currentPosId = posId;
   document.querySelectorAll('.pos-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('#pos-tabs .pos-tab-btn').forEach(b => b.classList.remove('active'));
   const el = document.getElementById('pos-' + posId);
   if (el) el.classList.add('active');
   if (btn) btn.classList.add('active');
+  renderPosContent(posId);
 }
 
-// ─── カードの正規化（既存カードに data属性 と 編集ボタンを付与）──
-function normalizeAllPosCards() {
-  document.querySelectorAll('.drill-card').forEach(card => {
-    if (!card.dataset.posInit) {
-      const titleEl = card.querySelector('.drill-title');
-      const descEl  = card.querySelector('p');
-      const stepsEl = card.querySelector('.drill-steps');
-      const fepEl   = card.querySelector('.drill-fep');
-      const numEl   = card.querySelector('.drill-num');
+// ─── ポジション内容描画 ──────────────────────────────────────
+function renderPosContent(posId) {
+  const container = document.getElementById('pos-' + posId);
+  if (!container) return;
 
-      card.dataset.posTitle = titleEl ? titleEl.textContent.trim() : '';
-      card.dataset.posDesc  = descEl  ? descEl.textContent.trim()  : '';
-      card.dataset.posFep   = fepEl   ? fepEl.textContent.trim()   : '';
-      card.dataset.posNum   = numEl   ? numEl.textContent.trim()   : '';
+  const meta = POS_META[posId];
+  const allMenus = _getPosMenus(posId);
+  const filtered = _applyPosFilters(allMenus);
 
-      // <li> をテキスト配列として保存
-      const items = stepsEl
-        ? Array.from(stepsEl.querySelectorAll('li')).map(li => li.textContent.trim())
-        : [];
-      card.dataset.posItems = JSON.stringify(items);
-      card.dataset.posInit  = '1';
-    }
+  let html = '';
 
-    // 編集ボタンがなければ追加
-    if (!card.querySelector('.menu-edit-btn')) {
-      const editBtn = document.createElement('button');
-      editBtn.className = 'menu-edit-btn';
-      editBtn.title = '編集';
-      editBtn.textContent = '✏️';
-      editBtn.onclick = () => editPosItem(editBtn);
-      card.style.position = 'relative';
-      const delBtn = card.querySelector('.menu-delete-btn');
-      if (delBtn) delBtn.insertAdjacentElement('afterend', editBtn);
-      else card.prepend(editBtn);
-    }
-  });
-}
-
-// ─── カード編集開始 ─────────────────────────────────────
-function editPosItem(btn) {
-  const card = btn.closest('.drill-card');
-  if (!card || card.querySelector('.menu-edit-form')) return;
-
-  const title = card.dataset.posTitle || '';
-  const desc  = card.dataset.posDesc  || '';
-  const fep   = card.dataset.posFep   || '';
-  const items = JSON.parse(card.dataset.posItems || '[]');
-
-  // このカードのポジション（gk/df/mf/fw）を特定
-  const posId = POS_KEYS.find(p => card.classList.contains(p)) || 'gk';
-
-  card.dataset.originalHtml = card.innerHTML;
-
-  // 既存ステップのHTML
-  const itemsHtml = items.map(item => `
-    <div class="item-row">
-      <span class="item-text">${escPosHtml(item)}</span>
-      <button class="item-del-btn" type="button" onclick="removeItemRow(this)" title="削除">✕</button>
-    </div>
-  `).join('');
-
-  // ポジション別プリセット（drill-library.js の POS_PRESETS）
-  const posPresets = (typeof POS_PRESETS !== 'undefined' && POS_PRESETS[posId]) ? POS_PRESETS[posId] : [];
-  const posPresetOpts = posPresets.map(p =>
-    `<option value="${escPosHtml(p.name)}">${escPosHtml(p.name)}</option>`
-  ).join('');
-
-  // 汎用ドリルプリセット（drill-library.js の DRILL_PRESETS）
-  const genPresetOpts = (typeof DRILL_PRESETS !== 'undefined')
-    ? DRILL_PRESETS.map(p => {
-        const label = (typeof CAT_LABEL !== 'undefined' && CAT_LABEL[p.cat]) ? CAT_LABEL[p.cat] : p.cat;
-        return `<option value="${escPosHtml(p.name)}">${escPosHtml(p.name)}（${label}）</option>`;
-      }).join('')
-    : '';
-
-  // 選択肢：ポジション別を先に、次に汎用
-  const allPresetOpts = [
-    posPresets.length ? `<optgroup label="ポジション別（${posId.toUpperCase()}）">${posPresetOpts}</optgroup>` : '',
-    genPresetOpts ? `<optgroup label="汎用ドリル">${genPresetOpts}</optgroup>` : '',
-  ].join('');
-
-  card.innerHTML = `
-    <div class="menu-edit-form">
-      <div class="menu-edit-row">
-        <label>ドリル名</label>
-        <input type="text" class="edit-pos-title" value="${escPosHtml(title)}" placeholder="例: シュートストップ宣言">
-      </div>
-      <div class="menu-edit-row">
-        <label>概要説明</label>
-        <input type="text" class="edit-pos-desc" value="${escPosHtml(desc)}" placeholder="ドリルの概要をひとことで">
-      </div>
-      <div class="menu-edit-row">
-        <label>ステップ・内容リスト</label>
-        <div class="items-editor">
-          <div class="items-list">
-            ${itemsHtml || '<div class="items-empty">内容がありません。下から追加してください。</div>'}
-          </div>
-          <div class="items-add-panel">
-            <div class="items-add-tabs">
-              <button class="items-tab-btn active" type="button" onclick="switchItemAddTab(this,'from-list')">リストから選ぶ</button>
-              <button class="items-tab-btn" type="button" onclick="switchItemAddTab(this,'custom')">カスタムで追加</button>
-            </div>
-            <div class="items-tab-content items-tab-from-list">
-              <select class="items-preset-select">
-                <option value="">── ドリルを選択 ──</option>
-                ${allPresetOpts}
-              </select>
-              <button class="btn btn-accent" type="button" onclick="addItemFromPreset(this)">＋</button>
-            </div>
-            <div class="items-tab-content items-tab-custom" style="display:none;">
-              <input type="text" class="items-custom-input" placeholder="例: 着地点を宣言してからジャンプ（10分）">
-              <button class="btn btn-accent" type="button" onclick="addCustomItem(this)">＋</button>
-            </div>
-          </div>
+  // Hero card
+  html += `
+    <div class="pos-hero ${posId}">
+      <div class="pos-hero-icon">${meta.icon}</div>
+      <div class="pos-hero-body">
+        <h3>${meta.label}</h3>
+        <p>テーマ：${meta.theme}</p>
+        <div class="pos-fep-tags">
+          ${meta.tags.map(t => `<span class="pos-fep-tag">${escPosHtml(t)}</span>`).join('')}
         </div>
       </div>
-      <div class="menu-edit-row">
-        <label>FEP的ポイント</label>
-        <input type="text" class="edit-pos-fep" value="${escPosHtml(fep)}" placeholder="🧠 FEP的ポイント：予測誤差を最小化する...">
-      </div>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button class="btn btn-primary" onclick="savePosEdit(this)">💾 保存</button>
-        <button class="btn btn-secondary" onclick="cancelPosEdit(this)">キャンセル</button>
-      </div>
     </div>
   `;
-  card.querySelector('.edit-pos-title')?.focus();
-}
 
-// ─── 編集保存 ────────────────────────────────────────────
-function savePosEdit(btn) {
-  const form = btn.closest('.menu-edit-form');
-  const card = btn.closest('.drill-card');
-  if (!form || !card) return;
-
-  const title = form.querySelector('.edit-pos-title')?.value?.trim() || '';
-  const desc  = form.querySelector('.edit-pos-desc')?.value?.trim()  || '';
-  const fep   = form.querySelector('.edit-pos-fep')?.value?.trim()   || '';
-
-  // items-list から項目を収集
-  const itemEls = form.querySelectorAll('.item-row .item-text');
-  const items   = Array.from(itemEls).map(el => el.textContent.trim()).filter(Boolean);
-
-  if (!title) { alert('ドリル名を入力してください'); return; }
-
-  const posId = POS_KEYS.find(p => card.classList.contains(p)) || 'gk';
-
-  card.dataset.posTitle = title;
-  card.dataset.posDesc  = desc;
-  card.dataset.posFep   = fep;
-  card.dataset.posItems = JSON.stringify(items);
-  card.dataset.posInit  = '1';
-
-  const stepsHtml = items.length
-    ? `<ul class="drill-steps">${items.map(i => `<li>${escPosHtml(i)}</li>`).join('')}</ul>`
-    : '';
-
-  card.innerHTML = `
-    <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn" onclick="editPosItem(this)" title="編集">✏️</button>
-    <div class="drill-header">
-      <span class="drill-num ${posId}">${escPosHtml(card.dataset.posNum || '')}</span>
-      <div class="drill-title">${escPosHtml(title)}</div>
-    </div>
-    ${desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(desc)}</p>` : ''}
-    ${stepsHtml}
-    ${fep ? `<div class="drill-fep ${posId}">🧠 ${escPosHtml(fep)}</div>` : ''}
-  `;
-}
-
-// ─── 編集キャンセル ─────────────────────────────────────
-function cancelPosEdit(btn) {
-  const card = btn.closest('.drill-card');
-  if (card?.dataset.originalHtml) {
-    card.innerHTML = card.dataset.originalHtml;
-    delete card.dataset.originalHtml;
+  // Drill cards
+  if (filtered.length === 0) {
+    html += `<div class="phase-empty" style="margin:16px 0;">このポジションのメニューはありません</div>`;
+  } else {
+    filtered.forEach((menu, i) => {
+      html += _renderPosCard(menu, posId, i + 1);
+    });
   }
-}
 
-// ─── カード削除（menu.js の deleteMenuItem を共有）────────
-// deleteMenuItem(btn) は menu.js で定義済み
-
-// ─── ライブラリからカードを追加（drill-library.js から呼ばれる）────
-function addPosItemFromPreset(posId, preset) {
-  const container = document.getElementById('pos-' + posId);
-  if (!container) return;
-
-  const existingCards = container.querySelectorAll('.drill-card');
-  const nextNum = existingCards.length + 1;
-
-  // steps: POS_PRESETS の steps 配列（data-loader.js で設定）
-  const steps = Array.isArray(preset.steps) ? preset.steps : [];
-  const stepsHtml = steps.length
-    ? `<ul class="drill-steps">${steps.map(s => `<li>${escPosHtml(s)}</li>`).join('')}</ul>`
-    : '';
-
-  // FEP解説
-  const fepText = preset.fep || '';
-  const fepHtml = fepText
-    ? `<details class="drill-fep-details">
-         <summary>解説</summary>
-         <div class="drill-fep ${posId}">${escPosHtml(fepText)}</div>
-       </details>`
-    : '';
-
-  const card = document.createElement('div');
-  card.className = `drill-card ${posId}`;
-  card.style.position = 'relative';
-  card.dataset.posTitle = preset.name;
-  card.dataset.posDesc  = preset.desc || '';
-  card.dataset.posFep   = fepText;
-  card.dataset.posNum   = `Drill ${nextNum}`;
-  card.dataset.posItems = JSON.stringify(steps);
-  card.dataset.posInit  = '1';
-
-  card.innerHTML = `
-    <button class="menu-delete-btn pos-del-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-    <button class="menu-edit-btn pos-edit-item-btn" onclick="editPosItem(this)" title="編集">✏️</button>
-    <div class="drill-header">
-      <span class="drill-num ${posId}">Drill ${nextNum}</span>
-      <div class="drill-title">${escPosHtml(preset.name)}</div>
+  // Add menu section (edit mode)
+  html += `
+    <div class="add-menu-section pos-edit-section">
+      <button class="btn btn-accent" onclick="openAddModal('pos','${posId}')">＋ メニューを追加</button>
     </div>
-    ${preset.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(preset.desc)}</p>` : ''}
-    ${stepsHtml}
-    ${fepHtml}
   `;
 
-  // add-menu-section（編集エリア）の直前に挿入
-  const addSection = container.querySelector('.pos-edit-section');
-  if (addSection) container.insertBefore(card, addSection);
-  else container.appendChild(card);
+  container.innerHTML = html;
 }
 
-// ─── ポジションメニュー保存（localStorage）──────────────
-function savePosMenu(posId) {
-  const container = document.getElementById('pos-' + posId);
-  if (!container) return;
+function _renderPosCard(menu, posId, num) {
+  const channels = menu.channels_list && menu.channels_list.length > 0
+    ? menu.channels_list
+    : (menu.channels ? menu.channels.split(',').map(s => s.trim()).filter(Boolean) : []);
 
-  normalizeAllPosCards();
+  const steps = menu.steps || [];
+  const coachingPts = menu.coaching_points || [];
 
-  const cards = Array.from(container.querySelectorAll('.drill-card'));
-  const data = cards.map(card => ({
-    title: card.dataset.posTitle || '',
-    desc:  card.dataset.posDesc  || '',
-    items: JSON.parse(card.dataset.posItems || '[]'),
-    fep:   card.dataset.posFep   || '',
-    num:   card.dataset.posNum   || '',
-    pos:   posId,
-  }));
-
-  localStorage.setItem('fep_pos_' + posId, JSON.stringify(data));
-
-  const btn = document.querySelector(`[onclick*="savePosMenu('${posId}')"]`);
-  if (btn) {
-    const orig = btn.textContent;
-    btn.textContent = '✅ 保存しました';
-    btn.disabled = true;
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
-  }
+  return `
+    <div class="drill-card ${posId}" data-name="${escPosHtml(menu.name)}">
+      <button class="menu-delete-btn pos-del-btn" onclick="deletePosMenu('${posId}','${escPosHtml(menu.name)}')" title="削除">✕</button>
+      <div class="drill-header">
+        <span class="drill-num ${posId}">Drill ${num}</span>
+        <div class="drill-title">${escPosHtml(menu.name)}</div>
+      </div>
+      ${menu.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(menu.desc)}</p>` : ''}
+      <div class="menu-card-attrs">
+        ${_posLayerBadge(menu.layer)}
+        ${_posPurposeBadge(menu.purpose)}
+        ${_posCoachingBadge(menu.coaching)}
+        ${_posVfeBadge(menu.vfe_target)}
+        ${menu.time ? `<span class="time-badge">${menu.time}分</span>` : ''}
+      </div>
+      ${channels.length > 0 ? `<div class="menu-card-channels">${_posChannelChips(channels)}</div>` : ''}
+      ${steps.length > 0 ? `
+        <ul class="drill-steps">
+          ${steps.map(s => `<li>${escPosHtml(s)}</li>`).join('')}
+        </ul>
+      ` : ''}
+      ${menu.fep ? `
+        <details class="drill-fep-details">
+          <summary>FEP解説</summary>
+          <div class="drill-fep ${posId}">${escPosHtml(menu.fep)}</div>
+        </details>
+      ` : ''}
+      ${coachingPts.length > 0 ? `
+        <details class="drill-fep-details">
+          <summary>コーチングポイント</summary>
+          <ul class="drill-steps">${coachingPts.map(s => `<li>${escPosHtml(s)}</li>`).join('')}</ul>
+        </details>
+      ` : ''}
+    </div>
+  `;
 }
 
-// ─── 保存済みドリルを DOM に復元 ────────────────────────
-function loadSavedPosMenus() {
-  POS_KEYS.forEach(posId => {
-    const raw = localStorage.getItem('fep_pos_' + posId);
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw);
-      const container = document.getElementById('pos-' + posId);
-      if (!container) return;
-
-      container.querySelectorAll('.drill-card').forEach(c => c.remove());
-
-      data.forEach(item => {
-        const card = document.createElement('div');
-        card.className = `drill-card ${item.pos || posId}`;
-        card.style.position = 'relative';
-        card.dataset.posTitle = item.title || '';
-        card.dataset.posDesc  = item.desc  || '';
-        card.dataset.posItems = JSON.stringify(item.items || []);
-        card.dataset.posFep   = item.fep   || '';
-        card.dataset.posNum   = item.num   || '';
-        card.dataset.posInit  = '1';
-
-        const items = item.items || [];
-        const stepsHtml = items.length
-          ? `<ul class="drill-steps">${items.map(i => `<li>${escPosHtml(i)}</li>`).join('')}</ul>`
-          : '';
-
-        card.innerHTML = `
-          <button class="menu-delete-btn" onclick="deleteMenuItem(this)" title="削除">✕</button>
-          <button class="menu-edit-btn" onclick="editPosItem(this)" title="編集">✏️</button>
-          <div class="drill-header">
-            <span class="drill-num ${item.pos || posId}">${escPosHtml(item.num || '')}</span>
-            <div class="drill-title">${escPosHtml(item.title || '')}</div>
-          </div>
-          ${item.desc ? `<p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px">${escPosHtml(item.desc)}</p>` : ''}
-          ${stepsHtml}
-          ${item.fep  ? `<div class="drill-fep ${item.pos || posId}">🧠 ${escPosHtml(item.fep)}</div>` : ''}
-        `;
-        container.appendChild(card);
-      });
-    } catch(e) { console.error('loadSavedPosMenus:', posId, e); }
-  });
-}
-
-// ─── 編集モード切替 ──────────────────────────────────────
-let isPosEditMode = false;
-
+// ─── 編集モード切替 ──────────────────────────────────────────
 function togglePosEditMode() {
   isPosEditMode = !isPosEditMode;
   const wrapper = document.getElementById('pos-page-wrapper');
@@ -347,10 +275,91 @@ function togglePosEditMode() {
   }
 }
 
-// ─── 初期化 ──────────────────────────────────────────────
+// ─── メニュー削除 ───────────────────────────────────────────
+function deletePosMenu(posId, name) {
+  if (!confirm(`「${name}」を削除しますか？`)) return;
+
+  let customs = _getPosCustomMenus(posId);
+  const customIdx = customs.findIndex(m => m.name === name);
+  if (customIdx >= 0) {
+    customs.splice(customIdx, 1);
+    _savePosCustomMenus(posId, customs);
+  } else {
+    _addPosDeletedName(posId, name);
+  }
+
+  renderPosContent(posId);
+}
+
+// ─── メニュー追加（drill-library.js の openAddModal 経由）────
+function addPosItemFromPreset(posId, preset) {
+  const customs = _getPosCustomMenus(posId);
+  const newMenu = {
+    menu_id: preset.menu_id || '',
+    name: preset.name || '',
+    cat: preset.cat || 'tech',
+    scope: posId,
+    layer: preset.layer || '',
+    purpose: preset.purpose || '',
+    purpose_list: preset.purpose_list || [],
+    channels: preset.channels || '',
+    channels_list: preset.channels_list || [],
+    coaching: preset.coaching || '',
+    vfe_target: preset.vfe_target || '',
+    time: parseInt(preset.time) || 0,
+    desc: preset.desc || '',
+    fep: preset.fep || '',
+    steps: preset.steps || [],
+    coaching_points: preset.coaching_points || [],
+  };
+
+  // Remove from deleted if was previously deleted
+  let deleted = _getPosDeletedNames(posId);
+  deleted = deleted.filter(n => n !== newMenu.name);
+  localStorage.setItem(POS_DELETED_KEY_PREFIX + posId, JSON.stringify(deleted));
+
+  if (!customs.find(m => m.name === newMenu.name)) {
+    customs.push(newMenu);
+    _savePosCustomMenus(posId, customs);
+  }
+
+  renderPosContent(posId);
+}
+
+// ─── 旧互換: savePosMenu (no-op) ────────────────────────────
+function savePosMenu() {}
+
+// ─── 旧互換: deleteMenuItem (position context) ──────────────
+// deleteMenuItem is defined in menu.js; if the card is a drill-card
+// in position page, this function handles it
+function deletePosItem(btn) {
+  const card = btn.closest('.drill-card');
+  if (!card) return;
+  const name = card.dataset.name;
+  if (name) deletePosMenu(currentPosId, name);
+}
+
+// ─── 旧互換: normalizeAllPosCards (no-op) ────────────────────
+function normalizeAllPosCards() {}
+
+// ─── 初期化 ──────────────────────────────────────────────────
 function initPositionPage() {
-  loadSavedPosMenus();
-  normalizeAllPosCards();
+  currentPosId = 'gk';
+  isPosEditMode = false;
+  posFilters = { layer: 'all', purpose: 'all' };
+
+  // Reset edit mode
+  const wrapper = document.getElementById('pos-page-wrapper');
+  if (wrapper) wrapper.classList.remove('edit-mode');
+  const btn = document.getElementById('pos-edit-btn');
+  if (btn) { btn.textContent = '✏️ 編集'; btn.classList.remove('is-active'); }
+
+  // Reset filters
+  document.querySelectorAll('#pos-filter-bar .filter-chip').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === 'all');
+  });
+
+  // Render
   const firstBtn = document.querySelector('#pos-tabs .pos-tab-btn');
   if (firstBtn) switchPosTab('gk', firstBtn);
 }

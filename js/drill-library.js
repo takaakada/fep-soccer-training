@@ -148,10 +148,17 @@ function _renderModalContent() {
   const inner = document.getElementById('drill-modal-inner');
   if (!inner) return;
 
-  // プリセット一覧
-  const presets = type === 'pos'
-    ? (POS_PRESETS[id] || []).map(d => ({ ...d, cat: 'pos' }))
-    : DRILL_PRESETS;
+  // プリセット一覧（ALL_MENU_PRESETS から取得、フォールバックで旧データ）
+  let presets;
+  if (type === 'pos') {
+    presets = (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0)
+      ? window.ALL_MENU_PRESETS.filter(m => m.scope === id)
+      : (POS_PRESETS[id] || []).map(d => ({ ...d, cat: 'pos' }));
+  } else {
+    presets = (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0)
+      ? window.ALL_MENU_PRESETS.filter(m => m.scope === 'team' || m.scope === 'all')
+      : DRILL_PRESETS;
+  }
 
   // カテゴリフィルター（レベル用のみ）
   const catBar = type === 'pos' ? '' : `
@@ -239,9 +246,17 @@ function _switchModalTab(tab) {
 function _filterLibSearch() {
   const q = document.getElementById('drill-lib-search-input')?.value?.toLowerCase() || '';
   const { type, id } = _modalTarget;
-  const presets = type === 'pos'
-    ? (POS_PRESETS[id] || []).map(d => ({ ...d, cat: 'pos' }))
-    : DRILL_PRESETS.filter(d => _activeLibCat === 'all' || d.cat === _activeLibCat);
+  let presets;
+  if (type === 'pos') {
+    presets = (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0)
+      ? window.ALL_MENU_PRESETS.filter(m => m.scope === id)
+      : (POS_PRESETS[id] || []).map(d => ({ ...d, cat: 'pos' }));
+  } else {
+    const base = (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0)
+      ? window.ALL_MENU_PRESETS.filter(m => m.scope === 'team' || m.scope === 'all')
+      : DRILL_PRESETS;
+    presets = base.filter(d => _activeLibCat === 'all' || d.cat === _activeLibCat);
+  }
   const filtered = q ? presets.filter(d => d.name.toLowerCase().includes(q) || (d.desc||'').toLowerCase().includes(q)) : presets;
   window._filteredPresetsCache = filtered;
   const list = document.getElementById('drill-lib-list');

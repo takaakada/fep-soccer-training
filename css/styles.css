@@ -854,6 +854,7 @@
     .pos-fep-tag { background: rgba(255,255,255,0.65); border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 3px 12px; font-size: 0.77rem; font-weight: 700; }
 
     .drill-card {
+      position: relative;
       background: var(--surface);
       border-radius: var(--radius);
       padding: 20px 22px;
@@ -3036,4 +3037,327 @@
   .sf-btn-row { flex-direction: column; }
   .sf-btn { width: 100%; text-align: center; }
   .sf-radio-cards { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PHASE-BASED MENU VIEW (menu.html redesign)
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Filter Bar ── */
+.menu-filter-bar,
+.pos-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-group > label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+.filter-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.filter-chip {
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover {
+  border-color: var(--primary-light);
+  color: var(--primary);
+}
+.filter-chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* ── Phase Sections ── */
+.phase-section {
+  margin-bottom: 24px;
+}
+.phase-header {
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.phase-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.phase-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+.phase-header-info {
+  flex: 1;
+}
+.phase-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.phase-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.phase-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.08);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+/* VFE Curve Indicator */
+.phase-vfe-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.vfe-curve-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.vfe-curve-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.vfe-curve-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Phase Cards Container ── */
+.phase-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.phase-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  background: var(--bg);
+  border-radius: 10px;
+}
+
+/* ── Menu Card ── */
+.menu-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s;
+}
+.menu-card:hover {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.menu-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.menu-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.menu-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.menu-card-del-btn {
+  display: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.72rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.menu-card-del-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+#menu-page-wrapper.edit-mode .menu-card-del-btn {
+  display: flex;
+}
+
+.menu-card-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* ── Attribute Badges ── */
+.menu-card-attrs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.attr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+/* ── Channel Chips ── */
+.menu-card-channels {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.channel-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* ── FEP Details (menu card) ── */
+.menu-card-fep,
+.menu-card-steps,
+.menu-card-coaching-pts {
+  margin-top: 6px;
+}
+.menu-card-fep > summary,
+.menu-card-steps > summary,
+.menu-card-coaching-pts > summary {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.menu-card-fep > summary::before,
+.menu-card-steps > summary::before,
+.menu-card-coaching-pts > summary::before {
+  content: '▶';
+  font-size: 0.6rem;
+  transition: transform 0.2s;
+}
+.menu-card-fep[open] > summary::before,
+.menu-card-steps[open] > summary::before,
+.menu-card-coaching-pts[open] > summary::before {
+  transform: rotate(90deg);
+}
+.menu-card-fep-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: #fefce8;
+  border-radius: 8px;
+  border: 1px solid #fef08a;
+  line-height: 1.5;
+}
+.menu-card-steps-list {
+  padding-left: 18px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-top: 6px;
+}
+
+/* ── Edit mode: show add section ── */
+#menu-page-wrapper.edit-mode .add-menu-section {
+  display: block;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .menu-filter-bar,
+  .pos-filter-bar {
+    padding: 10px 12px;
+  }
+  .filter-group > label {
+    min-width: 50px;
+    font-size: 0.72rem;
+  }
+  .filter-chip {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+  }
+  .phase-header {
+    padding: 10px 14px;
+  }
+  .phase-icon {
+    font-size: 1.4rem;
+  }
+  .phase-title {
+    font-size: 0.92rem;
+  }
 }
