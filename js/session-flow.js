@@ -2,8 +2,12 @@
 // SESSION-FLOW.JS — セッションフロー管理
 // ══════════════════════════════════════════════════════════════
 //
-// 5ステップのセッションフローを管理:
-//   ① 前チェック → ② セッション記録 → ③ 後評価 → ④ 次回提案 → ⑤ フォローアップ
+// 3ステップのセッションフローを管理:
+//   ① 前チェック → ② セッション記録（VFE + F'） → ③ 結果・提案
+//
+// 別ページ（フロー外）:
+//   - コーチ記録（session-coach-record）
+//   - EFE月次記録（session-efe）
 //
 // セッションデータは sessionState に一時保存し、
 // 各ステップ完了時に Supabase へ永続化する。
@@ -16,9 +20,7 @@ const SessionFlow = (() => {
   const STEPS = [
     { id: 'pre-check',   label: '前チェック',     icon: '📋', page: 'session-pre-check' },
     { id: 'record',      label: 'セッション記録', icon: '▶️', page: 'session-record' },
-    { id: 'post-eval',   label: '後評価',         icon: '📊', page: 'session-post-eval' },
-    { id: 'recommend',   label: '次回提案',       icon: '🔮', page: 'session-recommend' },
-    { id: 'followup',    label: 'フォローアップ', icon: '🔁', page: 'session-followup' },
+    { id: 'result',      label: '結果・提案',     icon: '📊', page: 'session-result' },
   ];
 
   // ── セッション状態 ────────────────────────────────────────
@@ -27,7 +29,6 @@ const SessionFlow = (() => {
   function createEmptyState() {
     return {
       id: null,
-      dbSessionId: null,  // Supabase sessions テーブルの UUID
       startedAt: null,
       currentStep: 0,
 
@@ -56,27 +57,17 @@ const SessionFlow = (() => {
         feedbackFreq: '',   // 'none' | 'few' | 'frequent'
       },
 
-      // ③ 後評価
+      // ③ 振り返り（F'コンポーネント）— セッション記録ページで入力
       postEval: {
-        ease: 5,            // やりやすさ (0-10)
-        difficulty: 5,      // 難しさの感覚 (0-10)
-        enjoyment: 5,       // 楽しさ (0-10) → F' Q2
-        satisfaction: 5,    // 納得感 (0-10) → F' Q3
-        reproducibility: '',// 'できそう' | '少し不安' | '難しい'
+        dr: 5,              // 成長実感 (0-10) → F' component
+        uh: 5,              // 満足感 (0-10) → F' component
+        fh: 5,              // 次回期待 (0-10) → F' component
+        enjoyment: 5,       // 楽しさ (0-10) → F' Q2（互換用）
+        satisfaction: 5,    // 納得感 (0-10) → F' Q3（互換用）
       },
 
-      // ④ 次回提案 (計算結果)
+      // ③ 次回提案 (結果ページで計算)
       recommendation: null,
-
-      // ⑤ フォローアップ
-      followup: {
-        reproduced: '',     // 'yes' | 'partial' | 'no'
-        transferable: '',   // 'yes' | 'unknown' | 'no'
-        wantRepeat: '',     // 'yes' | 'no'
-        anxietyChange: '',  // 'decreased' | 'same' | 'increased'
-        painChange: '',     // 'gone' | 'same' | 'slight' | 'worse'
-        notes: '',
-      },
 
       // 計算結果キャッシュ
       computed: {
@@ -111,9 +102,7 @@ const SessionFlow = (() => {
     recompute();
   }
 
-  function updateFollowup(data) {
-    Object.assign(sessionState.followup, data);
-  }
+  // updateFollowup removed — followup merged into postEval (dr/uh/fh)
 
   // ── 計算の再実行 ──────────────────────────────────────────
 
@@ -235,7 +224,6 @@ const SessionFlow = (() => {
     updatePreCheck,
     updateRecord,
     updatePostEval,
-    updateFollowup,
     recompute,
     renderProgressHtml,
   };

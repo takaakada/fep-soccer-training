@@ -1,122 +1,156 @@
 <!-- ══════════════════════════════════════════════════════════
-     SESSION RESULT — 結果・次回提案
-     F'表示、EU統合スコア、VFE推移、次回メニュー自動提案
+     SESSION RESULT — 結果表示・次回提案
+     F'/EU/VFE統合スコアと次回トレーニング推奨
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
-    <div class="sf-page-title">📈 結果・次回提案</div>
-    <p class="sf-page-sub">セッションの統合スコアと、次回トレーニングの推奨を表示します</p>
+    <div class="sf-page-title">📊 セッション結果</div>
+    <p class="sf-page-sub">統合スコアと次回トレーニングの提案</p>
   </div>
 
+  <!-- プログレスバー -->
   <div id="sf-progress-bar"></div>
 
-  <!-- ══ 統合スコア一覧 ══ -->
+  <!-- ══ 統合スコア表示 ══ -->
   <div class="sf-card">
-    <div class="sf-card-title">📊 セッション統合スコア</div>
-    <div class="sf-preview-grid" id="result-scores">
+    <div class="sf-card-title">🎯 統合スコア</div>
+    <div class="sf-preview-grid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr));">
       <div class="sf-preview-item">
         <div class="sf-preview-label">VFE</div>
-        <div class="sf-preview-val" id="res-vfe">—</div>
+        <div class="sf-preview-val" id="res-vfe">--</div>
         <div class="sf-preview-sub">変分自由エネルギー</div>
       </div>
       <div class="sf-preview-item">
         <div class="sf-preview-label">EFE</div>
-        <div class="sf-preview-val" id="res-efe">—</div>
+        <div class="sf-preview-val" id="res-efe">--</div>
         <div class="sf-preview-sub">期待自由エネルギー</div>
       </div>
       <div class="sf-preview-item">
         <div class="sf-preview-label">F'</div>
-        <div class="sf-preview-val" id="res-fprime">—</div>
-        <div class="sf-preview-sub">感情的反応性</div>
+        <div class="sf-preview-val" id="res-fprime">--</div>
+        <div class="sf-preview-sub">感情反応性</div>
       </div>
       <div class="sf-preview-item">
         <div class="sf-preview-label">EU</div>
-        <div class="sf-preview-val" id="res-eu">—</div>
-        <div class="sf-preview-sub">統合不確実性</div>
+        <div class="sf-preview-val" id="res-eu">--</div>
+        <div class="sf-preview-sub">推定不確実性</div>
       </div>
       <div class="sf-preview-item">
-        <div class="sf-preview-label">σ修飾</div>
-        <div class="sf-preview-val" id="res-sigma">—</div>
-        <div class="sf-preview-sub">セロトニン→精度</div>
+        <div class="sf-preview-label">σ</div>
+        <div class="sf-preview-val" id="res-sigma">--</div>
+        <div class="sf-preview-sub">セロトニン修飾</div>
       </div>
       <div class="sf-preview-item">
-        <div class="sf-preview-label">λ修飾</div>
-        <div class="sf-preview-val" id="res-lambda">—</div>
-        <div class="sf-preview-sub">オキシトシン→社会調節</div>
+        <div class="sf-preview-label">λ</div>
+        <div class="sf-preview-val" id="res-lambda">--</div>
+        <div class="sf-preview-sub">オキシトシン修飾</div>
       </div>
     </div>
   </div>
 
   <div class="sf-grid-2">
-    <!-- ══ 左列：F' 詳細 + 解釈 ══ -->
+    <!-- ══ 左列：F'詳細 + VFEバンド ══ -->
     <div>
-      <!-- F' 内訳 -->
+      <!-- F' 詳細 -->
       <div class="sf-card">
         <div class="sf-card-title">
-          🎭 F' 感情的反応性の内訳
-          <span class="sf-theory-tag" style="background:#8b5cf620;color:#8b5cf6;border-color:#8b5cf640;">F'</span>
+          🧠 F' 詳細
+          <span class="sf-theory-tag tag-fprime">F'</span>
         </div>
-        <div id="res-fprime-detail" style="font-size:0.88rem; color:var(--text-muted); line-height:1.8;">
-          データを計算中...
+        <div class="sf-preview-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">dr (成長)</div>
+            <div class="sf-preview-val" id="res-dr">--</div>
+          </div>
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">uh (満足)</div>
+            <div class="sf-preview-val" id="res-uh">--</div>
+          </div>
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">fh (期待)</div>
+            <div class="sf-preview-val" id="res-fh">--</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; padding:10px; background:var(--bg); border-radius:8px;">
+          <div style="font-size:0.82rem; color:var(--text-muted);" id="res-fprime-interp">--</div>
         </div>
       </div>
 
-      <!-- VFE 判定 -->
+      <!-- VFE バンド表示 -->
       <div class="sf-card">
-        <div class="sf-card-title">🎯 VFE バンド判定</div>
-        <div id="res-vfe-band" style="padding:16px; text-align:center;">
-          <div id="res-band-label" style="font-size:1.5rem; font-weight:800; margin-bottom:8px;">—</div>
-          <div id="res-band-desc" style="font-size:0.88rem; color:var(--text-muted);"></div>
+        <div class="sf-card-title">📊 VFE バンド</div>
+        <div id="res-vfe-band-display" style="padding:8px 0;">
+          <div style="position:relative; height:28px; background:linear-gradient(90deg, #059669 0%, #059669 30%, #d97706 30%, #d97706 60%, #dc2626 60%, #dc2626 100%); border-radius:14px; overflow:hidden;">
+            <div id="res-vfe-marker" style="position:absolute; top:2px; width:24px; height:24px; background:white; border-radius:50%; border:3px solid #1e293b; left:50%; transform:translateX(-50%); transition:left 0.3s;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+            <span>安定 (0)</span>
+            <span>適正 (30-60)</span>
+            <span>混乱 (100)</span>
+          </div>
         </div>
-        <!-- VFE バー -->
-        <div style="margin-top:8px;">
-          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">
-            <span>安定 (0)</span><span>混乱 (100)</span>
-          </div>
-          <div style="height:12px; background:#e5e7eb; border-radius:6px; overflow:hidden; position:relative;">
-            <div id="res-vfe-bar" style="height:100%; border-radius:6px; transition:width 0.5s;"></div>
-            <div style="position:absolute; top:0; left:40%; width:1px; height:100%; background:#d97706;"></div>
-            <div style="position:absolute; top:0; left:60%; width:1px; height:100%; background:#dc2626;"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:var(--text-muted); margin-top:2px;">
-            <span>Low Zone</span><span>Mid</span><span>High Zone</span>
-          </div>
+        <div style="text-align:center; margin-top:8px;">
+          <span id="res-vfe-band-label" style="font-size:1rem; font-weight:700;">--</span>
         </div>
       </div>
     </div>
 
     <!-- ══ 右列：次回提案 ══ -->
     <div>
-      <div class="sf-card" style="border-left:4px solid #3b82f6;">
+      <div class="sf-card" style="border-left:4px solid #2563eb;">
         <div class="sf-card-title">🔮 次回トレーニング提案</div>
-        <div id="res-recommendation" style="font-size:0.9rem; line-height:1.8; color:var(--text);">
-          計算中...
+
+        <!-- レイヤー提案 -->
+        <div class="sf-form-row">
+          <label class="sf-label">レイヤー調整</label>
+          <div id="res-rec-layer" class="sf-alert sf-alert-blue" style="margin-top:4px;">
+            <span class="sf-alert-icon">📐</span>
+            <div>計算中...</div>
+          </div>
+        </div>
+
+        <!-- コーチング提案 -->
+        <div class="sf-form-row">
+          <label class="sf-label">コーチングタイプ</label>
+          <div id="res-rec-coaching" class="sf-alert sf-alert-blue" style="margin-top:4px;">
+            <span class="sf-alert-icon">🤝</span>
+            <div>計算中...</div>
+          </div>
+        </div>
+
+        <!-- 目的提案 -->
+        <div class="sf-form-row">
+          <label class="sf-label">推奨する目的</label>
+          <div id="res-rec-purpose" class="sf-alert sf-alert-blue" style="margin-top:4px;">
+            <span class="sf-alert-icon">🎯</span>
+            <div>計算中...</div>
+          </div>
         </div>
       </div>
 
-      <!-- 推奨メニュー -->
+      <!-- おすすめメニュー -->
       <div class="sf-card">
-        <div class="sf-card-title">📋 推奨メニュー</div>
-        <div id="res-suggested-menus" style="font-size:0.88rem;">
-          計算中...
+        <div class="sf-card-title">📋 おすすめメニュー</div>
+        <div id="res-suggested-menus" style="max-height:250px; overflow-y:auto;">
+          <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.88rem;">計算中...</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- VFE 履歴（直近5件） -->
+  <!-- VFE 履歴チャート -->
   <div class="sf-card">
-    <div class="sf-card-title">📈 直近VFE推移</div>
-    <div id="res-vfe-history">
-      <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.88rem;">読み込み中...</div>
+    <div class="sf-card-title">📈 VFE 推移</div>
+    <div id="res-vfe-history" style="display:flex; align-items:flex-end; gap:4px; height:120px; padding:8px 0;">
+      <div style="text-align:center; width:100%; color:var(--text-muted); font-size:0.85rem;">履歴データなし</div>
     </div>
   </div>
 
   <!-- ボタン -->
   <div class="sf-btn-row">
-    <button class="sf-btn sf-btn-secondary" onclick="showPage('session-record')">
-      ← セッション記録に戻る
+    <button class="sf-btn sf-btn-secondary" onclick="showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page=session-record]'))">
+      ← 記録に戻る
     </button>
     <button class="sf-btn sf-btn-primary" onclick="finishSession()">
       ✅ セッション完了
@@ -131,281 +165,224 @@ function initResultPage() {
 
   const state = SessionFlow.getState();
   SessionFlow.recompute();
-  const computed = state.computed;
+  const c = state.computed;
 
   // ── 統合スコア表示 ──
-  displayScore('res-vfe', computed.vfe?.vfe_display, 40, 60);
-  displayScore('res-efe', computed.efe?.efe_display, 40, 60);
-
-  // F'
-  const fPrime = computed.fPrime;
-  const fEl = document.getElementById('res-fprime');
-  if (fEl && fPrime) {
-    fEl.textContent = fPrime.f_prime_display.toFixed(2);
-    fEl.className = 'sf-preview-val ' +
-      (Math.abs(fPrime.f_prime_display) < 0.5 ? 'val-good' : Math.abs(fPrime.f_prime_display) < 1.0 ? '' : 'val-warn');
+  if (c.vfe) {
+    setVal('res-vfe', c.vfe.vfe_display.toFixed(1), c.vfe.vfe_display < 40 ? 'good' : c.vfe.vfe_display < 60 ? '' : 'warn');
+  }
+  if (c.efe) {
+    setVal('res-efe', c.efe.efe_display.toFixed(1), c.efe.efe_display < 40 ? 'good' : c.efe.efe_display < 60 ? '' : 'warn');
+  }
+  if (c.fPrime) {
+    const fp = c.fPrime.f_prime_effective ?? c.fPrime.f_prime ?? 0;
+    setVal('res-fprime', fp.toFixed(2), fp > 0.3 ? 'good' : fp < -0.3 ? 'warn' : '');
+  }
+  if (c.eu) {
+    const euVal = c.eu.eu_display ?? c.eu.EU ?? 0;
+    setVal('res-eu', (typeof euVal === 'number' ? euVal.toFixed(1) : euVal), '');
   }
 
-  // EU
-  const eu = computed.eu;
-  displayScore('res-eu', eu?.eu_display, 40, 60);
+  setVal('res-sigma', (c.sigmaModifier >= 0 ? '+' : '') + c.sigmaModifier.toFixed(1), '');
+  setVal('res-lambda', (c.lambdaModifier >= 0 ? '+' : '') + c.lambdaModifier.toFixed(1), '');
 
-  // σ / λ
-  const sigmaEl = document.getElementById('res-sigma');
-  if (sigmaEl && computed.sigmaModifier !== undefined) {
-    const s = computed.sigmaModifier;
-    sigmaEl.textContent = (s >= 0 ? '+' : '') + s.toFixed(1);
-  }
-  const lambdaEl = document.getElementById('res-lambda');
-  if (lambdaEl && computed.lambdaModifier !== undefined) {
-    const l = computed.lambdaModifier;
-    lambdaEl.textContent = (l >= 0 ? '+' : '') + l.toFixed(1);
-  }
+  // ── F' 詳細 ──
+  const pe = state.postEval;
+  setVal('res-dr', pe.dr ?? pe.ease ?? '--', '');
+  setVal('res-uh', pe.uh ?? pe.enjoyment ?? '--', '');
+  setVal('res-fh', pe.fh ?? pe.satisfaction ?? '--', '');
 
-  // ── F' 内訳 ──
-  renderFPrimeDetail(state, computed);
+  // F' interpretation
+  const interpEl = document.getElementById('res-fprime-interp');
+  if (interpEl && c.fPrime) {
+    const fp = c.fPrime.f_prime_effective ?? c.fPrime.f_prime ?? 0;
+    let text = '';
+    if (fp > 1.0) text = '非常にポジティブな体験でした。次回はレイヤーを上げて挑戦できます。';
+    else if (fp > 0.3) text = 'ポジティブな体験でした。現在のアプローチが効果的です。';
+    else if (fp > -0.3) text = '中立的な体験でした。微調整で改善の余地があります。';
+    else if (fp > -1.0) text = 'やや困難を感じた体験でした。環境やレイヤーの調整を検討しましょう。';
+    else text = '困難な体験でした。レイヤーを下げ、安全なコーチング環境を優先しましょう。';
+    interpEl.textContent = text;
+  }
 
   // ── VFE バンド ──
-  renderVFEBand(computed.vfe?.vfe_display);
-
-  // ── 次回提案 ──
-  renderRecommendation(state, computed);
-
-  // ── 推奨メニュー ──
-  renderSuggestedMenus(computed);
-
-  // ── VFE 履歴 ──
-  loadVfeHistory();
-}
-
-function displayScore(elId, value, warnThresh, dangerThresh) {
-  const el = document.getElementById(elId);
-  if (!el || value === undefined || value === null) return;
-  el.textContent = value.toFixed(1);
-  el.className = 'sf-preview-val ' +
-    (value < warnThresh ? 'val-good' : value < dangerThresh ? '' : 'val-warn');
-}
-
-function renderFPrimeDetail(state, computed) {
-  const el = document.getElementById('res-fprime-detail');
-  if (!el) return;
-  const fp = computed.fPrime;
-  const postEval = state.postEval || {};
-
-  if (!fp) { el.textContent = 'F\'データが不足しています'; return; }
-
-  const dr = postEval.dr ?? 0;
-  const uh = postEval.uh ?? 0;
-  const fh = postEval.fh ?? 0;
-
-  el.innerHTML = `
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
-      <div style="text-align:center; padding:10px; background:var(--bg); border-radius:8px;">
-        <div style="font-size:0.78rem; color:var(--text-muted);">成長実感 (dr)</div>
-        <div style="font-size:1.2rem; font-weight:800; color:${dr >= 0 ? '#059669' : '#dc2626'};">${dr >= 0 ? '+' : ''}${dr.toFixed(1)}</div>
-      </div>
-      <div style="text-align:center; padding:10px; background:var(--bg); border-radius:8px;">
-        <div style="font-size:0.78rem; color:var(--text-muted);">満足度 (uh)</div>
-        <div style="font-size:1.2rem; font-weight:800; color:${uh >= 0 ? '#059669' : '#dc2626'};">${uh >= 0 ? '+' : ''}${uh.toFixed(1)}</div>
-      </div>
-      <div style="text-align:center; padding:10px; background:var(--bg); border-radius:8px;">
-        <div style="font-size:0.78rem; color:var(--text-muted);">次回期待 (fh)</div>
-        <div style="font-size:1.2rem; font-weight:800; color:${fh >= 0 ? '#059669' : '#dc2626'};">${fh >= 0 ? '+' : ''}${fh.toFixed(1)}</div>
-      </div>
-    </div>
-    <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">
-      <strong>F' = ${fp.f_prime_display.toFixed(2)}</strong><br>
-      ${fp.f_prime_display > 0.5 ? '⚠️ 感情的反応が高め。次回は安定的なメニュー（Safe/Explore）が推奨されます。' :
-        fp.f_prime_display < -0.5 ? '😊 ポジティブな感情状態。チャレンジ的なメニューにも対応できます。' :
-        '✅ 感情的に安定しています。現在のアプローチを継続できます。'}
-    </div>
-  `;
-}
-
-function renderVFEBand(vfeScore) {
-  if (vfeScore === undefined || vfeScore === null) return;
-  const band = FepCalc.getBand(vfeScore);
-
-  const labelEl = document.getElementById('res-band-label');
-  const descEl = document.getElementById('res-band-desc');
-  const barEl = document.getElementById('res-vfe-bar');
-
-  const colors = { low: '#059669', mid: '#d97706', high: '#dc2626' };
-  const descs = {
-    low: '安定した状態です。より高いレイヤーへの挑戦が可能です。',
-    mid: '適度な不確実性があります。学習効果が高い領域です。',
-    high: '不確実性が高い状態です。レイヤーを下げて安定を優先しましょう。'
-  };
-
-  if (labelEl) { labelEl.textContent = band.label; labelEl.style.color = colors[band.zone]; }
-  if (descEl) descEl.textContent = descs[band.zone] || '';
-  if (barEl) { barEl.style.width = Math.min(vfeScore, 100) + '%'; barEl.style.background = colors[band.zone]; }
-}
-
-function renderRecommendation(state, computed) {
-  const el = document.getElementById('res-recommendation');
-  if (!el) return;
-
-  const vfe = computed.vfe?.vfe_display ?? 50;
-  const efe = computed.efe?.efe_display ?? 50;
-  const fp = computed.fPrime?.f_prime_display ?? 0;
-  const rec = state.record || {};
-
-  let html = '<div style="line-height:2;">';
-
-  // Layer recommendation
-  const currentLayer = rec.layer || 'L2';
-  const layerNum = parseInt(currentLayer.replace('L', '')) || 2;
-  let nextLayer = currentLayer;
-  let layerAdvice = '';
-
-  if (vfe < 30 && fp <= 0.5) {
-    nextLayer = 'L' + Math.min(layerNum + 1, 4);
-    layerAdvice = '✅ VFEが低く安定しています。レイヤーを上げましょう。';
-  } else if (vfe > 65 || fp > 1.0) {
-    nextLayer = 'L' + Math.max(layerNum - 1, 1);
-    layerAdvice = '⚠️ VFEまたはF\'が高めです。レイヤーを下げて安定化を優先。';
-  } else {
-    layerAdvice = '👍 適切な負荷レベルです。同レイヤーでの反復を推奨。';
+  if (c.vfe) {
+    const vfeVal = c.vfe.vfe_display;
+    const marker = document.getElementById('res-vfe-marker');
+    if (marker) marker.style.left = Math.min(Math.max(vfeVal, 2), 98) + '%';
+    const bandLabel = document.getElementById('res-vfe-band-label');
+    if (bandLabel) {
+      const band = FepCalc.getBand(vfeVal);
+      bandLabel.textContent = `${band.label}（${vfeVal.toFixed(1)}）`;
+      bandLabel.style.color = vfeVal < 30 ? '#059669' : vfeVal < 60 ? '#d97706' : '#dc2626';
+    }
   }
 
-  html += `<div style="margin-bottom:12px;">
-    <strong>📊 レイヤー推奨：${nextLayer}</strong><br>
-    ${layerAdvice}
-  </div>`;
+  // ── 次回提案 ──
+  computeRecommendations(state, c);
 
-  // Coaching recommendation
-  let coachAdvice = '';
-  if (fp > 0.5) coachAdvice = '🛡️ Safe / 🔍 Explore を推奨（感情的反応が高い）';
-  else if (vfe < 30) coachAdvice = '🔥 Challenge を推奨（安定しているため挑戦可能）';
-  else if (efe > 50) coachAdvice = '🔍 Explore を推奨（探索的アプローチで情報収集）';
-  else coachAdvice = '👍 Positive / 🔍 Explore を推奨（現状維持）';
-
-  html += `<div style="margin-bottom:12px;">
-    <strong>🤝 コーチング推奨</strong><br>
-    ${coachAdvice}
-  </div>`;
-
-  // Purpose recommendation
-  let purposeAdvice = '';
-  if (vfe > 60) purposeAdvice = '安定化・修正';
-  else if (vfe < 30) purposeAdvice = '強化・統合';
-  else purposeAdvice = '探索・修正';
-
-  html += `<div>
-    <strong>🎯 目的推奨：${purposeAdvice}</strong><br>
-    VFE=${vfe.toFixed(1)}, EFE=${efe.toFixed(1)}, F'=${fp.toFixed(2)} に基づく推奨
-  </div>`;
-
-  html += '</div>';
-  el.innerHTML = html;
+  // ── VFE 履歴 ──
+  renderVfeHistory();
 }
 
-function renderSuggestedMenus(computed) {
-  const el = document.getElementById('res-suggested-menus');
+function setVal(id, text, type) {
+  const el = document.getElementById(id);
   if (!el) return;
+  el.textContent = text;
+  if (type === 'good') el.className = 'sf-preview-val val-good';
+  else if (type === 'warn') el.className = 'sf-preview-val val-warn';
+  else el.className = 'sf-preview-val';
+}
 
-  const vfe = computed.vfe?.vfe_display ?? 50;
-  const menus = (typeof ALL_MENU_PRESETS !== 'undefined' && ALL_MENU_PRESETS.length > 0)
-    ? ALL_MENU_PRESETS.filter(m => m.scope === 'team')
-    : (typeof DRILL_PRESETS !== 'undefined') ? DRILL_PRESETS : [];
+function computeRecommendations(state, c) {
+  const vfe = c.vfe ? c.vfe.vfe_display : 50;
+  const fp = c.fPrime ? (c.fPrime.f_prime_effective ?? c.fPrime.f_prime ?? 0) : 0;
 
-  if (menus.length === 0) { el.textContent = 'メニューデータなし'; return; }
+  // ── レイヤー提案 ──
+  let layerRec, layerIcon, layerClass;
+  if (vfe < 30 && fp <= 0.5) {
+    layerRec = 'レイヤーを上げましょう（例：L1→L2）。安定しているので、より複雑な課題に挑戦できます。';
+    layerIcon = '⬆️'; layerClass = 'sf-alert-green';
+  } else if (vfe > 65 || fp > 1.0) {
+    layerRec = 'レイヤーを下げましょう（例：L3→L2）。混乱が大きいため、基本に戻って安定させましょう。';
+    layerIcon = '⬇️'; layerClass = 'sf-alert-red';
+  } else {
+    layerRec = '現在のレイヤーを維持しましょう。適正な範囲で学習が進んでいます。';
+    layerIcon = '➡️'; layerClass = 'sf-alert-blue';
+  }
+  setRecBox('res-rec-layer', layerIcon, layerRec, layerClass);
 
-  // Filter by recommended VFE target
-  let targetVfe = 'mid';
-  if (vfe < 30) targetVfe = 'high';
-  else if (vfe > 65) targetVfe = 'low';
+  // ── コーチング提案 ──
+  let coachRec, coachIcon;
+  if (fp < -0.5 || vfe > 65) {
+    coachRec = '🛡️ 安全重視のコーチングを推奨。安心できる環境で自信を回復しましょう。';
+    coachIcon = '🛡️';
+  } else if (vfe < 30 && fp > 0.3) {
+    coachRec = '🔥 チャレンジ型のコーチングが効果的です。高い基準で成長を促しましょう。';
+    coachIcon = '🔥';
+  } else if (fp > 0 && vfe >= 30 && vfe <= 50) {
+    coachRec = '🔍 探索促進型のコーチングを推奨。新しいアプローチを試す余地があります。';
+    coachIcon = '🔍';
+  } else {
+    coachRec = '👍 ポジティブなコーチングを継続。成功体験を積み重ねましょう。';
+    coachIcon = '👍';
+  }
+  setRecBox('res-rec-coaching', coachIcon, coachRec, 'sf-alert-blue');
 
-  let suggested = menus.filter(m => m.vfe_target === targetVfe);
-  if (suggested.length === 0) suggested = menus.slice(0, 5);
-  suggested = suggested.slice(0, 5);
+  // ── 目的提案 ──
+  let purposeRec, purposeIcon;
+  if (vfe < 25) {
+    purposeRec = '強化・統合を推奨。安定した状態を活かして、スキルの定着と応用を目指しましょう。';
+    purposeIcon = '💪';
+  } else if (vfe < 45) {
+    purposeRec = '安定化・強化を推奨。適正ゾーンで反復練習の効果が最大化されます。';
+    purposeIcon = '🎯';
+  } else if (vfe < 65) {
+    purposeRec = '探索・修正を推奨。不確実性を活かして新しいパターンを見つけましょう。';
+    purposeIcon = '🔍';
+  } else {
+    purposeRec = '安定化を最優先に。基本動作に戻り、予測と結果のずれを最小化しましょう。';
+    purposeIcon = '🛡️';
+  }
+  setRecBox('res-rec-purpose', purposeIcon, purposeRec, 'sf-alert-blue');
 
-  const CAT = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
+  // ── おすすめメニュー ──
+  renderSuggestedMenus(vfe);
+}
 
-  el.innerHTML = suggested.map(m => `
-    <div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border);">
+function setRecBox(id, icon, text, alertClass) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'sf-alert ' + (alertClass || 'sf-alert-blue');
+  el.innerHTML = `<span class="sf-alert-icon">${icon}</span><div>${text}</div>`;
+}
+
+function renderSuggestedMenus(vfeTarget) {
+  const container = document.getElementById('res-suggested-menus');
+  if (!container) return;
+
+  let menus = [];
+  if (typeof ALL_MENU_PRESETS !== 'undefined') {
+    // Find menus whose VFE target range includes current VFE
+    menus = ALL_MENU_PRESETS.filter(m => {
+      if (m.scope !== 'team') return false;
+      const target = m.vfe_target || 50;
+      return Math.abs(target - vfeTarget) < 20;
+    }).slice(0, 5);
+  }
+
+  if (menus.length === 0) {
+    container.innerHTML = '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:0.85rem;">メニューデータがありません</div>';
+    return;
+  }
+
+  container.innerHTML = menus.map(m => `
+    <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--border);">
       <div style="flex:1;">
-        <div style="font-weight:700; font-size:0.9rem;">${m.name}</div>
-        <div style="font-size:0.78rem; color:var(--text-muted);">
-          ${CAT[m.cat]||m.cat} / ${m.layer||''} / ${m.purpose||''} / ${m.time?m.time+'分':''}
-        </div>
+        <div style="font-weight:600; font-size:0.9rem;">${m.name}</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">${m.layer || ''} | ${m.category || ''} | VFE目標: ${m.vfe_target || '?'}</div>
       </div>
-      <span class="attr-badge" style="background:${targetVfe==='low'?'#05966915':'#d9770615'};color:${targetVfe==='low'?'#059669':'#d97706'};border:1px solid ${targetVfe==='low'?'#05966930':'#d9770630'}">
-        VFE:${m.vfe_target||targetVfe}
-      </span>
+      <span class="attr-badge" style="font-size:0.72rem;">${m.layer || '?'}</span>
     </div>
   `).join('');
 }
 
-function loadVfeHistory() {
-  const el = document.getElementById('res-vfe-history');
-  if (!el) return;
+function renderVfeHistory() {
+  const container = document.getElementById('res-vfe-history');
+  if (!container) return;
 
-  // Try to get from localStorage or show current session only
-  let sessions = [];
-  try { sessions = JSON.parse(localStorage.getItem('fep_vfe_history') || '[]'); } catch(e) {}
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('fep_vfe_history') || '[]'); } catch(e) {}
 
-  // Add current session
-  const state = SessionFlow.getState();
-  const currentVfe = state.computed.vfe?.vfe_display;
-  if (currentVfe !== undefined) {
-    sessions.unshift({
-      date: new Date().toISOString().slice(0, 10),
-      vfe: currentVfe,
-      menu: state.record?.menuName || '',
-      current: true,
-    });
-  }
-
-  if (sessions.length === 0) {
-    el.innerHTML = '<div style="text-align:center; padding:16px; color:var(--text-muted);">まだ履歴がありません</div>';
+  if (history.length === 0) {
+    container.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-muted); font-size:0.85rem;">履歴データなし</div>';
     return;
   }
 
-  const recent = sessions.slice(0, 10);
-  el.innerHTML = `
-    <div style="display:flex; gap:8px; align-items:flex-end; height:120px; padding:0 8px;">
-      ${recent.map(s => {
-        const h = Math.max(10, Math.min(100, s.vfe));
-        const color = s.vfe < 40 ? '#059669' : s.vfe < 60 ? '#d97706' : '#dc2626';
-        return `
-          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
-            <div style="font-size:0.7rem; font-weight:700; color:${color};">${s.vfe.toFixed(0)}</div>
-            <div style="width:100%; height:${h}%; background:${color}20; border:2px solid ${color}; border-radius:4px;${s.current?' box-shadow:0 0 8px '+color+'40;':''}"></div>
-            <div style="font-size:0.6rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60px;">${s.date.slice(5)}</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
+  const maxBars = 20;
+  const recent = history.slice(0, maxBars).reverse();
+
+  container.innerHTML = recent.map((r, i) => {
+    const h = Math.max(4, (r.vfe_display / 100) * 100);
+    const color = r.vfe_display < 30 ? '#059669' : r.vfe_display < 60 ? '#d97706' : '#dc2626';
+    return `
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <div style="font-size:0.65rem; color:var(--text-muted);">${r.vfe_display.toFixed(0)}</div>
+        <div style="width:100%; max-width:24px; height:${h}px; background:${color}; border-radius:3px 3px 0 0;"></div>
+        <div style="font-size:0.58rem; color:var(--text-muted); writing-mode:vertical-rl; height:40px; overflow:hidden;">${r.date.slice(5)}</div>
+      </div>
+    `;
+  }).join('');
 }
 
-async function finishSession() {
+function finishSession() {
+  // Save final state
   const state = SessionFlow.getState();
-  const vfe = state.computed.vfe?.vfe_display;
+  const c = state.computed;
 
-  // Save VFE to history
-  if (vfe !== undefined) {
+  // Update VFE history (if not already saved)
+  if (c.vfe) {
+    const key = 'fep_vfe_history';
     let history = [];
-    try { history = JSON.parse(localStorage.getItem('fep_vfe_history') || '[]'); } catch(e) {}
-    history.unshift({
-      date: new Date().toISOString().slice(0, 10),
-      vfe,
-      menu: state.record?.menuName || '',
-    });
-    if (history.length > 50) history = history.slice(0, 50);
-    localStorage.setItem('fep_vfe_history', JSON.stringify(history));
+    try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+    // Check if already saved for today
+    const today = new Date().toISOString().slice(0, 10);
+    if (!history.length || history[0].date !== today) {
+      history.unshift({
+        date: today,
+        vfe_display: c.vfe.vfe_display,
+        savedAt: new Date().toISOString(),
+      });
+      if (history.length > 50) history = history.slice(0, 50);
+      localStorage.setItem(key, JSON.stringify(history));
+    }
   }
 
-  // Complete in DB
-  if (state.dbSessionId && typeof updateFlowPostEval === 'function') {
-    await updateFlowPostEval(state.dbSessionId, state.postEval || {}, state.computed);
-  }
+  alert('セッションを完了しました。おつかれさまでした！');
 
-  SessionFlow.reset();
-  alert('セッションを完了しました！');
-  showPage('home');
+  // Reset and go home
+  SessionFlow.startSession();
+  showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
 }
 
 initResultPage();

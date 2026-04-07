@@ -95,17 +95,17 @@
         <div class="sf-preview-grid">
           <div class="sf-preview-item">
             <div class="sf-preview-label">EFE</div>
-            <div class="sf-preview-val" id="efe-pv-score">—</div>
+            <div class="sf-preview-val" id="efe-pv-score">--</div>
             <div class="sf-preview-sub">期待自由エネルギー</div>
           </div>
           <div class="sf-preview-item">
             <div class="sf-preview-label">α（探索重み）</div>
-            <div class="sf-preview-val" id="efe-pv-alpha">—</div>
+            <div class="sf-preview-val" id="efe-pv-alpha">--</div>
             <div class="sf-preview-sub">epistemic weight</div>
           </div>
           <div class="sf-preview-item">
             <div class="sf-preview-label">β（実利重み）</div>
-            <div class="sf-preview-val" id="efe-pv-beta">—</div>
+            <div class="sf-preview-val" id="efe-pv-beta">--</div>
             <div class="sf-preview-sub">pragmatic weight</div>
           </div>
         </div>
@@ -163,7 +163,6 @@ function efeSliderChanged() {
   const betaEl = document.getElementById('efe-pv-beta');
   if (betaEl) betaEl.textContent = efe.beta.toFixed(2);
 
-  // 解釈テキスト
   const interpEl = document.getElementById('efe-pv-interpretation');
   if (interpEl) {
     let text = '';
@@ -195,12 +194,11 @@ async function saveEfeRecord() {
     savedAt: new Date().toISOString(),
   };
 
-  // Save to localStorage
   const key = 'fep_efe_monthly';
   let history = [];
   try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
   history.unshift(record);
-  if (history.length > 24) history = history.slice(0, 24); // Keep 2 years
+  if (history.length > 24) history = history.slice(0, 24);
   localStorage.setItem(key, JSON.stringify(history));
 
   alert('EFE月次記録を保存しました。');
