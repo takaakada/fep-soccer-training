@@ -1,12 +1,12 @@
 <!-- ══════════════════════════════════════════════════════════
-     SESSION RECORD — ② セッション記録
-     練習内容と観察結果を記録し、VFEをリアルタイム算出
+     SESSION RECORD — ② セッション記録（選手VFE）
+     選手が主観的な難易度・成功率を記録し、VFEをリアルタイム算出
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
-    <div class="sf-page-title">▶️ セッション記録</div>
-    <p class="sf-page-sub">練習内容と観察結果を記録し、VFEをリアルタイムに算出します</p>
+    <div class="sf-page-title">▶️ セッション記録（選手VFE）</div>
+    <p class="sf-page-sub">練習中の主観的な難易度と成功率を記録し、VFEを算出します</p>
   </div>
 
   <!-- プログレスバー -->
@@ -18,12 +18,26 @@
     <div id="sr-precheck-text">前チェックデータを読み込み中…</div>
   </div>
 
+  <!-- 選手切替（チーム/個人） -->
+  <div class="sf-card" style="padding:12px 16px;">
+    <div class="sf-form-row" style="margin:0;">
+      <label class="sf-label" style="margin-bottom:6px;">記録対象</label>
+      <div class="sf-radio-group" id="sr-target-type">
+        <label class="sf-radio"><input type="radio" name="sr-target" value="team" checked onchange="recordFieldChanged()"> チーム全体</label>
+        <label class="sf-radio"><input type="radio" name="sr-target" value="individual" onchange="recordFieldChanged()"> 個人</label>
+      </div>
+      <div id="sr-player-select" style="display:none; margin-top:8px;">
+        <input type="text" id="sr-player-name" class="sf-input" placeholder="選手名を入力" oninput="recordFieldChanged()">
+      </div>
+    </div>
+  </div>
+
   <div class="sf-grid-2">
-    <!-- ══ 左列：練習内容 ══ -->
+    <!-- ══ 左列：メニュー選択（参照用） ══ -->
     <div>
-      <!-- メニュー情報 -->
       <div class="sf-card">
-        <div class="sf-card-title">📝 練習メニュー</div>
+        <div class="sf-card-title">📝 練習メニュー（参照）</div>
+        <p class="sf-note" style="margin-bottom:12px;">コーチ記録ページで詳細を入力します。ここではメニュー名のみ選択してください。</p>
 
         <div class="sf-form-row">
           <label class="sf-label">メニュー名</label>
@@ -37,69 +51,11 @@
           </div>
           <div id="sr-menu-info" class="sf-menu-info" style="display:none"></div>
         </div>
-
-        <div class="sf-form-row">
-          <label class="sf-label">練習の目的（複数選択可）</label>
-          <div class="sf-chip-group" id="sr-purpose">
-            <button class="sf-chip" data-value="安定化" onclick="toggleChip(this, 'purpose')">安定化</button>
-            <button class="sf-chip" data-value="探索" onclick="toggleChip(this, 'purpose')">探索</button>
-            <button class="sf-chip" data-value="修正" onclick="toggleChip(this, 'purpose')">修正</button>
-            <button class="sf-chip" data-value="強化" onclick="toggleChip(this, 'purpose')">強化</button>
-            <button class="sf-chip" data-value="統合" onclick="toggleChip(this, 'purpose')">統合</button>
-          </div>
-        </div>
-
-        <div class="sf-form-row">
-          <label class="sf-label">練習時間（分）</label>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-duration" min="5" max="90" value="20" step="5"
-                   oninput="this.nextElementSibling.textContent=this.value+'分'; recordFieldChanged()">
-            <span class="sf-slider-val">20分</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>5分</span><span>90分</span>
-          </div>
-        </div>
-
-        <div class="sf-separator"></div>
-
-        <div class="sf-form-row">
-          <label class="sf-label">レイヤー（難易度段階）</label>
-          <p class="sf-note">L1=単純反復 → L4=実戦的・複雑</p>
-          <div class="sf-radio-group" id="sr-layer">
-            <label class="sf-radio"><input type="radio" name="sr-layer" value="L1" onchange="recordFieldChanged()"> L1 単純</label>
-            <label class="sf-radio"><input type="radio" name="sr-layer" value="L2" onchange="recordFieldChanged()"> L2 応用</label>
-            <label class="sf-radio"><input type="radio" name="sr-layer" value="L3" onchange="recordFieldChanged()"> L3 複合</label>
-            <label class="sf-radio"><input type="radio" name="sr-layer" value="L4" onchange="recordFieldChanged()"> L4 実戦</label>
-          </div>
-        </div>
-
-        <div class="sf-form-row">
-          <label class="sf-label">使用チャネル（複数選択可）</label>
-          <p class="sf-note">どの感覚情報を主に使ったか</p>
-          <div class="sf-chip-group" id="sr-channels">
-            <button class="sf-chip" data-value="視覚" onclick="toggleChip(this, 'channels')">👁 視覚</button>
-            <button class="sf-chip" data-value="体性感覚" onclick="toggleChip(this, 'channels')">🦶 体性感覚</button>
-            <button class="sf-chip" data-value="呼吸・心拍" onclick="toggleChip(this, 'channels')">💓 呼吸・心拍</button>
-            <button class="sf-chip" data-value="前庭覚" onclick="toggleChip(this, 'channels')">⚖️ 前庭覚</button>
-          </div>
-        </div>
-
-        <div class="sf-form-row">
-          <label class="sf-label">制約条件（複数選択可）</label>
-          <div class="sf-chip-group" id="sr-constraints">
-            <button class="sf-chip" data-value="時間制限あり" onclick="toggleChip(this, 'constraints')">⏱ 時間制限あり</button>
-            <button class="sf-chip" data-value="人数制限" onclick="toggleChip(this, 'constraints')">👥 人数制限</button>
-            <button class="sf-chip" data-value="スペース制限" onclick="toggleChip(this, 'constraints')">📐 スペース制限</button>
-            <button class="sf-chip" data-value="タッチ制限" onclick="toggleChip(this, 'constraints')">🦶 タッチ制限</button>
-          </div>
-        </div>
       </div>
     </div>
 
-    <!-- ══ 右列：VFE入力 + コーチング ══ -->
+    <!-- ══ 右列：VFE入力 ══ -->
     <div>
-      <!-- VFE 入力 -->
       <div class="sf-card">
         <div class="sf-card-title">
           📊 VFE 入力
@@ -109,7 +65,7 @@
         <!-- 難易度 (complexity) -->
         <div class="sf-form-row">
           <label class="sf-label">課題の難易度</label>
-          <p class="sf-note">選手にとっての主観的な難しさ（VFE complexity）</p>
+          <p class="sf-note">選手にとっての主観的な難しさ</p>
           <div class="sf-slider-row">
             <input type="range" id="sr-complexity" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; recordSliderChanged()">
@@ -124,8 +80,8 @@
 
         <!-- 成功率 (accuracy) -->
         <div class="sf-form-row">
-          <label class="sf-label">成功率（観察値）</label>
-          <p class="sf-note">練習中の成功率を推定（VFE accuracy）</p>
+          <label class="sf-label">成功率（体感値）</label>
+          <p class="sf-note">練習中に感じた成功率</p>
           <div class="sf-slider-row">
             <input type="range" id="sr-accuracy" min="0" max="100" value="50" step="5"
                    oninput="this.nextElementSibling.textContent=this.value+'%'; recordSliderChanged()">
@@ -141,7 +97,7 @@
         <!-- 重みバイアス (weightValue) -->
         <div class="sf-form-row">
           <label class="sf-label">処理バイアス</label>
-          <p class="sf-note">難易度と成功率のどちらを重視するか（VFE weight bias）</p>
+          <p class="sf-note">難易度と成功率のどちらに意識が向いたか</p>
           <div class="sf-slider-row">
             <input type="range" id="sr-weight" min="-20" max="20" value="0"
                    oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1); recordSliderChanged()">
@@ -153,65 +109,38 @@
         </div>
       </div>
 
-      <!-- コーチング環境（オキシトシン系） -->
+      <!-- 後評価（簡易） -->
       <div class="sf-card">
-        <div class="sf-card-title">
-          🤝 コーチング環境
-          <span class="sf-theory-tag tag-oxytocin">オキシトシン系→λ</span>
+        <div class="sf-card-title">📝 練習後の実感</div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">成長実感</label>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-dr" min="-10" max="10" value="0"
+                   oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1); recordSliderChanged()">
+            <span class="sf-slider-val">0.0</span>
+          </div>
+          <div class="sf-scale-ends"><span>不安・退化 (-1)</span><span>成長 (+1)</span></div>
         </div>
 
         <div class="sf-form-row">
-          <label class="sf-label">コーチングタイプ</label>
-          <p class="sf-note">選手への声かけ・環境設定の方針。λ（社会的調節）に影響します</p>
-          <div class="sf-radio-group sf-radio-cards" id="sr-coaching">
-            <label class="sf-radio-card">
-              <input type="radio" name="sr-coaching" value="safe" onchange="recordFieldChanged()">
-              <div class="sf-radio-card-content">
-                <span class="sf-radio-card-icon">🛡️</span>
-                <span class="sf-radio-card-label">安全重視</span>
-                <span class="sf-radio-card-desc">失敗OK、安心できる環境</span>
-                <span class="sf-radio-card-effect">λ = −2（安定寄り）</span>
-              </div>
-            </label>
-            <label class="sf-radio-card">
-              <input type="radio" name="sr-coaching" value="explore" onchange="recordFieldChanged()">
-              <div class="sf-radio-card-content">
-                <span class="sf-radio-card-icon">🔍</span>
-                <span class="sf-radio-card-label">探索促進</span>
-                <span class="sf-radio-card-desc">自由に試行錯誤を奨励</span>
-                <span class="sf-radio-card-effect">λ = −1（やや安定）</span>
-              </div>
-            </label>
-            <label class="sf-radio-card">
-              <input type="radio" name="sr-coaching" value="positive" onchange="recordFieldChanged()">
-              <div class="sf-radio-card-content">
-                <span class="sf-radio-card-icon">👍</span>
-                <span class="sf-radio-card-label">ポジティブ</span>
-                <span class="sf-radio-card-desc">成功を褒め、前向きに</span>
-                <span class="sf-radio-card-effect">λ = 0（中立）</span>
-              </div>
-            </label>
-            <label class="sf-radio-card">
-              <input type="radio" name="sr-coaching" value="challenge" onchange="recordFieldChanged()">
-              <div class="sf-radio-card-content">
-                <span class="sf-radio-card-icon">🔥</span>
-                <span class="sf-radio-card-label">チャレンジ</span>
-                <span class="sf-radio-card-desc">高い基準・競争的環境</span>
-                <span class="sf-radio-card-effect">λ = +2（変化寄り）</span>
-              </div>
-            </label>
+          <label class="sf-label">満足度</label>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-uh" min="-10" max="10" value="0"
+                   oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1); recordSliderChanged()">
+            <span class="sf-slider-val">0.0</span>
           </div>
+          <div class="sf-scale-ends"><span>不満 (-1)</span><span>満足 (+1)</span></div>
         </div>
 
-        <div class="sf-separator"></div>
-
         <div class="sf-form-row">
-          <label class="sf-label">フィードバック頻度</label>
-          <div class="sf-radio-group">
-            <label class="sf-radio"><input type="radio" name="sr-feedback" value="none" onchange="recordFieldChanged()"> なし（自律的）</label>
-            <label class="sf-radio"><input type="radio" name="sr-feedback" value="few" onchange="recordFieldChanged()"> 少なめ（要所のみ）</label>
-            <label class="sf-radio"><input type="radio" name="sr-feedback" value="frequent" onchange="recordFieldChanged()"> 多め（頻繁に声かけ）</label>
+          <label class="sf-label">次回への期待</label>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-fh" min="-10" max="10" value="0"
+                   oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1); recordSliderChanged()">
+            <span class="sf-slider-val">0.0</span>
           </div>
+          <div class="sf-scale-ends"><span>やりたくない (-1)</span><span>楽しみ (+1)</span></div>
         </div>
       </div>
     </div>
@@ -237,11 +166,6 @@
         <div class="sf-preview-sub">sigmoid(accuracy)</div>
       </div>
       <div class="sf-preview-item">
-        <div class="sf-preview-label">λ 修飾</div>
-        <div class="sf-preview-val" id="pv-lambda">—</div>
-        <div class="sf-preview-sub">オキシトシン→社会的調節</div>
-      </div>
-      <div class="sf-preview-item">
         <div class="sf-preview-label">バンド</div>
         <div class="sf-preview-val" id="pv-band">—</div>
         <div class="sf-preview-sub">VFEゾーン判定</div>
@@ -255,7 +179,7 @@
       ← 前チェックに戻る
     </button>
     <button class="sf-btn sf-btn-primary" onclick="completeRecord()">
-      記録完了 → 後評価へ
+      記録完了 →
     </button>
   </div>
 </div>
@@ -293,38 +217,36 @@
 <script>
 // ── セッション記録 初期化 ────────────────────────────────────
 function initRecordPage() {
-  // プログレスバー描画（ステップ2 = index 1）
   const progEl = document.getElementById('sf-progress-bar');
   if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(1);
-
-  // 前チェックサマリー表示
   showPreCheckSummary();
-
-  // 初回プレビュー更新
   recordSliderChanged();
+
+  // 個人選択の表示切替
+  document.querySelectorAll('input[name="sr-target"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('sr-player-select').style.display =
+        document.querySelector('input[name="sr-target"]:checked')?.value === 'individual' ? 'block' : 'none';
+    });
+  });
 }
 
-// ── 前チェックサマリー表示 ──────────────────────────────────
 function showPreCheckSummary() {
   const textEl = document.getElementById('sr-precheck-text');
   if (!textEl) return;
-
   const state = SessionFlow.getState();
   const pc = state.preCheck;
   const computed = state.computed;
-
   if (!state.startedAt) {
     textEl.innerHTML = '⚠️ 前チェックが未実施です。<a href="#" onclick="showPage(\'session-pre-check\', document.querySelector(\'.sidebar-nav-btn[data-page=session-pre-check]\'))">前チェックを先に行う</a>';
     return;
   }
-
   const sigmaMod = computed.sigmaModifier || FepCalc.serotoninToSigma(pc.condition);
   const efe = computed.efe;
-
   textEl.innerHTML = `<strong>前チェック結果：</strong>
     コンディション=${pc.condition}/10（σ修飾: ${sigmaMod >= 0 ? '+' : ''}${sigmaMod.toFixed(1)}）、
-    期待感=${pc.expectation}/10、
-    ${efe ? `EFE=${efe.efe_display.toFixed(1)}（α=${efe.alpha.toFixed(2)}, β=${efe.beta.toFixed(2)}）` : 'EFE=未計算'}`;
+    期待感=${pc.expectation}/10
+    ${efe ? `、EFE=${efe.efe_display.toFixed(1)}` : ''}`;
 }
 
 // ── チップ選択トグル ────────────────────────────────────────
@@ -336,24 +258,18 @@ function toggleChip(btn, field) {
 function getSelectedChips(groupId) {
   const group = document.getElementById('sr-' + groupId);
   if (!group) return [];
-  return Array.from(group.querySelectorAll('.sf-chip.active'))
-    .map(c => c.dataset.value);
+  return Array.from(group.querySelectorAll('.sf-chip.active')).map(c => c.dataset.value);
 }
 
 // ── フィールド変更時の状態更新 ──────────────────────────────
 function recordFieldChanged() {
   const data = {
     menuName: document.getElementById('sr-menu-name')?.value || '',
-    purpose: getSelectedChips('purpose'),
-    duration: parseInt(document.getElementById('sr-duration')?.value ?? 20),
-    layer: document.querySelector('input[name="sr-layer"]:checked')?.value || '',
-    channels: getSelectedChips('channels'),
-    constraints: getSelectedChips('constraints'),
-    coachingType: document.querySelector('input[name="sr-coaching"]:checked')?.value || '',
-    feedbackFreq: document.querySelector('input[name="sr-feedback"]:checked')?.value || '',
     complexity: parseInt(document.getElementById('sr-complexity')?.value ?? 5),
     accuracy: parseInt(document.getElementById('sr-accuracy')?.value ?? 50),
     weightValue: parseInt(document.getElementById('sr-weight')?.value ?? 0) / 10,
+    targetType: document.querySelector('input[name="sr-target"]:checked')?.value || 'team',
+    playerName: document.getElementById('sr-player-name')?.value || '',
   };
   SessionFlow.updateRecord(data);
   recordSliderChanged();
@@ -366,45 +282,23 @@ function recordSliderChanged() {
   const weightRaw  = parseInt(document.getElementById('sr-weight')?.value ?? 0);
   const weightValue = weightRaw / 10;
 
-  // SessionFlow 状態更新
   SessionFlow.updateRecord({ complexity, accuracy, weightValue });
 
-  // VFE 計算
-  const accuracyScale = accuracy / 10; // 0-100% → 0-10
+  const accuracyScale = accuracy / 10;
   const vfe = FepCalc.calcVFE(complexity, accuracyScale, weightValue);
 
-  // VFE display
   const vfeEl = document.getElementById('pv-vfe');
   if (vfeEl) {
     vfeEl.textContent = vfe.vfe_display.toFixed(1);
-    const band = FepCalc.getBand(vfe.vfe_display);
     vfeEl.className = 'sf-preview-val ' +
       (vfe.vfe_display < 40 ? 'val-good' : vfe.vfe_display < 60 ? '' : 'val-warn');
   }
 
-  // 正規化値
   const compEl = document.getElementById('pv-complexity');
   if (compEl) compEl.textContent = vfe.norm_c.toFixed(3);
-
   const accEl = document.getElementById('pv-accuracy');
   if (accEl) accEl.textContent = vfe.norm_a.toFixed(3);
 
-  // λ 修飾（コーチングタイプ）
-  const coachingType = document.querySelector('input[name="sr-coaching"]:checked')?.value || '';
-  const lambdaMod = FepCalc.oxytocinToLambda(coachingType);
-  const lambdaEl = document.getElementById('pv-lambda');
-  if (lambdaEl) {
-    if (coachingType) {
-      lambdaEl.textContent = (lambdaMod >= 0 ? '+' : '') + lambdaMod.toFixed(1);
-      lambdaEl.className = 'sf-preview-val ' +
-        (Math.abs(lambdaMod) <= 1 ? 'val-good' : 'val-warn');
-    } else {
-      lambdaEl.textContent = '—';
-      lambdaEl.className = 'sf-preview-val';
-    }
-  }
-
-  // バンド判定
   const bandEl = document.getElementById('pv-band');
   if (bandEl) {
     const band = FepCalc.getBand(vfe.vfe_display);
@@ -414,27 +308,28 @@ function recordSliderChanged() {
   }
 }
 
-// ── 前チェックに戻る ────────────────────────────────────────
 function backToPreCheck() {
   showPage('session-pre-check', document.querySelector('.sidebar-nav-btn[data-page="session-pre-check"]'));
 }
 
-// ── 記録完了 → 後評価へ ──────────────────────────────────────
+// ── 記録完了 ──────────────────────────────────────────────────
 async function completeRecord() {
-  // 最終状態を更新
   recordFieldChanged();
-
   const state = SessionFlow.getState();
   const rec = state.record;
 
-  // 最低限の入力チェック
   if (!rec.menuName.trim()) {
     alert('メニュー名を入力してください。');
     document.getElementById('sr-menu-name')?.focus();
     return;
   }
 
-  // DB にメニュー保存
+  // F' components
+  const dr = parseInt(document.getElementById('sr-dr')?.value ?? 0) / 10;
+  const uh = parseInt(document.getElementById('sr-uh')?.value ?? 0) / 10;
+  const fh = parseInt(document.getElementById('sr-fh')?.value ?? 0) / 10;
+  SessionFlow.updatePostEval({ dr, uh, fh });
+
   if (state.dbSessionId) {
     await saveFlowMenu(state.dbSessionId, {
       ...rec,
@@ -442,44 +337,32 @@ async function completeRecord() {
     });
   }
 
-  // 次のステップへ (③ 後評価)
   SessionFlow.nextStep();
-  showPage('session-post-eval', document.querySelector('.sidebar-nav-btn[data-page="session-post-eval"]'));
+  showPage('session-result', document.querySelector('.sidebar-nav-btn[data-page="session-result"]'));
 }
 
-// ── メニュー選択モーダル ────────────────────────────────────
+// ── メニュー選択モーダル（変更なし）──────────────────────────
 let _menuData = [];
 let _currentCatFilter = 'all';
 let _currentScopeFilter = 'all';
 
 function openMenuPicker() {
-  // ALL_MENU_PRESETS（全メニュー統合）> DRILL_PRESETS をフォールバックに使用
   _menuData = (typeof ALL_MENU_PRESETS !== 'undefined' && Array.isArray(ALL_MENU_PRESETS) && ALL_MENU_PRESETS.length > 0)
     ? ALL_MENU_PRESETS
-    : (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS))
-      ? DRILL_PRESETS : [];
-
-  if (_menuData.length === 0) {
-    alert('メニューデータが読み込まれていません。\nしばらく待ってから再試行してください。');
-    return;
-  }
-
+    : (typeof DRILL_PRESETS !== 'undefined' && Array.isArray(DRILL_PRESETS)) ? DRILL_PRESETS : [];
+  if (_menuData.length === 0) { alert('メニューデータが読み込まれていません。'); return; }
   _currentCatFilter = 'all';
   _currentScopeFilter = 'all';
   document.getElementById('mp-search').value = '';
-  // フィルターリセット
   document.querySelectorAll('#mp-cat-filters .sf-chip').forEach(c => c.classList.remove('active'));
   document.querySelector('#mp-cat-filters .sf-chip[data-cat="all"]')?.classList.add('active');
   document.querySelectorAll('#mp-scope-filters .sf-chip').forEach(c => c.classList.remove('active'));
   document.querySelector('#mp-scope-filters .sf-chip[data-scope="all"]')?.classList.add('active');
-
   renderMenuList(_menuData);
   document.getElementById('menu-picker-overlay').style.display = 'flex';
 }
 
-function closeMenuPicker() {
-  document.getElementById('menu-picker-overlay').style.display = 'none';
-}
+function closeMenuPicker() { document.getElementById('menu-picker-overlay').style.display = 'none'; }
 
 function filterByScope(scope, btn) {
   _currentScopeFilter = scope;
@@ -509,32 +392,20 @@ function filterMenuList() {
 function renderMenuList(menus) {
   const listEl = document.getElementById('mp-menu-list');
   if (!listEl) return;
-
-  if (menus.length === 0) {
-    listEl.innerHTML = '<div class="sf-modal-empty">該当するメニューがありません</div>';
-    return;
-  }
-
+  if (menus.length === 0) { listEl.innerHTML = '<div class="sf-modal-empty">該当するメニューがありません</div>'; return; }
   const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
   const SCOPE_LABEL = { team: '全体', gk: 'GK', df: 'DF', mf: 'MF', fw: 'FW' };
-
   listEl.innerHTML = menus.map(m => `
     <div class="sf-modal-item" onclick="selectMenu('${m.menu_id || ''}', '${(m.name || '').replace(/'/g, "\\'")}')">
       <div class="sf-modal-item-header">
         <span class="sf-modal-item-name">${m.name}</span>
         <span class="sf-modal-item-meta">
-          <span class="sf-chip-small">${SCOPE_LABEL[m.scope] || m.scope || '全体'}</span>
+          <span class="sf-chip-small">${SCOPE_LABEL[m.scope] || '全体'}</span>
           <span class="sf-chip-small">${CAT_LABEL[m.cat] || m.cat}</span>
           ${m.time ? `<span class="sf-chip-small">${m.time}分</span>` : ''}
-          ${m.layer ? `<span class="sf-chip-small">${m.layer}</span>` : ''}
         </span>
       </div>
       <div class="sf-modal-item-desc">${m.desc || ''}</div>
-      <div class="sf-modal-item-tags">
-        ${m.purpose ? `<span class="sf-modal-item-tag">目的: ${m.purpose}</span>` : ''}
-        ${m.coaching ? `<span class="sf-modal-item-tag">コーチング: ${m.coaching}</span>` : ''}
-        ${m.vfe_target ? `<span class="sf-modal-item-tag">VFE: ${m.vfe_target}</span>` : ''}
-      </div>
     </div>
   `).join('');
 }
@@ -543,73 +414,24 @@ function selectMenu(menuId, menuName) {
   const menu = (menuId && menuId !== '')
     ? _menuData.find(m => m.menu_id === menuId)
     : _menuData.find(m => m.name === menuName);
-
-  // メニュー名を設定
   const nameEl = document.getElementById('sr-menu-name');
   if (nameEl) nameEl.value = menu ? menu.name : menuName;
-
-  if (!menu) { closeMenuPicker(); recordFieldChanged(); return; }
-
-  // 時間を設定
-  if (menu.time) {
-    const durEl = document.getElementById('sr-duration');
-    if (durEl) {
-      durEl.value = menu.time;
-      durEl.nextElementSibling.textContent = menu.time + '分';
+  if (menu) {
+    const infoEl = document.getElementById('sr-menu-info');
+    if (infoEl) {
+      const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
+      infoEl.innerHTML = `
+        <span class="sf-chip-small">${CAT_LABEL[menu.cat] || menu.cat}</span>
+        ${menu.layer ? `<span class="sf-chip-small">${menu.layer}</span>` : ''}
+        ${menu.purpose ? `<span class="sf-chip-small">${menu.purpose}</span>` : ''}
+        ${menu.desc ? `<div class="sf-menu-info-desc">${menu.desc}</div>` : ''}
+      `;
+      infoEl.style.display = 'block';
     }
   }
-
-  // レイヤーを自動選択
-  if (menu.layer) {
-    const layerRadio = document.querySelector(`input[name="sr-layer"][value="${menu.layer}"]`);
-    if (layerRadio) layerRadio.checked = true;
-  }
-
-  // コーチングタイプを自動選択
-  if (menu.coaching) {
-    const coachRadio = document.querySelector(`input[name="sr-coaching"][value="${menu.coaching}"]`);
-    if (coachRadio) coachRadio.checked = true;
-  }
-
-  // 目的チップを自動選択
-  const purposes = menu.purpose_list && menu.purpose_list.length > 0
-    ? menu.purpose_list
-    : (menu.purpose || '').split(',').map(s => s.trim()).filter(Boolean);
-  if (purposes.length > 0) {
-    document.querySelectorAll('#sr-purpose .sf-chip').forEach(chip => {
-      chip.classList.toggle('active', purposes.includes(chip.dataset.value));
-    });
-  }
-
-  // チャネルチップを自動選択
-  const channels = menu.channels_list && menu.channels_list.length > 0
-    ? menu.channels_list
-    : (menu.channels || '').split(',').map(s => s.trim()).filter(Boolean);
-  if (channels.length > 0) {
-    document.querySelectorAll('#sr-channels .sf-chip').forEach(chip => {
-      chip.classList.toggle('active', channels.includes(chip.dataset.value));
-    });
-  }
-
-  // メニュー情報を表示
-  const infoEl = document.getElementById('sr-menu-info');
-  if (infoEl) {
-    const CAT_LABEL = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
-    infoEl.innerHTML = `
-      <span class="sf-chip-small">${CAT_LABEL[menu.cat] || menu.cat}</span>
-      ${menu.purpose ? `<span class="sf-chip-small">${menu.purpose}</span>` : ''}
-      ${menu.layer ? `<span class="sf-chip-small">${menu.layer}</span>` : ''}
-      ${menu.vfe_target ? `<span class="sf-chip-small">VFE: ${menu.vfe_target}</span>` : ''}
-      ${menu.desc ? `<div class="sf-menu-info-desc">${menu.desc}</div>` : ''}
-      ${menu.fep ? `<div class="sf-menu-info-fep">FEP: ${menu.fep}</div>` : ''}
-    `;
-    infoEl.style.display = 'block';
-  }
-
   closeMenuPicker();
   recordFieldChanged();
 }
 
-// ── ページ初期化呼び出し
 initRecordPage();
 </script>

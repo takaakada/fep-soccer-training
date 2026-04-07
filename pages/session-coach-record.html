@@ -1,0 +1,355 @@
+<!-- ══════════════════════════════════════════════════════════
+     COACH RECORD — コーチ記録
+     練習メニュー詳細とコーチング環境を記録（コーチ側の入力）
+═══════════════════════════════════════════════════════════ -->
+
+<div class="sf-page">
+  <div class="sf-header">
+    <div class="sf-page-title">🤝 コーチ記録</div>
+    <p class="sf-page-sub">練習メニューの詳細とコーチング環境を記録します（コーチ用）</p>
+  </div>
+
+  <div id="sf-progress-bar"></div>
+
+  <div class="sf-grid-2">
+    <!-- ══ 左列：練習メニュー詳細 ══ -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">📝 練習メニュー詳細</div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">メニュー名</label>
+          <div class="sf-menu-select-row">
+            <input type="text" id="cr-menu-name" class="sf-input"
+                   placeholder="メニューを選択または手入力"
+                   oninput="coachFieldChanged()">
+            <button class="sf-btn sf-btn-secondary sf-menu-pick-btn" onclick="openCoachMenuPicker()">
+              📋 選択
+            </button>
+          </div>
+          <div id="cr-menu-info" class="sf-menu-info" style="display:none"></div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">練習の目的（複数選択可）</label>
+          <div class="sf-chip-group" id="cr-purpose">
+            <button class="sf-chip" data-value="安定化" onclick="this.classList.toggle('active'); coachFieldChanged()">安定化</button>
+            <button class="sf-chip" data-value="探索" onclick="this.classList.toggle('active'); coachFieldChanged()">探索</button>
+            <button class="sf-chip" data-value="修正" onclick="this.classList.toggle('active'); coachFieldChanged()">修正</button>
+            <button class="sf-chip" data-value="強化" onclick="this.classList.toggle('active'); coachFieldChanged()">強化</button>
+            <button class="sf-chip" data-value="統合" onclick="this.classList.toggle('active'); coachFieldChanged()">統合</button>
+          </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">練習時間（分）</label>
+          <div class="sf-slider-row">
+            <input type="range" id="cr-duration" min="5" max="90" value="20" step="5"
+                   oninput="this.nextElementSibling.textContent=this.value+'分'; coachFieldChanged()">
+            <span class="sf-slider-val">20分</span>
+          </div>
+          <div class="sf-scale-ends"><span>5分</span><span>90分</span></div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">レイヤー（難易度段階）</label>
+          <p class="sf-note">L1=単純反復 → L4=実戦的・複雑</p>
+          <div class="sf-radio-group" id="cr-layer">
+            <label class="sf-radio"><input type="radio" name="cr-layer" value="L1" onchange="coachFieldChanged()"> L1 単純</label>
+            <label class="sf-radio"><input type="radio" name="cr-layer" value="L2" onchange="coachFieldChanged()"> L2 応用</label>
+            <label class="sf-radio"><input type="radio" name="cr-layer" value="L3" onchange="coachFieldChanged()"> L3 複合</label>
+            <label class="sf-radio"><input type="radio" name="cr-layer" value="L4" onchange="coachFieldChanged()"> L4 実戦</label>
+          </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">使用チャネル（複数選択可）</label>
+          <p class="sf-note">どの感覚情報を主に使ったか</p>
+          <div class="sf-chip-group" id="cr-channels">
+            <button class="sf-chip" data-value="視覚" onclick="this.classList.toggle('active'); coachFieldChanged()">👁 視覚</button>
+            <button class="sf-chip" data-value="体性感覚" onclick="this.classList.toggle('active'); coachFieldChanged()">🦶 体性感覚</button>
+            <button class="sf-chip" data-value="呼吸・心拍" onclick="this.classList.toggle('active'); coachFieldChanged()">💓 呼吸・心拍</button>
+            <button class="sf-chip" data-value="前庭覚" onclick="this.classList.toggle('active'); coachFieldChanged()">⚖️ 前庭覚</button>
+          </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">制約条件（複数選択可）</label>
+          <div class="sf-chip-group" id="cr-constraints">
+            <button class="sf-chip" data-value="時間制限あり" onclick="this.classList.toggle('active'); coachFieldChanged()">⏱ 時間制限あり</button>
+            <button class="sf-chip" data-value="人数制限" onclick="this.classList.toggle('active'); coachFieldChanged()">👥 人数制限</button>
+            <button class="sf-chip" data-value="スペース制限" onclick="this.classList.toggle('active'); coachFieldChanged()">📐 スペース制限</button>
+            <button class="sf-chip" data-value="タッチ制限" onclick="this.classList.toggle('active'); coachFieldChanged()">🦶 タッチ制限</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 右列：コーチング環境 ══ -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">
+          🤝 コーチング環境
+          <span class="sf-theory-tag tag-oxytocin">オキシトシン系→λ</span>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">コーチングタイプ</label>
+          <p class="sf-note">選手への声かけ・環境設定の方針。λ（社会的調節）に影響します</p>
+          <div class="sf-radio-group sf-radio-cards" id="cr-coaching">
+            <label class="sf-radio-card">
+              <input type="radio" name="cr-coaching" value="safe" onchange="coachFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">🛡️</span>
+                <span class="sf-radio-card-label">安全重視</span>
+                <span class="sf-radio-card-desc">失敗OK、安心できる環境</span>
+                <span class="sf-radio-card-effect">λ = −2（安定寄り）</span>
+              </div>
+            </label>
+            <label class="sf-radio-card">
+              <input type="radio" name="cr-coaching" value="explore" onchange="coachFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">🔍</span>
+                <span class="sf-radio-card-label">探索促進</span>
+                <span class="sf-radio-card-desc">自由に試行錯誤を奨励</span>
+                <span class="sf-radio-card-effect">λ = −1（やや安定）</span>
+              </div>
+            </label>
+            <label class="sf-radio-card">
+              <input type="radio" name="cr-coaching" value="positive" onchange="coachFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">👍</span>
+                <span class="sf-radio-card-label">ポジティブ</span>
+                <span class="sf-radio-card-desc">成功を褒め、前向きに</span>
+                <span class="sf-radio-card-effect">λ = 0（中立）</span>
+              </div>
+            </label>
+            <label class="sf-radio-card">
+              <input type="radio" name="cr-coaching" value="challenge" onchange="coachFieldChanged()">
+              <div class="sf-radio-card-content">
+                <span class="sf-radio-card-icon">🔥</span>
+                <span class="sf-radio-card-label">チャレンジ</span>
+                <span class="sf-radio-card-desc">高い基準・競争的環境</span>
+                <span class="sf-radio-card-effect">λ = +2（変化寄り）</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">フィードバック頻度</label>
+          <div class="sf-radio-group">
+            <label class="sf-radio"><input type="radio" name="cr-feedback" value="none" onchange="coachFieldChanged()"> なし（自律的）</label>
+            <label class="sf-radio"><input type="radio" name="cr-feedback" value="few" onchange="coachFieldChanged()"> 少なめ（要所のみ）</label>
+            <label class="sf-radio"><input type="radio" name="cr-feedback" value="frequent" onchange="coachFieldChanged()"> 多め（頻繁に声かけ）</label>
+          </div>
+        </div>
+
+        <div class="sf-separator"></div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">コーチメモ</label>
+          <textarea id="cr-coach-notes" class="sf-input" rows="3" placeholder="観察メモ、気づいた点など" oninput="coachFieldChanged()"></textarea>
+        </div>
+      </div>
+
+      <!-- λプレビュー -->
+      <div class="sf-card sf-preview-card">
+        <div class="sf-card-title">📐 λ プレビュー</div>
+        <div class="sf-preview-grid">
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">λ 修飾</div>
+            <div class="sf-preview-val" id="cr-pv-lambda">—</div>
+            <div class="sf-preview-sub">オキシトシン→社会的調節</div>
+          </div>
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">コーチングタイプ</div>
+            <div class="sf-preview-val" id="cr-pv-type">—</div>
+            <div class="sf-preview-sub">選択中</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ボタン -->
+  <div class="sf-btn-row">
+    <button class="sf-btn sf-btn-secondary" onclick="showPage('session-record')">
+      ← 選手記録に戻る
+    </button>
+    <button class="sf-btn sf-btn-primary" onclick="saveCoachRecord()">
+      💾 保存
+    </button>
+  </div>
+</div>
+
+<!-- メニュー選択モーダル（コーチ用） -->
+<div id="coach-menu-picker-overlay" class="sf-modal-overlay" style="display:none" onclick="closeCoachMenuPicker()">
+  <div class="sf-modal-box" onclick="event.stopPropagation()">
+    <div class="sf-modal-header">
+      <div class="sf-modal-title">📋 メニューを選択</div>
+      <button class="sf-modal-close" onclick="closeCoachMenuPicker()">✕</button>
+    </div>
+    <div class="sf-modal-filters">
+      <input type="text" id="cr-mp-search" class="sf-input" placeholder="🔍 メニュー名で検索" oninput="filterCoachMenuList()">
+      <div class="sf-chip-group" id="cr-mp-cat-filters" style="margin-top:4px">
+        <button class="sf-chip active" data-cat="all" onclick="filterCoachByCat('all', this)">全カテゴリ</button>
+        <button class="sf-chip" data-cat="warm" onclick="filterCoachByCat('warm', this)">ウォームアップ</button>
+        <button class="sf-chip" data-cat="tech" onclick="filterCoachByCat('tech', this)">技術</button>
+        <button class="sf-chip" data-cat="tactic" onclick="filterCoachByCat('tactic', this)">戦術</button>
+        <button class="sf-chip" data-cat="phys" onclick="filterCoachByCat('phys', this)">フィジカル</button>
+        <button class="sf-chip" data-cat="cool" onclick="filterCoachByCat('cool', this)">クールダウン</button>
+      </div>
+    </div>
+    <div class="sf-modal-list" id="cr-mp-menu-list"></div>
+  </div>
+</div>
+
+<script>
+let _crMenuData = [];
+let _crCatFilter = 'all';
+
+function initCoachRecordPage() {
+  // セッション記録のメニュー名を引き継ぐ
+  const state = SessionFlow.getState();
+  if (state.record?.menuName) {
+    const el = document.getElementById('cr-menu-name');
+    if (el) el.value = state.record.menuName;
+  }
+  // コーチング環境を引き継ぐ
+  if (state.record?.coachingType) {
+    const r = document.querySelector(`input[name="cr-coaching"][value="${state.record.coachingType}"]`);
+    if (r) r.checked = true;
+  }
+  coachFieldChanged();
+}
+
+function coachFieldChanged() {
+  const coachingType = document.querySelector('input[name="cr-coaching"]:checked')?.value || '';
+  const lambdaMod = (typeof FepCalc !== 'undefined') ? FepCalc.oxytocinToLambda(coachingType) : 0;
+  const labels = { safe: '安全重視', explore: '探索促進', positive: 'ポジティブ', challenge: 'チャレンジ' };
+
+  const lambdaEl = document.getElementById('cr-pv-lambda');
+  if (lambdaEl && coachingType) {
+    lambdaEl.textContent = (lambdaMod >= 0 ? '+' : '') + lambdaMod.toFixed(1);
+    lambdaEl.className = 'sf-preview-val ' + (Math.abs(lambdaMod) <= 1 ? 'val-good' : 'val-warn');
+  }
+  const typeEl = document.getElementById('cr-pv-type');
+  if (typeEl) typeEl.textContent = labels[coachingType] || '—';
+
+  // Update session flow state
+  const purpose = Array.from(document.querySelectorAll('#cr-purpose .sf-chip.active')).map(c => c.dataset.value);
+  const channels = Array.from(document.querySelectorAll('#cr-channels .sf-chip.active')).map(c => c.dataset.value);
+  const constraints = Array.from(document.querySelectorAll('#cr-constraints .sf-chip.active')).map(c => c.dataset.value);
+
+  SessionFlow.updateRecord({
+    menuName: document.getElementById('cr-menu-name')?.value || '',
+    purpose,
+    duration: parseInt(document.getElementById('cr-duration')?.value ?? 20),
+    layer: document.querySelector('input[name="cr-layer"]:checked')?.value || '',
+    channels,
+    constraints,
+    coachingType,
+    feedbackFreq: document.querySelector('input[name="cr-feedback"]:checked')?.value || '',
+    coachNotes: document.getElementById('cr-coach-notes')?.value || '',
+  });
+}
+
+async function saveCoachRecord() {
+  coachFieldChanged();
+  const state = SessionFlow.getState();
+  const rec = state.record;
+
+  if (state.dbSessionId) {
+    await saveFlowMenu(state.dbSessionId, {
+      ...rec,
+      vfeDisplay: state.computed.vfe?.vfe_display,
+    });
+  }
+
+  // Save to localStorage as backup
+  localStorage.setItem('fep_last_coach_record', JSON.stringify({
+    ...rec,
+    savedAt: new Date().toISOString(),
+  }));
+
+  alert('コーチ記録を保存しました。');
+}
+
+// ── メニュー選択モーダル ──────────────────────────────────────
+function openCoachMenuPicker() {
+  _crMenuData = (typeof ALL_MENU_PRESETS !== 'undefined' && ALL_MENU_PRESETS.length > 0)
+    ? ALL_MENU_PRESETS
+    : (typeof DRILL_PRESETS !== 'undefined') ? DRILL_PRESETS : [];
+  if (_crMenuData.length === 0) { alert('メニューデータが未読込'); return; }
+  _crCatFilter = 'all';
+  document.getElementById('cr-mp-search').value = '';
+  document.querySelectorAll('#cr-mp-cat-filters .sf-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('#cr-mp-cat-filters .sf-chip[data-cat="all"]')?.classList.add('active');
+  renderCoachMenuList(_crMenuData);
+  document.getElementById('coach-menu-picker-overlay').style.display = 'flex';
+}
+
+function closeCoachMenuPicker() { document.getElementById('coach-menu-picker-overlay').style.display = 'none'; }
+
+function filterCoachByCat(cat, btn) {
+  _crCatFilter = cat;
+  document.querySelectorAll('#cr-mp-cat-filters .sf-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filterCoachMenuList();
+}
+
+function filterCoachMenuList() {
+  const search = (document.getElementById('cr-mp-search')?.value || '').toLowerCase();
+  const filtered = _crMenuData.filter(m => {
+    const catMatch = _crCatFilter === 'all' || m.cat === _crCatFilter;
+    const searchMatch = !search || m.name.toLowerCase().includes(search);
+    return catMatch && searchMatch;
+  });
+  renderCoachMenuList(filtered);
+}
+
+function renderCoachMenuList(menus) {
+  const listEl = document.getElementById('cr-mp-menu-list');
+  if (!listEl) return;
+  const CAT = { warm: 'ウォームアップ', tech: '技術', tactic: '戦術', phys: 'フィジカル', cool: 'クールダウン' };
+  listEl.innerHTML = menus.length === 0
+    ? '<div class="sf-modal-empty">該当なし</div>'
+    : menus.map(m => `
+      <div class="sf-modal-item" onclick="selectCoachMenu('${(m.name||'').replace(/'/g,"\\'")}')">
+        <div class="sf-modal-item-header">
+          <span class="sf-modal-item-name">${m.name}</span>
+          <span class="sf-modal-item-meta">
+            <span class="sf-chip-small">${CAT[m.cat]||m.cat}</span>
+            ${m.time?`<span class="sf-chip-small">${m.time}分</span>`:''}
+            ${m.layer?`<span class="sf-chip-small">${m.layer}</span>`:''}
+          </span>
+        </div>
+        <div class="sf-modal-item-desc">${m.desc||''}</div>
+      </div>
+    `).join('');
+}
+
+function selectCoachMenu(name) {
+  const menu = _crMenuData.find(m => m.name === name);
+  const el = document.getElementById('cr-menu-name');
+  if (el) el.value = name;
+  if (menu) {
+    if (menu.time) { const d = document.getElementById('cr-duration'); if (d) { d.value = menu.time; d.nextElementSibling.textContent = menu.time+'分'; } }
+    if (menu.layer) { const r = document.querySelector(`input[name="cr-layer"][value="${menu.layer}"]`); if (r) r.checked = true; }
+    if (menu.coaching) { const r = document.querySelector(`input[name="cr-coaching"][value="${menu.coaching}"]`); if (r) r.checked = true; }
+    const purposes = (menu.purpose||'').split(',').map(s=>s.trim()).filter(Boolean);
+    if (purposes.length) document.querySelectorAll('#cr-purpose .sf-chip').forEach(c => c.classList.toggle('active', purposes.includes(c.dataset.value)));
+    const channels = (menu.channels||'').split(',').map(s=>s.trim()).filter(Boolean);
+    if (channels.length) document.querySelectorAll('#cr-channels .sf-chip').forEach(c => c.classList.toggle('active', channels.includes(c.dataset.value)));
+  }
+  closeCoachMenuPicker();
+  coachFieldChanged();
+}
+
+initCoachRecordPage();
+</script>
