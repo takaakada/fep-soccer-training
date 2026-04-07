@@ -2813,6 +2813,309 @@
 .sf-alert-green { background: #f0fdf4; border-left: 4px solid #059669; }
 .sf-alert-red   { background: #fef2f2; border-left: 4px solid #dc2626; }
 
+/* ══════════════════════════════════════════════════════════
+   MENU / POSITION — Phase-based & filter-bar styles
+══════════════════════════════════════════════════════════ */
+
+/* ── Filter Bar ── */
+.menu-filter-bar, .pos-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+.menu-filter-bar .filter-group,
+.pos-filter-bar .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.menu-filter-bar .filter-group > label,
+.pos-filter-bar .filter-group > label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.filter-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.filter-chip {
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.filter-chip.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ── Phase Section ── */
+.phase-section {
+  margin-bottom: 24px;
+}
+.phase-header {
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.phase-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.phase-icon {
+  font-size: 1.5rem;
+}
+.phase-header-info {
+  flex: 1;
+}
+.phase-title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+.phase-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.phase-count {
+  background: rgba(0,0,0,0.08);
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.phase-vfe-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.vfe-curve-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.vfe-curve-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.vfe-curve-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.phase-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.phase-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+}
+
+/* ── Menu Card ── */
+.menu-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.menu-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.menu-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.menu-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+.menu-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.menu-card-del-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.edit-mode .menu-card-del-btn {
+  display: inline-flex;
+}
+.menu-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.menu-card-attrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+/* ── Attribute Badge ── */
+.attr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.5;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Channel Chip ── */
+.channel-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+.menu-card-channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+/* ── Expandable details in menu-card ── */
+.menu-card-fep,
+.menu-card-steps,
+.menu-card-coaching-pts {
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+.menu-card-fep summary,
+.menu-card-steps summary,
+.menu-card-coaching-pts summary {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+}
+.menu-card-fep-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.menu-card-steps-list {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 4px 0 0 16px;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* ── Position page card fix ── */
+.drill-card { position: relative; }
+
+/* ── Edit mode ── */
+.edit-mode-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.edit-mode-btn:hover { border-color: var(--primary); color: var(--primary); }
+.edit-mode-btn.is-active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ── Add menu section ── */
+.add-menu-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ── Menu page header ── */
+.menu-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sf-grid-2 { grid-template-columns: 1fr; }
@@ -2820,4 +3123,6 @@
   .sf-preview-item { min-width: auto; }
   .sf-btn-row { flex-direction: column; }
   .sf-btn { width: 100%; text-align: center; }
+  .menu-filter-bar, .pos-filter-bar { flex-direction: column; gap: 10px; }
+  .phase-cards { grid-template-columns: 1fr; }
 }

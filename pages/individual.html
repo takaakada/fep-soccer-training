@@ -1,63 +1,82 @@
 <!-- ══════════════════════════════════════════════════════════
      INDIVIDUAL TRAINING — 個別トレーニング
-     怪我人・個人向けトレーニングメニュー管理
+     エラーパターン別プラン + 選手別カスタムメニュー
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
     <div class="sf-page-title">🏃 個別トレーニング</div>
-    <p class="sf-page-sub">個人向け・怪我人向けのトレーニングメニューを管理します</p>
+    <p class="sf-page-sub">エラーパターンに基づく個別課題プランと、選手別メニューを管理します</p>
   </div>
 
-  <!-- 選手選択 -->
-  <div class="sf-card" style="padding:12px 16px;">
-    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+  <!-- ═══ セクション1: 個別課題プラン ═══ -->
+  <div class="sf-card" style="border-left:4px solid #7c3aed; margin-bottom:24px;">
+    <div class="sf-card-title" style="color:#7c3aed;">🧠 個別課題プラン</div>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
+      典型的なエラーパターンから課題を特定し、解決プランを提示します
+    </p>
+
+    <!-- ポジションフィルター -->
+    <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+      <button class="sf-chip active" id="ep-filter-all" onclick="filterErrorPlans('all', this)">全ポジション</button>
+      <button class="sf-chip" id="ep-filter-gk" onclick="filterErrorPlans('gk', this)">🧤 GK</button>
+      <button class="sf-chip" id="ep-filter-df" onclick="filterErrorPlans('df', this)">🛡️ DF</button>
+      <button class="sf-chip" id="ep-filter-mf" onclick="filterErrorPlans('mf', this)">⚙️ MF</button>
+      <button class="sf-chip" id="ep-filter-fw" onclick="filterErrorPlans('fw', this)">🎯 FW</button>
+    </div>
+
+    <!-- プランカード一覧 -->
+    <div id="ep-plan-cards"></div>
+  </div>
+
+  <!-- ═══ プラン詳細表示エリア（タップで展開） ═══ -->
+  <div id="ep-plan-detail" style="display:none;"></div>
+
+  <!-- ═══ セクション2: 選手別カスタムメニュー ═══ -->
+  <div class="sf-card" style="margin-top:24px;">
+    <div class="sf-card-title">📋 選手別カスタムメニュー</div>
+
+    <!-- 選手選択 -->
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
       <label class="sf-label" style="margin:0; min-width:auto;">選手：</label>
       <select id="ind-player-select" class="sf-input" style="flex:1; min-width:180px; max-width:300px;" onchange="onPlayerSelect()">
         <option value="">-- 選手を選択 --</option>
       </select>
-      <button class="sf-btn sf-btn-secondary" onclick="addNewPlayer()">＋ 新規選手</button>
+      <button class="sf-btn sf-btn-secondary" style="font-size:0.82rem;" onclick="addNewPlayer()">＋ 新規選手</button>
     </div>
-  </div>
 
-  <!-- 選手未選択時 -->
-  <div id="ind-empty" style="text-align:center; padding:60px 20px; color:var(--text-muted);">
-    <div style="font-size:2.5rem; margin-bottom:12px;">🏃</div>
-    <p style="font-size:1rem;">選手を選択するか、新規登録してメニューを作成してください</p>
-  </div>
+    <!-- 選手未選択時 -->
+    <div id="ind-empty" style="text-align:center; padding:30px 20px; color:var(--text-muted);">
+      <p style="font-size:0.88rem;">選手を選択するか、新規登録してメニューを作成できます</p>
+    </div>
 
-  <!-- 選手選択後のコンテンツ -->
-  <div id="ind-content" style="display:none;">
-    <!-- 選手情報ヘッダー -->
-    <div class="sf-card" style="border-left:4px solid #2563eb;">
-      <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-        <div style="font-size:2rem;">🧑</div>
+    <!-- 選手選択後のコンテンツ -->
+    <div id="ind-content" style="display:none;">
+      <!-- 選手情報ヘッダー -->
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px; background:var(--bg); border-radius:10px; margin-bottom:14px;">
+        <div style="font-size:1.6rem;">🧑</div>
         <div style="flex:1;">
-          <div id="ind-player-name" style="font-size:1.2rem; font-weight:800;">--</div>
-          <div id="ind-player-info" style="font-size:0.82rem; color:var(--text-muted);">--</div>
+          <div id="ind-player-name" style="font-size:1.05rem; font-weight:800;">--</div>
+          <div id="ind-player-info" style="font-size:0.78rem; color:var(--text-muted);">--</div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="sf-btn sf-btn-secondary" style="font-size:0.82rem;" onclick="showPage('player-profile', document.querySelector('.sidebar-nav-btn[data-page=player-profile]'))">📊 プロフィール</button>
-        </div>
+        <button class="sf-btn sf-btn-secondary" style="font-size:0.78rem; padding:6px 12px;" onclick="showPage('player-profile', document.querySelector('.sidebar-nav-btn[data-page=player-profile]'))">📊 プロフィール</button>
       </div>
-    </div>
 
-    <!-- カテゴリタブ -->
-    <div style="display:flex; gap:8px; margin:16px 0; flex-wrap:wrap;">
-      <button class="sf-chip active" id="ind-tab-rehab" onclick="switchIndTab('rehab', this)">🏥 リハビリ</button>
-      <button class="sf-chip" id="ind-tab-skill" onclick="switchIndTab('skill', this)">⚡ スキル強化</button>
-      <button class="sf-chip" id="ind-tab-condition" onclick="switchIndTab('condition', this)">💪 コンディション</button>
-      <button class="sf-chip" id="ind-tab-custom" onclick="switchIndTab('custom', this)">📝 カスタム</button>
-    </div>
+      <!-- カテゴリタブ -->
+      <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="sf-chip active" id="ind-tab-rehab" onclick="switchIndTab('rehab', this)">🏥 リハビリ</button>
+        <button class="sf-chip" id="ind-tab-skill" onclick="switchIndTab('skill', this)">⚡ スキル強化</button>
+        <button class="sf-chip" id="ind-tab-condition" onclick="switchIndTab('condition', this)">💪 コンディション</button>
+        <button class="sf-chip" id="ind-tab-custom" onclick="switchIndTab('custom', this)">📝 カスタム</button>
+      </div>
 
-    <!-- メニューリスト -->
-    <div id="ind-menu-list"></div>
+      <!-- メニューリスト -->
+      <div id="ind-menu-list"></div>
 
-    <!-- メニュー追加ボタン -->
-    <div style="text-align:center; margin-top:16px;">
-      <button class="sf-btn sf-btn-primary" onclick="openAddIndMenu()">
-        ＋ メニューを追加
-      </button>
+      <!-- メニュー追加ボタン -->
+      <div style="text-align:center; margin-top:12px;">
+        <button class="sf-btn sf-btn-secondary" style="font-size:0.85rem;" onclick="openAddIndMenu()">＋ メニューを追加</button>
+      </div>
     </div>
   </div>
 </div>
@@ -153,193 +172,4 @@
   </div>
 </div>
 
-<script>
-let _currentPlayerId = '';
-let _currentIndTab = 'rehab';
-
-function initIndividualPage() {
-  loadPlayerList();
-}
-
-// ── 選手管理 ──
-function loadPlayerList() {
-  const select = document.getElementById('ind-player-select');
-  if (!select) return;
-  const players = getPlayers();
-
-  // Preserve current selection
-  const prevVal = select.value;
-  select.innerHTML = '<option value="">-- 選手を選択 --</option>';
-  players.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = `${p.name}（${p.position}）`;
-    select.appendChild(opt);
-  });
-  if (prevVal) select.value = prevVal;
-}
-
-function getPlayers() {
-  try { return JSON.parse(localStorage.getItem('fep_players') || '[]'); } catch(e) { return []; }
-}
-
-function savePlayers(players) {
-  localStorage.setItem('fep_players', JSON.stringify(players));
-}
-
-function addNewPlayer() {
-  document.getElementById('ind-new-player-modal').style.display = 'flex';
-  document.getElementById('ind-np-name').value = '';
-  document.getElementById('ind-np-notes').value = '';
-}
-
-function saveNewPlayer() {
-  const name = document.getElementById('ind-np-name')?.value?.trim();
-  if (!name) { alert('選手名を入力してください。'); return; }
-
-  const players = getPlayers();
-  const player = {
-    id: 'p_' + Date.now(),
-    name,
-    position: document.getElementById('ind-np-position')?.value || 'MF',
-    notes: document.getElementById('ind-np-notes')?.value || '',
-    createdAt: new Date().toISOString(),
-  };
-  players.push(player);
-  savePlayers(players);
-
-  document.getElementById('ind-new-player-modal').style.display = 'none';
-  loadPlayerList();
-
-  // Auto-select
-  document.getElementById('ind-player-select').value = player.id;
-  onPlayerSelect();
-}
-
-function onPlayerSelect() {
-  const select = document.getElementById('ind-player-select');
-  _currentPlayerId = select?.value || '';
-
-  if (!_currentPlayerId) {
-    document.getElementById('ind-empty').style.display = 'block';
-    document.getElementById('ind-content').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('ind-empty').style.display = 'none';
-  document.getElementById('ind-content').style.display = 'block';
-
-  const players = getPlayers();
-  const player = players.find(p => p.id === _currentPlayerId);
-  if (player) {
-    document.getElementById('ind-player-name').textContent = player.name;
-    document.getElementById('ind-player-info').textContent =
-      `${player.position} | ${player.notes || '特記事項なし'} | 登録: ${player.createdAt?.slice(0, 10) || '--'}`;
-  }
-
-  renderIndMenus();
-}
-
-// ── タブ切り替え ──
-function switchIndTab(tab, btn) {
-  _currentIndTab = tab;
-  document.querySelectorAll('[id^="ind-tab-"]').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  renderIndMenus();
-}
-
-// ── メニュー管理 ──
-function getIndMenus(playerId) {
-  try { return JSON.parse(localStorage.getItem('fep_ind_menus_' + playerId) || '[]'); } catch(e) { return []; }
-}
-
-function saveIndMenus(playerId, menus) {
-  localStorage.setItem('fep_ind_menus_' + playerId, JSON.stringify(menus));
-}
-
-function renderIndMenus() {
-  const container = document.getElementById('ind-menu-list');
-  if (!container || !_currentPlayerId) return;
-
-  const menus = getIndMenus(_currentPlayerId).filter(m => m.category === _currentIndTab);
-
-  if (menus.length === 0) {
-    const catLabels = { rehab: 'リハビリ', skill: 'スキル強化', condition: 'コンディション', custom: 'カスタム' };
-    container.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
-      <p>${catLabels[_currentIndTab] || _currentIndTab}メニューがまだありません</p>
-    </div>`;
-    return;
-  }
-
-  container.innerHTML = menus.map((m, i) => `
-    <div class="sf-card" style="margin-bottom:8px;">
-      <div style="display:flex; align-items:flex-start; gap:12px;">
-        <div style="flex:1;">
-          <div style="font-weight:700; font-size:1rem; margin-bottom:4px;">${m.name}</div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
-            <span class="attr-badge">${m.layer || 'L1'}</span>
-            ${(m.purpose || []).map(p => `<span class="attr-badge" style="background:#dbeafe; color:#1e40af;">${p}</span>`).join('')}
-            <span class="time-badge">${m.duration || 15}分</span>
-          </div>
-          ${m.notes ? `<div style="font-size:0.82rem; color:var(--text-muted); line-height:1.4;">${m.notes}</div>` : ''}
-        </div>
-        <button style="background:none; border:none; font-size:1.1rem; cursor:pointer; color:#dc2626; padding:4px;"
-                onclick="deleteIndMenu(${i})" title="削除">🗑</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function openAddIndMenu() {
-  document.getElementById('ind-add-modal').style.display = 'flex';
-  document.getElementById('ind-new-name').value = '';
-  document.getElementById('ind-new-notes').value = '';
-  document.getElementById('ind-new-category').value = _currentIndTab;
-  // Reset purpose chips
-  document.querySelectorAll('#ind-new-purpose .sf-chip').forEach(c => c.classList.remove('active'));
-}
-
-function closeAddIndMenu() {
-  document.getElementById('ind-add-modal').style.display = 'none';
-}
-
-function saveNewIndMenu() {
-  const name = document.getElementById('ind-new-name')?.value?.trim();
-  if (!name) { alert('メニュー名を入力してください。'); return; }
-  if (!_currentPlayerId) { alert('選手を選択してください。'); return; }
-
-  const purpose = Array.from(document.querySelectorAll('#ind-new-purpose .sf-chip.active'))
-    .map(c => c.dataset.value);
-
-  const menu = {
-    name,
-    category: document.getElementById('ind-new-category')?.value || 'custom',
-    layer: document.querySelector('input[name="ind-new-layer"]:checked')?.value || 'L1',
-    purpose,
-    duration: parseInt(document.getElementById('ind-new-duration')?.value ?? 15),
-    notes: document.getElementById('ind-new-notes')?.value || '',
-    createdAt: new Date().toISOString(),
-  };
-
-  const menus = getIndMenus(_currentPlayerId);
-  menus.push(menu);
-  saveIndMenus(_currentPlayerId, menus);
-
-  closeAddIndMenu();
-  renderIndMenus();
-}
-
-function deleteIndMenu(index) {
-  if (!confirm('このメニューを削除しますか？')) return;
-  const menus = getIndMenus(_currentPlayerId);
-  const filtered = menus.filter(m => m.category === _currentIndTab);
-  const globalIndex = menus.indexOf(filtered[index]);
-  if (globalIndex >= 0) {
-    menus.splice(globalIndex, 1);
-    saveIndMenus(_currentPlayerId, menus);
-    renderIndMenus();
-  }
-}
-
-initIndividualPage();
-</script>
+<!-- JS is in js/individual.js, initialized via core.js -->
