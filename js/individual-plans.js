@@ -19,8 +19,9 @@ const PROBLEM_MASTER = {
   P11: '他者と完全理解できない',
 };
 
-// ─── 5つの典型エラーパターン ─────────────────────────────────
-const INDIVIDUAL_ERROR_PLANS = [
+// ─── 5つの典型エラーパターン（フォールバック：スプレッドシートが取得できない時に使用）──
+// data-loader.js が CSV から取得成功すると window.INDIVIDUAL_ERROR_PLANS を上書きする
+const INDIVIDUAL_ERROR_PLANS_FALLBACK = [
   {
     plan_id: 'IND-001',
     plan_name: '反応遅れ型プラン',
@@ -338,13 +339,20 @@ const INDIVIDUAL_ERROR_PLANS = [
   },
 ];
 
+// フォールバックを初期値として設定（CSV取得で上書きされる）
+if (typeof window.INDIVIDUAL_ERROR_PLANS === 'undefined') {
+  window.INDIVIDUAL_ERROR_PLANS = INDIVIDUAL_ERROR_PLANS_FALLBACK;
+}
+
 // ─── ヘルパー関数 ───────────────────────────────────────────
 function getActivePlans() {
-  return INDIVIDUAL_ERROR_PLANS.filter(p => p.is_active).sort((a, b) => a.sort_order - b.sort_order);
+  const plans = window.INDIVIDUAL_ERROR_PLANS || INDIVIDUAL_ERROR_PLANS_FALLBACK;
+  return plans.filter(p => p.is_active).sort((a, b) => a.sort_order - b.sort_order);
 }
 
 function getPlanById(planId) {
-  return INDIVIDUAL_ERROR_PLANS.find(p => p.plan_id === planId) || null;
+  const plans = window.INDIVIDUAL_ERROR_PLANS || INDIVIDUAL_ERROR_PLANS_FALLBACK;
+  return plans.find(p => p.plan_id === planId) || null;
 }
 
 function getPlansByPosition(posId) {

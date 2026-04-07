@@ -11,7 +11,11 @@
 // ══════════════════════════════════════════════════════════════
 
 const MENU_CACHE_KEY = 'fep_menu_master_cache';
+const INDIV_CACHE_KEY = 'fep_indiv_plan_cache';
 const MENU_CACHE_TTL = 1000 * 60 * 30;  // 30分
+
+// 個別プラン Google Sheets CSV URL
+const INDIV_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTMK9I8caCEpPT6c2AO6QHY3H3yaIOaVy0lekXkJQyp6CixAOzYLeZQioFY0hzYC0eJ6VXb6GOzLiNi/pub?output=csv';
 
 // ── ローカルキャッシュの読み書き ─────────────────────────────
 function _readCache() {
@@ -158,24 +162,173 @@ function _buildAllMenuFromHardcoded() {
   }
 }
 
-// ── 現在開いているページを再描画 ────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// INDIVIDUAL PLANS LOADER  — Google Sheets CSV → INDIVIDUAL_ERROR_PLANS
+// ══════════════════════════════════════════════════════════════
+
+function _readIndivCache() {
+  try {
+    const raw = localStorage.getItem(INDIV_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+function _writeIndivCache(data) {
+  try {
+    localStorage.setItem(INDIV_CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch (e) { console.warn('[data-loader] indiv cache write failed:', e); }
+}
+
+// ── CSV テキストをパース（タブ or カンマ対応）─────────────────
+function _parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  // delimiter 自動検出（ヘッダー行にタブが多ければTSV）
+  const delim = (lines[0].split('\t').length > lines[0].split(',').length) ? '\t' : ',';
+  const headers = lines[0].split(delim).map(h => h.trim().replace(/^"|"$/g, ''));
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = _splitCSVLine(lines[i], delim);
+    if (vals.length < headers.length) continue;
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = (vals[idx] || '').trim().replace(/^"|"$/g, ''); });
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function _splitCSVLine(line, delim) {
+  // 簡易CSV/TSVパーサ（ダブルクォート対応）
+  const result = [];
+  let current = '';
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i + 1] === '"') { current += '"'; i++; }
+      else { inQuote = !inQuote; }
+    } else if (ch === delim && !inQuote) {
+      result.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+// ── CSV行 → INDIVIDUAL_ERROR_PLANS 形式に変換 ─────────────────
+function _normalizeIndivPlan(row) {
+  return {
+    plan_id:        row.plan_id || '',
+    plan_name:      row.plan_name || '',
+    error_type:     row.error_type || 'unclassified',
+    ui_label:       row.ui_label || row.plan_name || '',
+    icon:           row.icon || '📋',
+    color:          row.color || '#666',
+    target_age:     row.target_age || 'all',
+    target_position: (row.target_position || 'all').split(',').map(s => s.trim()),
+    position_examples: {
+      gk: row.position_example_gk || '',
+      df: row.position_example_df || '',
+      mf: row.position_example_mf || '',
+      fw: row.position_example_fw || '',
+    },
+    problem_main:   row.problem_main || '',
+    problem_sub:    (row.problem_sub || '').split(',').map(s => s.trim()).filter(Boolean),
+    summary:        row.summary || '',
+    common_signs:   (row.common_signs || '').split('|').map(s => s.trim()).filter(Boolean),
+    background:     (row.background || '').split('|').map(s => s.trim()).filter(Boolean),
+    improvement_goal: row.improvement_goal || '',
+    training_steps: [
+      { title: row.step1_title || '', desc: row.step1_desc || '', layer: row.step1_layer || 'L1', duration: parseInt(row.step1_duration) || 10 },
+      { title: row.step2_title || '', desc: row.step2_desc || '', layer: row.step2_layer || 'L2', duration: parseInt(row.step2_duration) || 15 },
+      { title: row.step3_title || '', desc: row.step3_desc || '', layer: row.step3_layer || 'L3', duration: parseInt(row.step3_duration) || 15 },
+    ].filter(s => s.title),  // タイトルが空のステップは除外
+    eval_points: [
+      row.eval_point_1, row.eval_point_2, row.eval_point_3, row.eval_point_4
+    ].filter(Boolean),
+    coaching_note:  row.coaching_note || '',
+    note_for_player: row.note_for_player || '',
+    difficulty:     row.difficulty || 'basic',
+    duration_total: parseInt(row.duration_total) || 40,
+    is_active:      (row.is_active || 'true').toLowerCase() !== 'false',
+    sort_order:     parseInt(row.sort_order) || 99,
+  };
+}
+
+function _applyIndivData(plans) {
+  if (!plans || plans.length === 0) return;
+  // INDIVIDUAL_ERROR_PLANS をスプレッドシートのデータで上書き
+  window.INDIVIDUAL_ERROR_PLANS = plans;
+  console.log(`[data-loader] Applied ${plans.length} individual error plans from spreadsheet`);
+  // 現在のページが individual なら再描画
+  _refreshCurrentPage();
+}
+
+// ── 個別プランをCSV URLから取得 ──────────────────────────────
+async function _fetchIndivCSV() {
+  const res = await fetch(INDIV_CSV_URL, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  const rows = _parseCSV(text);
+  return rows.map(_normalizeIndivPlan).filter(p => p.plan_id);
+}
+
+async function loadIndivData() {
+  const cached = _readIndivCache();
+  const cacheAge = cached ? Date.now() - cached.ts : Infinity;
+  const cacheValid = cacheAge < MENU_CACHE_TTL;
+
+  // キャッシュが有効なら即座に適用
+  if (cacheValid && cached.data && cached.data.length > 0) {
+    _applyIndivData(cached.data);
+  }
+
+  // オンラインならCSVを取得
+  try {
+    const fresh = await _fetchIndivCSV();
+    if (fresh.length > 0) {
+      _writeIndivCache(fresh);
+      _applyIndivData(fresh);
+      console.log('[data-loader] Individual plans updated from Google Sheets');
+    }
+  } catch (e) {
+    console.warn('[data-loader] Individual CSV fetch failed:', e.message);
+    if (!cacheValid && cached?.data && cached.data.length > 0) {
+      _applyIndivData(cached.data);
+      console.warn('[data-loader] Offline: using stale indiv cache');
+    } else {
+      // individual-plans.js のハードコード値がフォールバック
+      console.log('[data-loader] Using hardcoded INDIVIDUAL_ERROR_PLANS as fallback');
+    }
+  }
+}
+
+// ── 現在開いているページを再描画（拡張）────────────────────────
 function _refreshCurrentPage() {
-  // core.js の currentPage 変数を参照して再init
   const page = (typeof currentPage !== 'undefined') ? currentPage : null;
   if (!page) return;
   if (page === 'menu' && typeof initMenuPage === 'function') {
     initMenuPage();
   } else if (page === 'position' && typeof initPositionPage === 'function') {
     initPositionPage();
+  } else if (page === 'individual' && typeof initIndividualPage === 'function') {
+    initIndividualPage();
   }
 }
 
 // ── アプリ起動時に自動実行 ──────────────────────────────────
 // DOMContentLoaded より後に drill-library.js が読まれているので
 // window.onload または DOMContentLoaded 後に実行する
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadMenuData);
-} else {
-  // すでにDOM準備完了の場合
+function _initAllData() {
   loadMenuData();
+  loadIndivData();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initAllData);
+} else {
+  _initAllData();
 }
