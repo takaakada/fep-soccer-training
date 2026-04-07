@@ -47,7 +47,10 @@ function renderErrorPlanCards() {
               <span style="font-size:1.2rem; margin-right:6px;">${p.icon}</span>
               ${p.ui_label}
             </div>
-            <span class="time-badge">${p.duration_total}分</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:0.65rem; font-weight:700; color:${p.color}; background:${p.color}12; border:1px solid ${p.color}30; padding:1px 6px; border-radius:4px; font-family:monospace;">${p.plan_id}</span>
+              <span class="time-badge">${p.duration_total}分</span>
+            </div>
           </div>
           <div class="menu-card-desc">${p.summary}</div>
           <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">
@@ -92,7 +95,10 @@ function togglePlanDetail(planId) {
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
         <div style="width:48px; height:48px; background:${plan.color}15; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${plan.icon}</div>
         <div style="flex:1;">
-          <div style="font-size:1.15rem; font-weight:800; color:${plan.color};">${plan.plan_name}</div>
+          <div style="font-size:1.15rem; font-weight:800; color:${plan.color};">
+            <span style="font-size:0.72rem; font-weight:700; font-family:monospace; background:${plan.color}12; border:1px solid ${plan.color}30; padding:2px 8px; border-radius:4px; margin-right:8px;">${plan.plan_id}</span>
+            ${plan.plan_name}
+          </div>
           <div style="font-size:0.82rem; color:var(--text-muted);">${plan.summary} | 合計${plan.duration_total}分</div>
         </div>
         <button onclick="togglePlanDetail('${planId}')" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">×</button>

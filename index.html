@@ -21,21 +21,50 @@
     <div class="login-app-name">Active Training</div>
     <p class="login-tagline">予測して、ズレを知り、修正する</p>
     <p class="login-desc">
-      脳と感覚に基づく科学的サッカー育成プログラム<br>
-      Inflexion Index と同じ Google アカウントでログインできます
+      脳と感覚に基づく科学的サッカー育成プログラム
     </p>
-    <button class="btn-google" id="login-google-btn" onclick="loginWithGoogle()">
-      <svg width="20" height="20" viewBox="0 0 48 48">
-        <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.5-4z"/>
-        <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/>
-        <path fill="#FBBC05" d="M24 45c5.8 0 10.7-1.9 14.3-5.2l-6.6-5.4C29.8 36.1 27 37 24 37c-6.1 0-10.7-3.1-11.8-7.5l-7 5.4C8.5 41.1 15.6 45 24 45z"/>
-        <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-1 2.8-3 5-5.8 6.3l6.6 5.4C41 36.3 45 30.7 45 24c0-1.3-.2-2.7-.5-4z"/>
-      </svg>
-      Google でログイン
-    </button>
-    <p class="login-note">
-      ※ ログインには招待済みの Google アカウントが必要です
-    </p>
+
+    <!-- ── ロール選択画面（デフォルト表示）── -->
+    <div id="login-role-select">
+      <button class="btn-google" onclick="loginWithGoogle()">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.5-4z"/>
+          <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 16.3 3 9.7 7.9 6.3 14.7z"/>
+          <path fill="#FBBC05" d="M24 45c5.8 0 10.7-1.9 14.3-5.2l-6.6-5.4C29.8 36.1 27 37 24 37c-6.1 0-10.7-3.1-11.8-7.5l-7 5.4C8.5 41.1 15.6 45 24 45z"/>
+          <path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-1 2.8-3 5-5.8 6.3l6.6 5.4C41 36.3 45 30.7 45 24c0-1.3-.2-2.7-.5-4z"/>
+        </svg>
+        コーチ・指導者ログイン（Google）
+      </button>
+      <div class="login-divider"><span>or</span></div>
+      <button class="btn-player-login" onclick="showPlayerLoginForm()">
+        🏃 選手として入る
+      </button>
+      <p class="login-note">コーチ：Google認証 ｜ 選手：チーム名＋名前で入れます</p>
+    </div>
+
+    <!-- ── 選手ログインフォーム（非表示）── -->
+    <div id="player-login-form" style="display:none;">
+      <div class="player-form-title">選手ログイン</div>
+      <div class="player-form-field">
+        <label>チーム名</label>
+        <input type="text" id="player-team-input" class="player-form-input" placeholder="例：FC Active U-12">
+      </div>
+      <div class="player-form-field">
+        <label>名前</label>
+        <input type="text" id="player-name-input" class="player-form-input" placeholder="例：田中太郎">
+      </div>
+      <div class="player-form-field">
+        <label>ポジション</label>
+        <select id="player-position-input" class="player-form-input">
+          <option value="GK">GK</option>
+          <option value="DF">DF</option>
+          <option value="MF" selected>MF</option>
+          <option value="FW">FW</option>
+        </select>
+      </div>
+      <button class="btn-player-submit" onclick="loginAsPlayer()">入る</button>
+      <button class="btn-player-back" onclick="hidePlayerLoginForm()">← 戻る</button>
+    </div>
   </div>
 </div>
 
@@ -53,22 +82,24 @@
     <div class="sidebar-auth" id="sidebar-auth-area"></div>
     <nav class="sidebar-nav">
       <button class="sidebar-nav-btn active" data-page="home" onclick="showPage('home',this)">🏠 ホーム</button>
-      <div class="sidebar-nav-section">トレーニング</div>
-      <button class="sidebar-nav-btn" data-page="menu" onclick="showPage('menu',this)">📋 全体トレーニング</button>
-      <button class="sidebar-nav-btn" data-page="position" onclick="showPage('position',this)">⚽ ポジション別</button>
-      <button class="sidebar-nav-btn" data-page="individual" onclick="showPage('individual',this)">🏃 個別トレーニング</button>
-      <div class="sidebar-nav-section">セッションフロー</div>
-      <button class="sidebar-nav-btn" data-page="session-pre-check" onclick="showPage('session-pre-check',this)">📋 前チェック</button>
-      <button class="sidebar-nav-btn" data-page="session-record" onclick="showPage('session-record',this)">▶️ セッション記録</button>
-      <button class="sidebar-nav-btn" data-page="session-result" onclick="showPage('session-result',this)">📊 結果・提案</button>
-      <div class="sidebar-nav-section">記録・評価</div>
-      <button class="sidebar-nav-btn" data-page="session-coach-record" onclick="showPage('session-coach-record',this)">📝 コーチ記録</button>
-      <button class="sidebar-nav-btn" data-page="session-efe" onclick="showPage('session-efe',this)">📅 EFE月次記録</button>
-      <button class="sidebar-nav-btn" data-page="player-profile" onclick="showPage('player-profile',this)">📊 選手プロフィール</button>
-      <div class="sidebar-nav-section">管理</div>
-      <button class="sidebar-nav-btn" data-page="eval" onclick="showPage('eval',this)">📊 評価シート（旧）</button>
-      <button class="sidebar-nav-btn" data-page="about" onclick="showPage('about',this)">📚 指導理論</button>
-      <button class="sidebar-nav-btn sidebar-nav-kadai" data-page="kadai" onclick="showPage('kadai',this)">🎯 課題チャレンジ</button>
+
+      <div class="sidebar-nav-section" data-role="player">選手メニュー</div>
+      <button class="sidebar-nav-btn" data-page="session-pre-check" data-role="player" onclick="showPage('session-pre-check',this)">📋 前チェック</button>
+      <button class="sidebar-nav-btn" data-page="session-record" data-role="player" onclick="showPage('session-record',this)">▶️ セッション記録</button>
+      <button class="sidebar-nav-btn" data-page="session-efe" data-role="player" onclick="showPage('session-efe',this)">📅 EFE月次記録</button>
+
+      <div class="sidebar-nav-section" data-role="coach">コーチ専用</div>
+      <button class="sidebar-nav-btn" data-page="menu" data-role="coach" onclick="showPage('menu',this)">📋 全体トレーニング</button>
+      <button class="sidebar-nav-btn" data-page="position" data-role="coach" onclick="showPage('position',this)">⚽ ポジション別</button>
+      <button class="sidebar-nav-btn" data-page="individual" data-role="coach" onclick="showPage('individual',this)">🏃 個別トレーニング</button>
+      <button class="sidebar-nav-btn" data-page="session-coach-record" data-role="coach" onclick="showPage('session-coach-record',this)">📝 コーチ記録</button>
+      <button class="sidebar-nav-btn" data-page="session-result" data-role="coach" onclick="showPage('session-result',this)">📊 結果・提案</button>
+      <button class="sidebar-nav-btn" data-page="player-profile" data-role="coach" onclick="showPage('player-profile',this)">👤 選手プロフィール</button>
+
+      <div class="sidebar-nav-section" data-role="coach">管理</div>
+      <button class="sidebar-nav-btn" data-page="eval" data-role="coach" onclick="showPage('eval',this)">📊 評価シート（旧）</button>
+      <button class="sidebar-nav-btn" data-page="about" data-role="coach" onclick="showPage('about',this)">📚 指導理論</button>
+      <button class="sidebar-nav-btn sidebar-nav-kadai" data-page="kadai" data-role="coach" onclick="showPage('kadai',this)">🎯 課題チャレンジ</button>
     </nav>
     <div class="sidebar-external-link">
       <a href="https://inflexion-index-e231d56a5394.herokuapp.com" target="_blank" rel="noopener" class="sidebar-ext-btn">
@@ -83,8 +114,9 @@
     <div class="user-menu-header">
       <div class="user-menu-name" id="menu-display-name">―</div>
       <div class="user-menu-email" id="menu-email">―</div>
+      <div class="user-menu-role" id="menu-role-badge"></div>
     </div>
-    <button class="user-menu-item" onclick="showPage('eval', document.querySelector('.sidebar-nav-btn[data-page=\'eval\']')); closeUserMenu()">
+    <button class="user-menu-item" id="menu-history-btn" onclick="showPage('eval', document.querySelector('.sidebar-nav-btn[data-page=\'eval\']')); closeUserMenu()">
       📁 記録・履歴を見る
     </button>
     <div class="user-menu-divider"></div>
@@ -93,7 +125,7 @@
       <span id="sync-status-text">Supabase 接続済み</span>
     </div>
     <button class="user-menu-item danger" onclick="logout()">
-      🚪 ログアウト
+      🚪 <span id="menu-logout-label">ログアウト</span>
     </button>
   </div>
 
@@ -119,19 +151,20 @@
 
 </div><!-- /#app-wrapper -->
 
-<!-- Core scripts (cache-bust v2) -->
-<script src="js/core.js?v=2"></script>
-<script src="js/fep-calc.js?v=2"></script>
-<script src="js/session-flow.js?v=2"></script>
-<script src="js/api-client.js?v=2"></script>
-<script src="js/drill-library.js?v=2"></script>
-<script src="js/data-loader.js?v=2"></script>
-<script src="js/individual-plans.js?v=2"></script>
-<script src="js/individual.js?v=2"></script>
-<script src="js/menu.js?v=2"></script>
-<script src="js/position.js?v=2"></script>
-<script src="js/eval.js?v=2"></script>
-<script type="text/babel" src="js/kadai.js?v=2"></script>
+<!-- Core scripts (cache-bust v3) -->
+<script src="js/core.js?v=3"></script>
+<script src="js/fep-calc.js?v=3"></script>
+<script src="js/session-flow.js?v=3"></script>
+<script src="js/api-client.js?v=3"></script>
+<script src="js/drill-library.js?v=3"></script>
+<script src="js/data-loader.js?v=3"></script>
+<script src="js/individual-plans.js?v=3"></script>
+<script src="js/individual.js?v=3"></script>
+<script src="js/player-profile.js?v=3"></script>
+<script src="js/menu.js?v=3"></script>
+<script src="js/position.js?v=3"></script>
+<script src="js/eval.js?v=3"></script>
+<script type="text/babel" src="js/kadai.js?v=3"></script>
 
 </body>
 </html>

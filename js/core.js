@@ -14,6 +14,27 @@ const REDIRECT_URL = window.location.origin + window.location.pathname;
 let sb    = null;   // Inflexion Index（認証 + VFE書き込み）
 let sbFep = null;   // FEP Soccer Training（セッション記録）
 let currentUser = null;
+let currentRole = null;     // 'coach' | 'player'
+let currentPlayer = null;   // { id, team_name, player_name, position }
+
+// コーチ専用ページ
+const COACH_ONLY_PAGES = new Set([
+  'menu', 'position', 'individual', 'session-coach-record',
+  'session-result', 'player-profile', 'eval', 'about', 'kadai'
+]);
+
+// ユーザーID取得（コーチ or 選手）
+function getActiveUserId() {
+  if (currentRole === 'coach' && currentUser) return currentUser.id;
+  if (currentRole === 'player' && currentPlayer) return currentPlayer.id;
+  return null;
+}
+
+function getActiveUserName() {
+  if (currentRole === 'coach' && currentUser) return currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Coach';
+  if (currentRole === 'player' && currentPlayer) return currentPlayer.player_name;
+  return 'Unknown';
+}
 
 function showLoginScreen() {
     document.getElementById('login-screen').style.display = 'flex';
@@ -34,12 +55,15 @@ function showLoginScreen() {
       sb.auth.getSession().then(({ data: { session } }) => {
         currentUser = session ? session.user : null;
         if (currentUser) {
+          currentRole = 'coach';
           showApp();
           renderAuthBadge(currentUser);
+          applySidebarVisibility();
           const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
           if (homeBtn) showPage('home', homeBtn);
         } else {
-          showLoginScreen();
+          // 選手セッション復元を試行
+          restorePlayerSession();
         }
       });
 
@@ -47,11 +71,16 @@ function showLoginScreen() {
       sb.auth.onAuthStateChange(async (event, session) => {
         currentUser = session ? session.user : null;
         if (event === 'SIGNED_IN' && currentUser) {
+          currentRole = 'coach';
           showApp();
           renderAuthBadge(currentUser);
+          applySidebarVisibility();
           const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
           if (homeBtn) showPage('home', homeBtn);
         } else if (event === 'SIGNED_OUT') {
+          currentRole = null;
+          currentPlayer = null;
+          sessionStorage.removeItem('fep_player_session');
           showLoginScreen();
           renderAuthBadge(null);
         }
@@ -65,20 +94,24 @@ function showLoginScreen() {
 function renderAuthBadge(user) {
     const area       = document.getElementById('auth-area');
     const sidebarArea = document.getElementById('sidebar-auth-area');
+    const dispName  = document.getElementById('menu-display-name');
+    const dispEmail = document.getElementById('menu-email');
+    const roleBadge = document.getElementById('menu-role-badge');
+    const historyBtn = document.getElementById('menu-history-btn');
+    const logoutLabel = document.getElementById('menu-logout-label');
 
-    if (user) {
+    if (currentRole === 'coach' && user) {
       const name   = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
       const email  = user.email || '';
       const avatar = user.user_metadata?.avatar_url;
       const initial = name.charAt(0).toUpperCase();
 
-      // user-menu の表示名・メール更新
-      const dispName = document.getElementById('menu-display-name');
-      const dispEmail = document.getElementById('menu-email');
-      if (dispName)  dispName.textContent  = name;
-      if (dispEmail) dispEmail.textContent = email;
+      if (dispName)   dispName.textContent  = name;
+      if (dispEmail)  dispEmail.textContent = email;
+      if (roleBadge)  roleBadge.innerHTML = '<span class="role-badge coach">コーチ</span>';
+      if (historyBtn) historyBtn.style.display = '';
+      if (logoutLabel) logoutLabel.textContent = 'ログアウト';
 
-      // モバイルトップバーのバッジ
       if (area) {
         area.innerHTML = `
           <div class="auth-badge" onclick="toggleUserMenu()">
@@ -86,10 +119,9 @@ function renderAuthBadge(user) {
               ${avatar ? `<img src="${avatar}" alt="avatar">` : initial}
             </div>
             <span>${name}</span>
+            <span class="role-badge coach">コーチ</span>
           </div>`;
       }
-
-      // サイドバーのユーザー情報
       if (sidebarArea) {
         sidebarArea.innerHTML = `
           <div class="sidebar-user-info" onclick="toggleUserMenu()">
@@ -97,8 +129,38 @@ function renderAuthBadge(user) {
               ${avatar ? `<img src="${avatar}" alt="avatar">` : initial}
             </div>
             <div class="sidebar-user-text">
-              <div class="sidebar-user-name">${name}</div>
+              <div class="sidebar-user-name">${name} <span class="role-badge coach">コーチ</span></div>
               <div class="sidebar-user-email">${email}</div>
+            </div>
+            <div class="sidebar-user-arrow">⌄</div>
+          </div>`;
+      }
+    } else if (currentRole === 'player' && currentPlayer) {
+      const name = currentPlayer.player_name;
+      const team = currentPlayer.team_name;
+      const initial = name.charAt(0);
+
+      if (dispName)   dispName.textContent  = name;
+      if (dispEmail)  dispEmail.textContent = team;
+      if (roleBadge)  roleBadge.innerHTML = '<span class="role-badge player">選手</span>';
+      if (historyBtn) historyBtn.style.display = 'none';
+      if (logoutLabel) logoutLabel.textContent = '退出する';
+
+      if (area) {
+        area.innerHTML = `
+          <div class="auth-badge" onclick="toggleUserMenu()">
+            <div class="auth-avatar">${initial}</div>
+            <span>${name}</span>
+            <span class="role-badge player">選手</span>
+          </div>`;
+      }
+      if (sidebarArea) {
+        sidebarArea.innerHTML = `
+          <div class="sidebar-user-info" onclick="toggleUserMenu()">
+            <div class="sidebar-user-avatar">${initial}</div>
+            <div class="sidebar-user-text">
+              <div class="sidebar-user-name">${name} <span class="role-badge player">選手</span></div>
+              <div class="sidebar-user-email">${team} | ${currentPlayer.position}</div>
             </div>
             <div class="sidebar-user-arrow">⌄</div>
           </div>`;
@@ -138,10 +200,132 @@ async function loginWithGoogle() {
 
 async function logout() {
     closeUserMenu();
-    if (sb) await sb.auth.signOut();
+    if (currentRole === 'coach' && sb) {
+      await sb.auth.signOut();
+    }
     currentUser = null;
+    currentRole = null;
+    currentPlayer = null;
+    sessionStorage.removeItem('fep_player_session');
     renderAuthBadge(null);
+    showLoginScreen();
   }
+
+// ══════════════════════════════════════════════════════════
+// PLAYER LOGIN（選手ログイン — Google OAuth不要）
+// ══════════════════════════════════════════════════════════
+
+function showPlayerLoginForm() {
+  document.getElementById('login-role-select').style.display = 'none';
+  document.getElementById('player-login-form').style.display = 'block';
+  document.getElementById('player-name-input')?.focus();
+}
+
+function hidePlayerLoginForm() {
+  document.getElementById('player-login-form').style.display = 'none';
+  document.getElementById('login-role-select').style.display = '';
+}
+
+async function loginAsPlayer() {
+  const teamName   = document.getElementById('player-team-input')?.value?.trim();
+  const playerName = document.getElementById('player-name-input')?.value?.trim();
+  const position   = document.getElementById('player-position-input')?.value || 'MF';
+
+  if (!teamName) { alert('チーム名を入力してください。'); return; }
+  if (!playerName) { alert('名前を入力してください。'); return; }
+
+  let playerRecord = null;
+
+  // Supabase に選手レコードを upsert
+  if (sbFep) {
+    try {
+      // 既存選手を検索
+      const { data: existing } = await sbFep
+        .from('players')
+        .select('*')
+        .eq('team_name', teamName)
+        .eq('player_name', playerName)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        playerRecord = existing[0];
+        // ポジション更新（変わった場合）
+        if (playerRecord.position !== position) {
+          await sbFep.from('players').update({ position }).eq('id', playerRecord.id);
+          playerRecord.position = position;
+        }
+      } else {
+        // 新規作成
+        const { data: inserted, error } = await sbFep
+          .from('players')
+          .insert({ team_name: teamName, player_name: playerName, position })
+          .select()
+          .single();
+        if (error) {
+          console.error('Player insert error:', error);
+          // Supabase失敗時はローカルIDで続行
+          playerRecord = { id: 'local_' + Date.now(), team_name: teamName, player_name: playerName, position };
+        } else {
+          playerRecord = inserted;
+        }
+      }
+    } catch(e) {
+      console.error('Player login Supabase error:', e);
+      playerRecord = { id: 'local_' + Date.now(), team_name: teamName, player_name: playerName, position };
+    }
+  } else {
+    playerRecord = { id: 'local_' + Date.now(), team_name: teamName, player_name: playerName, position };
+  }
+
+  currentRole = 'player';
+  currentPlayer = playerRecord;
+  sessionStorage.setItem('fep_player_session', JSON.stringify(playerRecord));
+
+  showApp();
+  renderAuthBadge(null);
+  applySidebarVisibility();
+  const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+  if (homeBtn) showPage('home', homeBtn);
+}
+
+function restorePlayerSession() {
+  const saved = sessionStorage.getItem('fep_player_session');
+  if (saved) {
+    try {
+      currentPlayer = JSON.parse(saved);
+      currentRole = 'player';
+      showApp();
+      renderAuthBadge(null);
+      applySidebarVisibility();
+      const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+      if (homeBtn) showPage('home', homeBtn);
+      return;
+    } catch(e) {
+      sessionStorage.removeItem('fep_player_session');
+    }
+  }
+  showLoginScreen();
+}
+
+// ══════════════════════════════════════════════════════════
+// SIDEBAR VISIBILITY（ロール別表示制御）
+// ══════════════════════════════════════════════════════════
+
+function applySidebarVisibility() {
+  const navItems = document.querySelectorAll('.sidebar-nav [data-role]');
+  navItems.forEach(el => {
+    const role = el.getAttribute('data-role');
+    if (currentRole === 'coach') {
+      // コーチは全部見える
+      el.style.display = '';
+    } else if (currentRole === 'player') {
+      // 選手はplayer項目のみ
+      el.style.display = (role === 'player') ? '' : 'none';
+    } else {
+      el.style.display = '';
+    }
+  });
+}
 
 function switchAgeTab(ageId, btn) {
     document.querySelectorAll('.age-content').forEach(c => c.style.display = 'none');
@@ -174,6 +358,14 @@ function closeSidebar() {
 
 // Override showPage with fetch-based version for dynamic page loading
 async function showPage(id, btn) {
+  // アクセス制御：選手がコーチ専用ページにアクセスしようとした場合はブロック
+  if (currentRole === 'player' && COACH_ONLY_PAGES.has(id)) {
+    console.warn(`[FEP] Player blocked from coach-only page: ${id}`);
+    const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+    if (homeBtn) showPage('home', homeBtn);
+    return;
+  }
+
   // Update sidebar active state
   document.querySelectorAll('.sidebar-nav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
@@ -214,6 +406,9 @@ async function showPage(id, btn) {
     if (id === 'individual' && typeof initIndividualPage === 'function') {
       initIndividualPage();
     }
+    if (id === 'player-profile' && typeof initPlayerProfilePage === 'function') {
+      initPlayerProfilePage();
+    }
     // session-pre-check の初期化は pages/session-pre-check.html 内の
     // インラインスクリプトで自動実行される（initPreCheckPage()）
   } catch(e) {
@@ -238,11 +433,12 @@ async function showPage(id, btn) {
 // ── training_sessions ───────────────────────────────────
 
 async function fetchSessions() {
-  if (sbFep && currentUser) {
+  const uid = getActiveUserId();
+  if (sbFep && uid) {
     const { data, error } = await sbFep
       .from('training_sessions')
       .select('*')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', uid)
       .order('saved_at', { ascending: false });
     if (error) { console.error('fetchSessions:', error); return []; }
     // snake_case → camelCase
@@ -267,9 +463,10 @@ async function fetchSessions() {
 }
 
 async function persistSession(record) {
-  if (sbFep && currentUser) {
+  const uid = getActiveUserId();
+  if (sbFep && uid) {
     const row = {
-      user_id:      currentUser.id,
+      user_id:      uid,
       sheet_id:     record.sheetId,
       role:         record.role,
       grade:        record.grade,
@@ -292,12 +489,13 @@ async function persistSession(record) {
 }
 
 async function removeSession(id) {
-  if (sbFep && currentUser) {
+  const uid = getActiveUserId();
+  if (sbFep && uid) {
     const { error } = await sbFep
       .from('training_sessions')
       .delete()
       .eq('id', id)
-      .eq('user_id', currentUser.id);
+      .eq('user_id', uid);
     if (error) console.error('removeSession:', error);
     return;
   }
