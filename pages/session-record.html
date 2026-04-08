@@ -1,21 +1,21 @@
 <!-- ══════════════════════════════════════════════════════════
-     SESSION RECORD — ② セッション記録（選手用）
-     VFEのみ記録 + F'コンポーネント（dr/uh/fh）
+     SESSION RECORD — ② 練習後チェック（選手用）
+     VFE記録 + F'コンポーネント（dr/uh/fh）
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
-    <div class="sf-page-title">▶️ セッション記録</div>
-    <p class="sf-page-sub">選手のVFEと振り返り（F'）を記録します</p>
+    <div class="sf-page-title">▶️ 練習後チェック</div>
+    <p class="sf-page-sub">練習のVFEと振り返り（F'）を記録します</p>
   </div>
 
   <!-- プログレスバー -->
   <div id="sf-progress-bar"></div>
 
-  <!-- 前チェックサマリー -->
+  <!-- MTG後チェックサマリー -->
   <div id="sr-precheck-summary" class="sf-alert sf-alert-blue">
     <span class="sf-alert-icon">📋</span>
-    <div id="sr-precheck-text">前チェックデータを読み込み中...</div>
+    <div id="sr-precheck-text">MTG後チェックデータを読み込み中...</div>
   </div>
 
   <!-- チーム / 個人 切り替え -->
@@ -32,138 +32,128 @@
     </div>
   </div>
 
-  <!-- ══ VFE 入力（質問形式） ══ -->
-  <div class="sf-card">
-    <div class="sf-card-title">
-      📊 VFE 入力
-      <span class="sf-theory-tag tag-vfe">VFE</span>
-    </div>
+  <!-- ══ 2カラムレイアウト: VFE + F' ══ -->
+  <div class="sf-grid-2">
+    <!-- 左列: VFE 入力 -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">
+          📊 VFE 入力
+          <span class="sf-theory-tag tag-vfe">VFE</span>
+        </div>
 
-    <!-- メニュー名（参照用） -->
-    <div class="sf-form-row">
-      <label class="sf-label">メニュー名（参照）</label>
-      <input type="text" id="sr-menu-name" class="sf-input"
-             placeholder="例：3v3ポゼッション" readonly
-             style="background:var(--bg); cursor:pointer;"
-             onclick="openMenuPicker()">
-      <p class="sf-note">コーチ記録ページで詳細を入力できます</p>
-    </div>
+        <!-- Q1: 難易度 (complexity) -->
+        <div class="sf-form-row">
+          <label class="sf-label"><strong>Q1. 今日の練習について</strong></label>
+          <select id="sr-complexity" class="sf-select" onchange="recordSelectChanged()">
+            <option value="10">複雑で難しい・うまくできない</option>
+            <option value="7">練習強度や課題は少し難しく感じる</option>
+            <option value="5" selected>チャレンジのレベルは最適だと思う</option>
+            <option value="3">取り組みやすいが、やや単調に感じる</option>
+            <option value="0">最低限の単純なパターンだった</option>
+          </select>
+        </div>
 
-    <div class="sf-separator"></div>
+        <div class="sf-separator"></div>
 
-    <!-- Q1: 難易度 (complexity) -->
-    <div class="sf-form-row">
-      <label class="sf-label"><strong>Q1. 今日の練習について</strong></label>
-      <select id="sr-complexity" class="sf-select" onchange="recordSelectChanged()">
-        <option value="10">複雑で難しい・うまくできない</option>
-        <option value="7">練習強度や課題は少し難しく感じる</option>
-        <option value="5" selected>チャレンジのレベルは最適だと思う</option>
-        <option value="3">取り組みやすいが、やや単調に感じる</option>
-        <option value="0">最低限の単純なパターンだった</option>
-      </select>
-    </div>
+        <!-- Q2: 成功率 (accuracy) -->
+        <div class="sf-form-row">
+          <label class="sf-label"><strong>Q2. 練習・競技中の身体の動きについて</strong></label>
+          <select id="sr-accuracy" class="sf-select" onchange="recordSelectChanged()">
+            <option value="10">必要な強度に対応できず、調子が悪い</option>
+            <option value="7">普段よりうまくいかず、なんとなく調子が悪い</option>
+            <option value="5" selected>普段通り、調子はまずまず</option>
+            <option value="3">概ね良好にコントロールできる</option>
+            <option value="0">完璧に調整できておりイメージ通り</option>
+          </select>
+        </div>
 
-    <div class="sf-separator"></div>
+        <div class="sf-separator"></div>
 
-    <!-- Q2: 成功率 (accuracy) -->
-    <div class="sf-form-row">
-      <label class="sf-label"><strong>Q2. 練習・競技中の身体の動きについて</strong></label>
-      <select id="sr-accuracy" class="sf-select" onchange="recordSelectChanged()">
-        <option value="10">必要な強度に対応できず、調子が悪い</option>
-        <option value="7">普段よりうまくいかず、なんとなく調子が悪い</option>
-        <option value="5" selected>普段通り、調子はまずまず</option>
-        <option value="3">概ね良好にコントロールできる</option>
-        <option value="0">完璧に調整できておりイメージ通り</option>
-      </select>
-    </div>
-
-    <div class="sf-separator"></div>
-
-    <!-- Q3: 重みバイアス (weight) -->
-    <div class="sf-form-row">
-      <label class="sf-label"><strong>Q3. 動作イメージと身体感覚について</strong></label>
-      <select id="sr-weight" class="sf-select" onchange="recordSelectChanged()">
-        <option value="2">やりたい動きをイメージできるかが全て</option>
-        <option value="1">イメージの方が大事で感覚はそれほど重要ではない</option>
-        <option value="0" selected>動作イメージと動いた時の感覚が合うことが重要</option>
-        <option value="-1">感覚に合わせてイメージを変えることが重要</option>
-        <option value="-2">体の感覚が全て（動いてみないとわからない）</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- ══ F' コンポーネント入力（スライダー） ══ -->
-  <div class="sf-card">
-    <div class="sf-card-title">
-      🧠 振り返り（F' コンポーネント）
-      <span class="sf-theory-tag tag-fprime">F'</span>
-    </div>
-
-    <!-- dr: 成長実感 -->
-    <div class="sf-form-row">
-      <label class="sf-label">成長実感 (dr)</label>
-      <p class="sf-note">今日の練習で成長を感じましたか？</p>
-      <div class="sf-slider-row">
-        <input type="range" id="sr-dr" min="0" max="10" value="5"
-               oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
-        <span class="sf-slider-val">5</span>
-      </div>
-      <div class="sf-scale-ends">
-        <span>全く感じない (0)</span><span>とても感じる (10)</span>
+        <!-- Q3: 重みバイアス (weight) -->
+        <div class="sf-form-row">
+          <label class="sf-label"><strong>Q3. 動作イメージと身体感覚について</strong></label>
+          <select id="sr-weight" class="sf-select" onchange="recordSelectChanged()">
+            <option value="2">やりたい動きをイメージできるかが全て</option>
+            <option value="1">イメージの方が大事で感覚はそれほど重要ではない</option>
+            <option value="0" selected>動作イメージと動いた時の感覚が合うことが重要</option>
+            <option value="-1">感覚に合わせてイメージを変えることが重要</option>
+            <option value="-2">体の感覚が全て（動いてみないとわからない）</option>
+          </select>
+        </div>
       </div>
     </div>
 
-    <div class="sf-separator"></div>
+    <!-- 右列: F' 入力 + プレビュー -->
+    <div>
+      <div class="sf-card">
+        <div class="sf-card-title">
+          🧠 振り返り（F' コンポーネント）
+          <span class="sf-theory-tag tag-fprime">F'</span>
+        </div>
 
-    <!-- uh: 満足感 -->
-    <div class="sf-form-row">
-      <label class="sf-label">満足感 (uh)</label>
-      <p class="sf-note">練習の結果に満足していますか？</p>
-      <div class="sf-slider-row">
-        <input type="range" id="sr-uh" min="0" max="10" value="5"
-               oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
-        <span class="sf-slider-val">5</span>
-      </div>
-      <div class="sf-scale-ends">
-        <span>不満 (0)</span><span>とても満足 (10)</span>
-      </div>
-    </div>
+        <!-- dr: 成長実感 -->
+        <div class="sf-form-row">
+          <label class="sf-label">成長実感 (dr)</label>
+          <p class="sf-note">今日の練習で成長を感じましたか？</p>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-dr" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>全く感じない (0)</span><span>とても感じる (10)</span>
+          </div>
+        </div>
 
-    <div class="sf-separator"></div>
+        <div class="sf-separator"></div>
 
-    <!-- fh: 次回への期待 -->
-    <div class="sf-form-row">
-      <label class="sf-label">次回への期待 (fh)</label>
-      <p class="sf-note">次の練習が楽しみですか？</p>
-      <div class="sf-slider-row">
-        <input type="range" id="sr-fh" min="0" max="10" value="5"
-               oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
-        <span class="sf-slider-val">5</span>
-      </div>
-      <div class="sf-scale-ends">
-        <span>不安・消極的 (0)</span><span>とても楽しみ (10)</span>
-      </div>
-    </div>
-  </div>
+        <!-- uh: 満足感 -->
+        <div class="sf-form-row">
+          <label class="sf-label">満足感 (uh)</label>
+          <p class="sf-note">練習の結果に満足していますか？</p>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-uh" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>不満 (0)</span><span>とても満足 (10)</span>
+          </div>
+        </div>
 
-  <!-- ══ VFE + F' リアルタイムプレビュー ══ -->
-  <div class="sf-card sf-preview-card">
-    <div class="sf-card-title">📐 リアルタイムプレビュー</div>
-    <div class="sf-preview-grid">
-      <div class="sf-preview-item">
-        <div class="sf-preview-label">VFE</div>
-        <div class="sf-preview-val" id="pv-vfe">--</div>
-        <div class="sf-preview-sub">変分自由エネルギー</div>
+        <div class="sf-separator"></div>
+
+        <!-- fh: 次回への期待 -->
+        <div class="sf-form-row">
+          <label class="sf-label">次回への期待 (fh)</label>
+          <p class="sf-note">次の練習が楽しみですか？</p>
+          <div class="sf-slider-row">
+            <input type="range" id="sr-fh" min="0" max="10" value="5"
+                   oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
+            <span class="sf-slider-val">5</span>
+          </div>
+          <div class="sf-scale-ends">
+            <span>不安・消極的 (0)</span><span>とても楽しみ (10)</span>
+          </div>
+        </div>
       </div>
-      <div class="sf-preview-item">
-        <div class="sf-preview-label">バンド</div>
-        <div class="sf-preview-val" id="pv-band">--</div>
-        <div class="sf-preview-sub">VFEゾーン</div>
-      </div>
-      <div class="sf-preview-item">
-        <div class="sf-preview-label">F'概算</div>
-        <div class="sf-preview-val" id="pv-fprime">--</div>
-        <div class="sf-preview-sub">dr/uh/fhから</div>
+
+      <!-- リアルタイムプレビュー -->
+      <div class="sf-card sf-preview-card">
+        <div class="sf-card-title">📐 プレビュー</div>
+        <div class="sf-preview-grid">
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">VFE</div>
+            <div class="sf-preview-val" id="pv-vfe">--</div>
+            <div class="sf-preview-sub">変分自由エネルギー</div>
+          </div>
+          <div class="sf-preview-item">
+            <div class="sf-preview-label">F'概算</div>
+            <div class="sf-preview-val" id="pv-fprime">--</div>
+            <div class="sf-preview-sub">dr/uh/fhから</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -171,26 +161,11 @@
   <!-- ボタン -->
   <div class="sf-btn-row">
     <button class="sf-btn sf-btn-secondary" onclick="backToPreCheck()">
-      ← 前チェックに戻る
+      ← MTG後チェックに戻る
     </button>
     <button class="sf-btn sf-btn-primary" onclick="completeRecord()">
       記録完了 → 結果表示へ
     </button>
-  </div>
-</div>
-
-<!-- メニューピッカーモーダル -->
-<div id="sr-menu-picker-modal" class="sf-modal-overlay" style="display:none;">
-  <div class="sf-modal" style="max-width:500px;">
-    <div class="sf-modal-header">
-      <span>メニュー選択</span>
-      <button onclick="closeMenuPicker()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;">×</button>
-    </div>
-    <div style="padding:16px;">
-      <input type="text" id="sr-menu-search" class="sf-input" placeholder="メニュー名で検索..."
-             oninput="filterMenuPicker(this.value)">
-      <div id="sr-menu-picker-list" style="max-height:300px; overflow-y:auto; margin-top:12px;"></div>
-    </div>
   </div>
 </div>
 
@@ -203,13 +178,6 @@ function initRecordPage() {
   showPreCheckSummary();
   recordSelectChanged();
   updateFPrimeSelect();
-
-  // inherit menu name from SessionFlow state
-  const state = SessionFlow.getState();
-  if (state.record.menuName) {
-    const el = document.getElementById('sr-menu-name');
-    if (el) el.value = state.record.menuName;
-  }
 }
 
 function setRecordMode(mode) {
@@ -227,15 +195,15 @@ function showPreCheckSummary() {
   const computed = state.computed;
 
   if (!state.startedAt) {
-    textEl.innerHTML = '前チェックが未実施です。<a href="#" onclick="showPage(\'session-pre-check\', document.querySelector(\'.sidebar-nav-btn[data-page=session-pre-check]\'))">前チェックを先に行う</a>';
+    textEl.innerHTML = 'MTG後チェックが未実施です。<a href="#" onclick="showPage(\'session-pre-check\', document.querySelector(\'.sidebar-nav-btn[data-page=session-pre-check]\'))">MTG後チェックを先に行う</a>';
     return;
   }
   const sigmaMod = computed.sigmaModifier || FepCalc.serotoninToSigma(pc.condition);
   const efe = computed.efe;
-  textEl.innerHTML = `<strong>前チェック結果：</strong>
+  textEl.innerHTML = `<strong>MTG後チェック結果：</strong>
     コンディション=${pc.condition}/10（σ: ${sigmaMod >= 0 ? '+' : ''}${sigmaMod.toFixed(1)}）、
     期待感=${pc.expectation}/10、
-    ${efe ? `EFE=${efe.efe_display.toFixed(1)}（α=${efe.alpha.toFixed(2)}, β=${efe.beta.toFixed(2)}）` : 'EFE=未計算'}`;
+    ${efe ? `EFE=${efe.efe_display.toFixed(1)}（認識=${efe.epi_score.toFixed(1)}, 実行=${efe.pra_score.toFixed(1)}）` : 'EFE=未計算'}`;
 }
 
 function recordSelectChanged() {
@@ -253,14 +221,6 @@ function recordSelectChanged() {
     vfeEl.textContent = vfe.vfe_display.toFixed(1);
     vfeEl.className = 'sf-preview-val ' +
       (vfe.vfe_display < 40 ? 'val-good' : vfe.vfe_display < 60 ? '' : 'val-warn');
-  }
-
-  const bandEl = document.getElementById('pv-band');
-  if (bandEl) {
-    const band = FepCalc.getBand(vfe.vfe_display);
-    bandEl.textContent = band.label;
-    bandEl.className = 'sf-preview-val ' +
-      (band.zone === 'low' ? 'val-good' : band.zone === 'mid' ? '' : 'val-warn');
   }
 }
 
@@ -290,55 +250,6 @@ function updateFPrimeSelect() {
 
 // 後方互換
 function updateFPrimePreview() { updateFPrimeSelect(); }
-
-// ── メニューピッカー ──
-function openMenuPicker() {
-  document.getElementById('sr-menu-picker-modal').style.display = 'flex';
-  populateMenuPicker();
-}
-function closeMenuPicker() {
-  document.getElementById('sr-menu-picker-modal').style.display = 'none';
-}
-function populateMenuPicker() {
-  const list = document.getElementById('sr-menu-picker-list');
-  if (!list) return;
-  let menus = [];
-  if (typeof ALL_MENU_PRESETS !== 'undefined') {
-    menus = ALL_MENU_PRESETS.filter(m => m.scope === 'team');
-  }
-  renderMenuPickerList(list, menus);
-}
-function filterMenuPicker(query) {
-  const list = document.getElementById('sr-menu-picker-list');
-  if (!list) return;
-  let menus = [];
-  if (typeof ALL_MENU_PRESETS !== 'undefined') {
-    menus = ALL_MENU_PRESETS.filter(m => m.scope === 'team');
-  }
-  if (query.trim()) {
-    const q = query.trim().toLowerCase();
-    menus = menus.filter(m => m.name.toLowerCase().includes(q));
-  }
-  renderMenuPickerList(list, menus);
-}
-function renderMenuPickerList(container, menus) {
-  if (menus.length === 0) {
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">メニューが見つかりません</div>';
-    return;
-  }
-  container.innerHTML = menus.map(m => `
-    <div style="padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer;"
-         onclick="selectMenuFromPicker('${m.name.replace(/'/g, "\\'")}')">
-      <div style="font-weight:600;">${m.name}</div>
-      <div style="font-size:0.78rem; color:var(--text-muted);">${m.layer || ''} ${m.category || ''}</div>
-    </div>
-  `).join('');
-}
-function selectMenuFromPicker(name) {
-  document.getElementById('sr-menu-name').value = name;
-  SessionFlow.updateRecord({ menuName: name });
-  closeMenuPicker();
-}
 
 // ── ナビゲーション ──
 function backToPreCheck() {
@@ -370,7 +281,6 @@ function completeRecord() {
       dr: parseInt(document.getElementById('sr-dr')?.value ?? 5),
       uh: parseInt(document.getElementById('sr-uh')?.value ?? 5),
       fh: parseInt(document.getElementById('sr-fh')?.value ?? 5),
-      menuName: state.record.menuName,
       savedAt: new Date().toISOString(),
     });
     if (records.length > 200) records = records.slice(0, 200);

@@ -1,17 +1,18 @@
 <!-- ══════════════════════════════════════════════════════════
      MONTHLY EFE — EFE月次記録
      月1回の将来不確実性（Expected Free Energy）を記録
+     加算モデル v3: 高いほど見通しが悪く動きにくい
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
     <div class="sf-page-title">📅 EFE 月次記録</div>
-    <p class="sf-page-sub">月1回、将来の不確実性（Expected Free Energy）を評価します</p>
+    <p class="sf-page-sub">月1回、将来への見通しと動きやすさ（Expected Free Energy）を評価します</p>
   </div>
 
   <div class="sf-alert sf-alert-blue">
     <span class="sf-alert-icon">ℹ️</span>
-    <div>EFEは長期的な不確実性の指標です。月1回の頻度で記録し、α（探索重み）とβ（実利重み）の変化を追跡します。</div>
+    <div>EFEは「将来に向けた見通しの悪さ＋動きにくさ」の指標です。低いほど良い状態（明確で前向き）、高いほど課題がある状態です。認識的負荷と実行的負荷の2軸で変化を追跡します。</div>
   </div>
 
   <div class="sf-grid-2">
@@ -23,10 +24,10 @@
           <span class="sf-theory-tag tag-efe">EFE</span>
         </div>
 
-        <!-- Q1: 理解度 → epistemic -->
+        <!-- Q1: 不明確さ (epistemic / ambiguity) -->
         <div class="sf-form-row">
           <label class="sf-label">Q1. 自分の状態の理解度</label>
-          <p class="sf-note">今のパフォーマンスについて、改善すべき点はありますか？</p>
+          <p class="sf-note">パフォーマンスについて、改善すべき点が見えていますか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q1" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; efeSliderChanged()">
@@ -39,10 +40,10 @@
 
         <div class="sf-separator"></div>
 
-        <!-- Q2: 探索欲 → α -->
+        <!-- Q2: 情報を求めなさ (epistemic / ambiguity) -->
         <div class="sf-form-row">
-          <label class="sf-label">Q2. 新しい気づきへの探索欲</label>
-          <p class="sf-note">パフォーマンスを上げるために、助言や新しい提案をもっと知りたいですか？</p>
+          <label class="sf-label">Q2. 助言やヒントへの関心</label>
+          <p class="sf-note">パフォーマンスを上げるために、助言や新しい提案を求めていますか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q2" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; efeSliderChanged()">
@@ -55,9 +56,9 @@
 
         <div class="sf-separator"></div>
 
-        <!-- Q3: パフォーマンスの見通し → pragmatic -->
+        <!-- Q3: 目標優先度の低さ (pragmatic / risk) -->
         <div class="sf-form-row">
-          <label class="sf-label">Q3. パフォーマンスの見通し</label>
+          <label class="sf-label">Q3. パフォーマンス向上の優先度</label>
           <p class="sf-note">パフォーマンスを上げることはどれくらい大切ですか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q3" min="0" max="10" value="5"
@@ -71,9 +72,9 @@
 
         <div class="sf-separator"></div>
 
-        <!-- Q4: 負担感 → β -->
+        <!-- Q4: 取り組みにくさ (pragmatic / risk) -->
         <div class="sf-form-row">
-          <label class="sf-label">Q4. 練習への意欲</label>
+          <label class="sf-label">Q4. 練習への取り組みやすさ</label>
           <p class="sf-note">パフォーマンス向上のために、練習や生活を変えることはできますか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q4" min="0" max="10" value="5"
@@ -81,7 +82,7 @@
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>必要ならなんでも取り組みたい (0)</span><span>変えるつもりはない (10)</span>
+            <span>なんでも取り組みたい (0)</span><span>取り組みにくい (10)</span>
           </div>
         </div>
       </div>
@@ -96,17 +97,17 @@
           <div class="sf-preview-item">
             <div class="sf-preview-label">EFE</div>
             <div class="sf-preview-val" id="efe-pv-score">--</div>
-            <div class="sf-preview-sub">期待自由エネルギー</div>
+            <div class="sf-preview-sub">見通し＋動きやすさ</div>
           </div>
           <div class="sf-preview-item">
-            <div class="sf-preview-label">α（探索重み）</div>
-            <div class="sf-preview-val" id="efe-pv-alpha">--</div>
-            <div class="sf-preview-sub">epistemic weight</div>
+            <div class="sf-preview-label">認識的負荷</div>
+            <div class="sf-preview-val" id="efe-pv-epi">--</div>
+            <div class="sf-preview-sub">ambiguity (Q1+Q2)</div>
           </div>
           <div class="sf-preview-item">
-            <div class="sf-preview-label">β（実利重み）</div>
-            <div class="sf-preview-val" id="efe-pv-beta">--</div>
-            <div class="sf-preview-sub">pragmatic weight</div>
+            <div class="sf-preview-label">実行的負荷</div>
+            <div class="sf-preview-val" id="efe-pv-pra">--</div>
+            <div class="sf-preview-sub">risk (Q3+Q4)</div>
           </div>
         </div>
         <div style="margin-top:12px; padding:10px; background:var(--bg); border-radius:8px;">
@@ -152,27 +153,34 @@ function efeSliderChanged() {
 
   const efe = FepCalc.calcEFE(q1, q2, q3, q4);
 
+  // EFE スコア
   const scoreEl = document.getElementById('efe-pv-score');
   if (scoreEl) {
     scoreEl.textContent = efe.efe_display.toFixed(1);
     scoreEl.className = 'sf-preview-val ' +
-      (efe.efe_display < 40 ? 'val-good' : efe.efe_display < 60 ? '' : 'val-warn');
+      (efe.efe_display <= 20 ? 'val-good' : efe.efe_display <= 60 ? '' : 'val-warn');
   }
-  const alphaEl = document.getElementById('efe-pv-alpha');
-  if (alphaEl) alphaEl.textContent = efe.alpha.toFixed(2);
-  const betaEl = document.getElementById('efe-pv-beta');
-  if (betaEl) betaEl.textContent = efe.beta.toFixed(2);
 
+  // 2軸スコア
+  const epiEl = document.getElementById('efe-pv-epi');
+  if (epiEl) epiEl.textContent = efe.epi_score.toFixed(1);
+  const praEl = document.getElementById('efe-pv-pra');
+  if (praEl) praEl.textContent = efe.pra_score.toFixed(1);
+
+  // 解釈テキスト
   const interpEl = document.getElementById('efe-pv-interpretation');
   if (interpEl) {
     let text = '';
-    if (efe.efe_display < 30) text = '将来の不確実性は低く、安定した見通しが持てています。レイヤーを上げるタイミングかもしれません。';
-    else if (efe.efe_display < 50) text = '適度な不確実性があり、学習効果が高い状態です。現在のアプローチを継続しましょう。';
-    else if (efe.efe_display < 70) text = '不確実性がやや高めです。探索的なアプローチで情報収集を優先しましょう。';
-    else text = '不確実性が高い状態です。Layer 1-2の基本に戻り、安定を優先しましょう。';
+    if (efe.efe_display <= 20) text = 'とても低い：目標が明確で、取り組む準備ができています。レイヤーを上げるタイミングかもしれません。';
+    else if (efe.efe_display <= 40) text = '低い：比較的良い状態です。現在のアプローチを継続しましょう。';
+    else if (efe.efe_display <= 60) text = '中等度：ある程度の課題があります。認識面か実行面、どちらに課題があるか確認しましょう。';
+    else if (efe.efe_display <= 80) text = '高い：見通しや動きやすさに課題があります。基本に立ち返り、整理を優先しましょう。';
+    else text = 'とても高い：見通しが曖昧で動きにくい状態です。Layer 1-2に戻り、小さな一歩から始めましょう。';
 
-    if (efe.alpha > efe.beta) text += ` α(${efe.alpha.toFixed(2)}) > β(${efe.beta.toFixed(2)})：探索モード優位。`;
-    else text += ` β(${efe.beta.toFixed(2)}) > α(${efe.alpha.toFixed(2)})：実利モード優位。`;
+    // 2軸の優位性
+    if (efe.dominant === 'epistemic') text += ' 認識面の課題が優位です。';
+    else if (efe.dominant === 'pragmatic') text += ' 実行面の課題が優位です。';
+    else text += ' 両面にバランスよく課題があります。';
 
     interpEl.textContent = text;
   }
@@ -189,8 +197,9 @@ async function saveEfeRecord() {
     date: new Date().toISOString().slice(0, 10),
     q1, q2, q3, q4,
     efe_display: efe.efe_display,
-    alpha: efe.alpha,
-    beta: efe.beta,
+    epi_score: efe.epi_score,
+    pra_score: efe.pra_score,
+    dominant: efe.dominant,
     savedAt: new Date().toISOString(),
   };
 
@@ -218,13 +227,15 @@ function loadEfeHistory() {
   }
 
   listEl.innerHTML = history.map((r, i) => {
-    const efeColor = r.efe_display < 40 ? '#059669' : r.efe_display < 60 ? '#d97706' : '#dc2626';
+    const efeColor = r.efe_display <= 20 ? '#059669' : r.efe_display <= 40 ? '#059669' : r.efe_display <= 60 ? '#d97706' : '#dc2626';
+    const epi = r.epi_score ?? '—';
+    const pra = r.pra_score ?? '—';
     return `
       <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-bottom:1px solid var(--border); ${i===0 ? 'background:#f0fdf4;' : ''}">
         <div style="font-size:0.82rem; color:var(--text-muted); min-width:80px;">${r.date}</div>
         <div style="font-size:1.1rem; font-weight:800; color:${efeColor}; min-width:50px;">${r.efe_display.toFixed(1)}</div>
         <div style="font-size:0.78rem; color:var(--text-muted);">
-          α=${r.alpha.toFixed(2)} β=${r.beta.toFixed(2)}
+          認識=${typeof epi === 'number' ? epi.toFixed(1) : epi} 実行=${typeof pra === 'number' ? pra.toFixed(1) : pra}
         </div>
         ${i === 0 ? '<span style="font-size:0.72rem; background:#059669; color:white; padding:2px 8px; border-radius:99px; font-weight:700;">最新</span>' : ''}
       </div>

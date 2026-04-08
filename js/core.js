@@ -30,8 +30,8 @@ const pageHistory = [];   // ページ遷移履歴（戻るボタン用）
 // ページ名の日本語表示マップ
 const PAGE_LABELS = {
   'home': '🏠 ホーム',
-  'session-pre-check': '📋 前チェック',
-  'session-record': '▶️ セッション記録',
+  'session-pre-check': '📋 MTG後チェック',
+  'session-record': '▶️ 練習後チェック',
   'session-efe': '📅 EFE月次記録',
   'menu': '📋 全体トレーニング',
   'position': '⚽ ポジション別',

@@ -1,12 +1,12 @@
 <!-- ══════════════════════════════════════════════════════════
-     SESSION PRE-CHECK — ① セッション前チェック
-     今日の状態を記録して、最適な練習の入り口を整える
+     SESSION PRE-CHECK — ① ミーティング後チェック
+     ミーティング後の状態を記録して、最適な練習の入り口を整える
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
-    <div class="sf-page-title">📋 セッション前チェック</div>
-    <p class="sf-page-sub">今日の状態を記録して、最適な練習の入り口を整えます</p>
+    <div class="sf-page-title">📋 ミーティング後チェック</div>
+    <p class="sf-page-sub">ミーティング後の状態を記録して、最適な練習の入り口を整えます</p>
   </div>
 
   <!-- プログレスバー -->
@@ -69,65 +69,65 @@
           <span class="sf-theory-tag tag-efe">EFE</span>
         </div>
 
-        <!-- epiQ1: 情報理解度 -->
+        <!-- Q1: 不明確さ (epistemic) -->
         <div class="sf-form-row">
-          <label class="sf-label">今日の練習で何をするか分かっていますか？</label>
-          <p class="sf-note">epistemic_raw の入力。理解度が低い → 認識的不確実性が高い</p>
+          <label class="sf-label">Q1. 今日の練習でやることは、どれくらい決まっていますか？</label>
+          <p class="sf-note">ambiguity: 認識的な不明確さ</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-epiQ1" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; preCheckSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>よく分かっている (0)</span><span>よく分からない (10)</span>
+            <span>しっかり決まっている (0)</span><span>何も決まっていない (10)</span>
           </div>
         </div>
 
         <div class="sf-separator"></div>
 
-        <!-- epiQ2: 情報の必要性 → α -->
+        <!-- Q2: 情報を求めなさ (epistemic) -->
         <div class="sf-form-row">
-          <label class="sf-label">今日は新しいことにチャレンジしたいですか？</label>
-          <p class="sf-note">α（認識的重み）の算出に使用。高い → 探索重視のセッション設計</p>
+          <label class="sf-label">Q2. 助言やヒントを、今はどれくらい求めていますか？</label>
+          <p class="sf-note">ambiguity: 情報探索への消極度</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-epiQ2" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; preCheckSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>積極的に挑戦したい (0)</span><span>今は求めていない (10)</span>
+            <span>積極的に知りたい (0)</span><span>今は求めていない (10)</span>
           </div>
         </div>
 
         <div class="sf-separator"></div>
 
-        <!-- praQ3: 報酬 -->
+        <!-- Q3: 目標優先度の低さ (pragmatic) -->
         <div class="sf-form-row">
-          <label class="sf-label">今日の目標をどのくらい達成したいですか？</label>
-          <p class="sf-note">pragmatic_raw の入力。目標達成への期待感</p>
+          <label class="sf-label">Q3. 今日の目標は、どれくらい大切ですか？</label>
+          <p class="sf-note">risk: 目標の優先度</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-praQ3" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; preCheckSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>しっかり達成したい (0)</span><span>そこまで優先ではない (10)</span>
+            <span>とても大切 (0)</span><span>そこまで優先ではない (10)</span>
           </div>
         </div>
 
         <div class="sf-separator"></div>
 
-        <!-- praQ4: コスト → β -->
+        <!-- Q4: 取り組みにくさ (pragmatic) -->
         <div class="sf-form-row">
-          <label class="sf-label">今日は、練習をがんばれそうですか？</label>
-          <p class="sf-note">β（実用的重み）の算出に使用。高い → コスト考慮した設計</p>
+          <label class="sf-label">Q4. 今日の練習に、どれくらい取り組めそうですか？</label>
+          <p class="sf-note">risk: 実行コストの高さ</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-praQ4" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; preCheckSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>とてもがんばれそう (0)</span><span>あまりがんばれなさそう (10)</span>
+            <span>なんでも取り組みたい (0)</span><span>取り組みにくい (10)</span>
           </div>
         </div>
       </div>
@@ -157,19 +157,19 @@
         <div class="sf-preview-sub">ドーパミン→期待</div>
       </div>
       <div class="sf-preview-item">
-        <div class="sf-preview-label">α (認識的)</div>
-        <div class="sf-preview-val" id="pv-alpha">0.50</div>
-        <div class="sf-preview-sub">探索重み</div>
+        <div class="sf-preview-label">認識的負荷</div>
+        <div class="sf-preview-val" id="pv-alpha">—</div>
+        <div class="sf-preview-sub">ambiguity (Q1+Q2)</div>
       </div>
       <div class="sf-preview-item">
-        <div class="sf-preview-label">β (実用的)</div>
-        <div class="sf-preview-val" id="pv-beta">0.50</div>
-        <div class="sf-preview-sub">コスト重み</div>
+        <div class="sf-preview-label">実行的負荷</div>
+        <div class="sf-preview-val" id="pv-beta">—</div>
+        <div class="sf-preview-sub">risk (Q3+Q4)</div>
       </div>
       <div class="sf-preview-item">
         <div class="sf-preview-label">EFE</div>
         <div class="sf-preview-val" id="pv-efe">—</div>
-        <div class="sf-preview-sub">期待自由エネルギー</div>
+        <div class="sf-preview-sub">見通し＋動きやすさ</div>
       </div>
     </div>
   </div>
@@ -177,7 +177,7 @@
   <!-- ボタン -->
   <div class="sf-btn-row">
     <button class="sf-btn sf-btn-primary" onclick="completePreCheck()">
-      チェック完了 → セッション記録へ
+      チェック完了 → 練習後チェックへ
     </button>
     <button class="sf-btn sf-btn-secondary" onclick="savePreCheckDraft()">
       下書き保存
@@ -230,19 +230,14 @@ function preCheckSliderChanged() {
     fPrimeEl.className = 'sf-preview-val ' + (q1_bipolar >= 0 ? 'val-good' : 'val-warn');
   }
 
-  // EFE 計算 (正式版: 技術ドキュメント §4.2)
-  const efe = FepCalc.calcEFE(
-    10 - epiQ1,   // Q1: 理解度→反転して不確実性
-    epiQ2,         // Q2: 情報探索欲求
-    10 - praQ3,    // Q3: 達成見通し→反転して目標重要度
-    praQ4,         // Q4: 負担感（実行コスト）
-  );
+  // EFE 計算 (加算モデル v3: 全設問 0=良い, 10=悪い)
+  const efe = FepCalc.calcEFE(epiQ1, epiQ2, praQ3, praQ4);
 
-  // α / β
+  // epi / pra スコア表示
   const alphaEl = document.getElementById('pv-alpha');
   const betaEl  = document.getElementById('pv-beta');
-  if (alphaEl) alphaEl.textContent = efe.alpha.toFixed(2);
-  if (betaEl)  betaEl.textContent  = efe.beta.toFixed(2);
+  if (alphaEl) alphaEl.textContent = efe.epi_score.toFixed(1);
+  if (betaEl)  betaEl.textContent  = efe.pra_score.toFixed(1);
 
   // EFE display (0-100)
   const efeEl = document.getElementById('pv-efe');

@@ -24,10 +24,10 @@
 //   F_display = F * 100
 //
 // ── EFE (Expected Free Energy) ─────────────────────────────
-//   epi = epiQ1 * (10 - epiQ2) / 10
-//   pra = (10 - praQ3) * (10 - praQ4) / 10
-//   alpha = rescale(10 - epiQ2, [0,10], [0.5, 2.0])
-//   beta  = rescale(10 - praQ3, [0,10], [0.5, 2.0])
+//   epi_score = (q1 + q2) / 2       ... ambiguity（認識的負荷）
+//   pra_score = (q3 + q4) / 2       ... risk（実行的負荷）
+//   efe_score = (epi + pra) / 2
+//   efe_display = efe_score * 10    ... 0-100, 高いほど悪い
 //   epi_c = tanh((epi - 5) / 2.5)
 //   pra_c = tanh((pra - 5) / 2.5)
 //   EFE_raw = -alpha * epi_c - beta * pra_c
@@ -195,78 +195,96 @@ const FepCalc = (() => {
   }
 
   // ══════════════════════════════════════════════════════════
-  // EFE (Expected Free Energy) — 未来への未整理さ
+  // EFE (Expected Free Energy) — 将来に向けた見通しの悪さ＋動きにくさ
   // ══════════════════════════════════════════════════════════
   //
-  // 技術ドキュメント §4.2 準拠
-  // epi = epiQ1 * (10 - epiQ2) / 10
-  // pra = (10 - praQ3) * (10 - praQ4) / 10
-  // alpha = rescale(10 - epiQ2, [0,10], [0.5, 2.0])
-  // beta  = rescale(10 - praQ3, [0,10], [0.5, 2.0])
-  // epi_c = tanh((epi - 5) / 2.5)
-  // pra_c = tanh((pra - 5) / 2.5)
-  // EFE_raw = -alpha * epi_c - beta * pra_c
-  // EFE_display = rescale(EFE_raw, [-max_raw, max_raw], [100, 0])
+  // Active Inference の EFE を実用的に再定義:
+  //   EFE = ambiguity (認識的負荷) + risk (実行的負荷)
+  //
+  // 設問はすべて「高いほど悪い」(0=良い, 10=悪い) に統一:
+  //   q1: 不明確さ     (0=やることが見えている, 10=何も分からない)
+  //   q2: 情報を求めなさ (0=積極的に知りたい, 10=求めていない)
+  //   q3: 目標優先度の低さ (0=とても大切, 10=優先ではない)
+  //   q4: 取り組みにくさ  (0=なんでも取り組める, 10=動けない)
+  //
+  // 2軸スコア:
+  //   epi_score = (q1 + q2) / 2   ... ambiguity (認識的負荷)
+  //   pra_score = (q3 + q4) / 2   ... risk      (実行的負荷)
+  //   efe_score = (epi_score + pra_score) / 2
+  //   efe_display = efe_score * 10  ... 0-100 表示
+  //
+  // 解釈:
+  //   0-20  : とても低い（明確で前向き）
+  //   21-40 : 低い
+  //   41-60 : 中等度
+  //   61-80 : 高い
+  //   81-100: とても高い（曖昧で動きにくい）
 
   /**
-   * EFE を計算する
-   * @param {number} epiQ1 - Q1: 現在の状態不確実性 (0-10)
-   * @param {number} epiQ2 - Q2: 情報探索欲求 (0-10)
-   * @param {number} praQ3 - Q3: 目標の重要度 (0-10)
-   * @param {number} praQ4 - Q4: 実行コスト (0-10)
-   * @returns {{ efe_raw: number, efe_display: number, epi: number, pra: number,
-   *             epi_c: number, pra_c: number, alpha: number, beta: number }}
+   * EFE を計算する（加算モデル v3）
+   *
+   * 全入力 0-10、高いほど悪い。
+   * @param {number} q1 - 不明確さ (0=見えている, 10=分からない)
+   * @param {number} q2 - 情報を求めなさ (0=知りたい, 10=求めていない)
+   * @param {number} q3 - 目標優先度の低さ (0=大切, 10=優先ではない)
+   * @param {number} q4 - 取り組みにくさ (0=取り組める, 10=動けない)
+   * @returns {{ efe_raw: number, efe_display: number, epi_score: number, pra_score: number,
+   *             dominant: string, score: number }}
    */
-  function calcEFE(epiQ1, epiQ2, praQ3, praQ4) {
-    // 中間値計算
-    const epi = epiQ1 * (10 - epiQ2) / 10;
-    const pra = (10 - praQ3) * (10 - praQ4) / 10;
+  function calcEFE(q1, q2, q3, q4) {
+    // 2軸スコア (0-10)
+    const epi_score = (q1 + q2) / 2;   // ambiguity: 認識的負荷
+    const pra_score = (q3 + q4) / 2;   // risk: 実行的負荷
 
-    // 重み推定
-    const alpha = rescale(10 - epiQ2, 0, 10, 0.5, 2.0);
-    const beta  = rescale(10 - praQ3, 0, 10, 0.5, 2.0);
+    // 統合スコア (0-10)
+    const efe_score = (epi_score + pra_score) / 2;
 
-    // tanh正規化
-    const epi_c = Math.tanh((epi - 5) / 2.5);
-    const pra_c = Math.tanh((pra - 5) / 2.5);
+    // 表示スコア (0-100): 高いほど見通しが悪く動きにくい
+    const efe_display = efe_score * 10;
 
-    // EFE_raw
-    const efe_raw = -alpha * epi_c - beta * pra_c;
-
-    // 表示スコア (0-100): 高いほど不確実性が高い
-    const max_raw = alpha + beta;
-    const efe_display = rescale(efe_raw, -max_raw, max_raw, 100, 0);
+    // どちらの負荷が大きいか
+    const diff = epi_score - pra_score;
+    let dominant = 'balanced';
+    if (diff > 1.5)      dominant = 'epistemic';   // 認識面の課題が優位
+    else if (diff < -1.5) dominant = 'pragmatic';   // 実行面の課題が優位
 
     return {
-      efe_raw:     round2(efe_raw),
+      efe_raw:     round2(efe_score),
       efe_display: round1(clamp(efe_display, 0, 100)),
-      epi:   round2(epi),
-      pra:   round2(pra),
-      epi_c: round2(epi_c),
-      pra_c: round2(pra_c),
-      alpha: round2(alpha),
-      beta:  round2(beta),
+      epi_score:   round2(epi_score),
+      pra_score:   round2(pra_score),
+      dominant,
       // レガシー互換
-      score: round1(clamp(efe_display, 0, 100)),
+      score:       round1(clamp(efe_display, 0, 100)),
+      // 旧キー互換（参照箇所があれば壊れないように）
+      epi:   round2(epi_score),
+      pra:   round2(pra_score),
+      alpha: round2(epi_score / 10 * 1.5 + 0.5), // 参考値: 0.5-2.0 レンジに換算
+      beta:  round2(pra_score / 10 * 1.5 + 0.5), // 参考値: 0.5-2.0 レンジに換算
     };
   }
 
   /**
-   * EFE の中間値 epi / pra を返す（F' の u_state 計算に使用）
-   * @param {number} epiQ1 - Q1 (0-10)
-   * @param {number} epiQ2 - Q2 (0-10)
-   * @param {number} praQ3 - Q3 (0-10)
-   * @param {number} praQ4 - Q4 (0-10)
+   * EFE の中間値を返す（F' の u_state 計算に使用）
+   *
+   * 新モデルでは epi_score / pra_score をそのまま渡す。
+   * u_state = 1 - certainty の計算に使われる。
+   * 高い epi_score / pra_score = 高い負荷 = 低い確信 = 高い u_state。
+   *
+   * @param {number} q1 - 不明確さ (0-10)
+   * @param {number} q2 - 情報を求めなさ (0-10)
+   * @param {number} q3 - 目標優先度の低さ (0-10)
+   * @param {number} q4 - 取り組みにくさ (0-10)
    * @returns {{ epi: number, pra: number, norm_epi: number, norm_pra: number }}
    */
-  function calcEFEIntermediate(epiQ1, epiQ2, praQ3, praQ4) {
-    const epi = epiQ1 * (10 - epiQ2) / 10;
-    const pra = (10 - praQ3) * (10 - praQ4) / 10;
+  function calcEFEIntermediate(q1, q2, q3, q4) {
+    const epi_score = (q1 + q2) / 2;
+    const pra_score = (q3 + q4) / 2;
     return {
-      epi:      round2(epi),
-      pra:      round2(pra),
-      norm_epi: round2(epi / 10),
-      norm_pra: round2(pra / 10),
+      epi:      round2(epi_score),
+      pra:      round2(pra_score),
+      norm_epi: round2(epi_score / 10),
+      norm_pra: round2(pra_score / 10),
     };
   }
 
@@ -281,7 +299,7 @@ const FepCalc = (() => {
   //
   // Step 2: reactivity = min(1 + K_λ * λ_n + K_u * u, R_max)
   //   λ_n = lambda_raw / 10
-  //   u = 1 - (norm_epi + norm_pra) / 2
+  //   u = (norm_epi + norm_pra) / 2  ... 高負荷 = 高 u_state
   //
   // Step 3: F'_effective = clip(F'_raw * reactivity, -2, +2)
 
@@ -313,8 +331,8 @@ const FepCalc = (() => {
     const lambda_n = clamp(lambdaRaw / 10, 0, 1);
     const norm_epi = clamp(epi / 10, 0, 1);
     const norm_pra = clamp(pra / 10, 0, 1);
-    const certainty = (norm_epi + norm_pra) / 2;
-    const u_state = 1 - certainty;
+    // 新EFEモデル: 高 epi/pra = 高負荷 = 低確信 → u_state は負荷そのもの
+    const u_state = (norm_epi + norm_pra) / 2;
     const reactivity = Math.min(1.0 + K_LAMBDA * lambda_n + K_U * u_state, REACTIVITY_MAX);
 
     // Step 3: F'_effective
