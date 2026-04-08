@@ -22,6 +22,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder=".", static_url_path="")
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # 開発中はキャッシュ無効
 
 # ── Google Sheets 公開CSV URL ─────────────────────────────────
 # Heroku Config Vars に設定する:

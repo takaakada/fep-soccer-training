@@ -430,6 +430,25 @@ async function showPage(id, btn) {
     // ナビバーを先頭に挿入 + ページHTML
     containerEl.innerHTML = _buildPageNavBar(id) + html;
 
+    // ── innerHTML で挿入された <script> を手動で実行 ──────────
+    // innerHTML では <script> が自動実行されないため、
+    // 各スクリプトの中身を (0,eval)() でグローバルスコープで実行する
+    containerEl.querySelectorAll('script').forEach(scriptEl => {
+      if (scriptEl.src) {
+        // 外部スクリプトの場合は新しいscript要素をheadに追加
+        const ext = document.createElement('script');
+        ext.src = scriptEl.src;
+        document.head.appendChild(ext);
+      } else if (scriptEl.textContent.trim()) {
+        // インラインスクリプトはグローバルスコープで eval
+        try {
+          (0, eval)(scriptEl.textContent);
+        } catch (e) {
+          console.error('[FEP] Inline script error in page:', id, e);
+        }
+      }
+    });
+
     // Run page-specific init functions
     if (id === 'eval' && typeof initEvalPage === 'function') {
       initEvalPage();
