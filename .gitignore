@@ -32,3 +32,6 @@ Thumbs.db
 
 # テスト用フォルダ
 テスト/
+
+# Claude Code
+.claude/
