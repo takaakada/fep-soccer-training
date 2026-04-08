@@ -26,14 +26,14 @@
         <!-- Q1: 理解度 → epistemic -->
         <div class="sf-form-row">
           <label class="sf-label">Q1. 自分の状態の理解度</label>
-          <p class="sf-note">今の自分の動き・感覚はどれくらい理解できていますか？</p>
+          <p class="sf-note">今のパフォーマンスについて、改善すべき点はありますか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q1" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; efeSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>全くわからない (0)</span><span>完全に理解 (10)</span>
+            <span>取り組むべき点が見えている (0)</span><span>何を変えるべきか分からない (10)</span>
           </div>
         </div>
 
@@ -42,30 +42,30 @@
         <!-- Q2: 探索欲 → α -->
         <div class="sf-form-row">
           <label class="sf-label">Q2. 新しい気づきへの探索欲</label>
-          <p class="sf-note">新しい気づきや感覚を積極的に探りたいですか？</p>
+          <p class="sf-note">パフォーマンスを上げるために、助言や新しい提案をもっと知りたいですか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q2" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; efeSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>今は安定したい (0)</span><span>積極的に探りたい (10)</span>
+            <span>積極的に知りたい (0)</span><span>今は特に求めていない (10)</span>
           </div>
         </div>
 
         <div class="sf-separator"></div>
 
-        <!-- Q3: 目標達成見通し → pragmatic -->
+        <!-- Q3: パフォーマンスの見通し → pragmatic -->
         <div class="sf-form-row">
-          <label class="sf-label">Q3. 目標達成の見通し</label>
-          <p class="sf-note">練習目標は達成できそうですか？</p>
+          <label class="sf-label">Q3. パフォーマンスの見通し</label>
+          <p class="sf-note">パフォーマンスを上げることはどれくらい大切ですか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q3" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; efeSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>まったく見通せない (0)</span><span>確実に達成できる (10)</span>
+            <span>とても大切 (0)</span><span>今はそこまで優先ではない (10)</span>
           </div>
         </div>
 
@@ -73,15 +73,15 @@
 
         <!-- Q4: 負担感 → β -->
         <div class="sf-form-row">
-          <label class="sf-label">Q4. 練習の負担感</label>
-          <p class="sf-note">きつそう・負担が大きそうですか？</p>
+          <label class="sf-label">Q4. 練習への意欲</label>
+          <p class="sf-note">パフォーマンス向上のために、練習や生活を変えることはできますか？</p>
           <div class="sf-slider-row">
             <input type="range" id="efe-q4" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; efeSliderChanged()">
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>余裕がある (0)</span><span>とても大きい (10)</span>
+            <span>必要ならなんでも取り組みたい (0)</span><span>変えるつもりはない (10)</span>
           </div>
         </div>
       </div>
