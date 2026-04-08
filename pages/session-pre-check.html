@@ -71,7 +71,7 @@
 
         <!-- epiQ1: 情報理解度 -->
         <div class="sf-form-row">
-          <label class="sf-label">今日の練習でやることは決まっていますか？</label>
+          <label class="sf-label">今日の練習で何をするか分かっていますか？</label>
           <p class="sf-note">epistemic_raw の入力。理解度が低い → 認識的不確実性が高い</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-epiQ1" min="0" max="10" value="5"
@@ -79,7 +79,7 @@
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>しっかり決まっている (0)</span><span>何も決まっていない (10)</span>
+            <span>よく分かっている (0)</span><span>よく分からない (10)</span>
           </div>
         </div>
 
@@ -87,7 +87,7 @@
 
         <!-- epiQ2: 情報の必要性 → α -->
         <div class="sf-form-row">
-          <label class="sf-label">今日は新しいことに積極的に挑戦したいですか？</label>
+          <label class="sf-label">今日は新しいことにチャレンジしたいですか？</label>
           <p class="sf-note">α（認識的重み）の算出に使用。高い → 探索重視のセッション設計</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-epiQ2" min="0" max="10" value="5"
@@ -119,7 +119,7 @@
 
         <!-- praQ4: コスト → β -->
         <div class="sf-form-row">
-          <label class="sf-label">今日の練習は頑張れそうですか？</label>
+          <label class="sf-label">今日は、練習をがんばれそうですか？</label>
           <p class="sf-note">β（実用的重み）の算出に使用。高い → コスト考慮した設計</p>
           <div class="sf-slider-row">
             <input type="range" id="pc-praQ4" min="0" max="10" value="5"
@@ -127,7 +127,7 @@
             <span class="sf-slider-val">5</span>
           </div>
           <div class="sf-scale-ends">
-            <span>しっかり頑張りたい (0)</span><span>やる気がない (10)</span>
+            <span>とてもがんばれそう (0)</span><span>あまりがんばれなさそう (10)</span>
           </div>
         </div>
       </div>
