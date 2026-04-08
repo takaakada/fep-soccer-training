@@ -1,66 +1,62 @@
 <!-- ══════════════════════════════════════════════════════════
      INDIVIDUAL TRAINING — 個別トレーニング
-     エラーパターン別プラン + 選手別カスタムメニュー
+     選手を選択 → タイプ別課題プラン + カスタムメニュー
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
   <div class="sf-header">
     <div class="sf-page-title">🏃 個別トレーニング</div>
-    <p class="sf-page-sub">エラーパターンに基づく個別課題プランと、選手別メニューを管理します</p>
+    <p class="sf-page-sub">選手のエラータイプに基づく課題プランと、カスタムメニューを管理します</p>
   </div>
 
-  <!-- ═══ セクション1: 個別課題プラン ═══ -->
-  <div class="sf-card" style="border-left:4px solid #7c3aed; margin-bottom:24px;">
-    <div class="sf-card-title" style="color:#7c3aed;">🧠 個別課題プラン</div>
-    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
-      典型的なエラーパターンから課題を特定し、解決プランを提示します
-    </p>
-
-    <!-- ポジションフィルター -->
-    <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-      <button class="sf-chip active" id="ep-filter-all" onclick="filterErrorPlans('all', this)">全ポジション</button>
-      <button class="sf-chip" id="ep-filter-gk" onclick="filterErrorPlans('gk', this)">🧤 GK</button>
-      <button class="sf-chip" id="ep-filter-df" onclick="filterErrorPlans('df', this)">🛡️ DF</button>
-      <button class="sf-chip" id="ep-filter-mf" onclick="filterErrorPlans('mf', this)">⚙️ MF</button>
-      <button class="sf-chip" id="ep-filter-fw" onclick="filterErrorPlans('fw', this)">🎯 FW</button>
-    </div>
-
-    <!-- プランカード一覧 -->
-    <div id="ep-plan-cards"></div>
-  </div>
-
-  <!-- ═══ プラン詳細表示エリア（タップで展開） ═══ -->
-  <div id="ep-plan-detail" style="display:none;"></div>
-
-  <!-- ═══ セクション2: 選手別カスタムメニュー ═══ -->
-  <div class="sf-card" style="margin-top:24px;">
-    <div class="sf-card-title">📋 選手別カスタムメニュー</div>
-
-    <!-- 選手選択 -->
-    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-      <label class="sf-label" style="margin:0; min-width:auto;">選手：</label>
-      <select id="ind-player-select" class="sf-input" style="flex:1; min-width:180px; max-width:300px;" onchange="onPlayerSelect()">
-        <option value="">-- 選手を選択 --</option>
-      </select>
-      <button class="sf-btn sf-btn-secondary" style="font-size:0.82rem;" onclick="addNewPlayer()">＋ 新規選手</button>
-    </div>
-
-    <!-- 選手未選択時 -->
-    <div id="ind-empty" style="text-align:center; padding:30px 20px; color:var(--text-muted);">
-      <p style="font-size:0.88rem;">選手を選択するか、新規登録してメニューを作成できます</p>
-    </div>
-
-    <!-- 選手選択後のコンテンツ -->
-    <div id="ind-content" style="display:none;">
-      <!-- 選手情報ヘッダー -->
-      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px; background:var(--bg); border-radius:10px; margin-bottom:14px;">
-        <div style="font-size:1.6rem;">🧑</div>
-        <div style="flex:1;">
-          <div id="ind-player-name" style="font-size:1.05rem; font-weight:800;">--</div>
-          <div id="ind-player-info" style="font-size:0.78rem; color:var(--text-muted);">--</div>
-        </div>
-        <button class="sf-btn sf-btn-secondary" style="font-size:0.78rem; padding:6px 12px;" onclick="showPage('player-profile', document.querySelector('.sidebar-nav-btn[data-page=player-profile]'))">📊 プロフィール</button>
+  <!-- ═══ 選手選択（チーム → 選手） ═══ -->
+  <div class="sf-card" style="border-left:4px solid #2563eb; margin-bottom:20px;">
+    <div class="sf-card-title">👤 選手を選択</div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+      <!-- チーム選択 -->
+      <div style="flex:1; min-width:160px;">
+        <label class="sf-label" style="font-size:0.78rem;">チーム</label>
+        <select id="ind-team-select" class="sf-input" onchange="onIndTeamChange()">
+          <option value="">-- チームを選択 --</option>
+        </select>
       </div>
+      <!-- 選手選択 -->
+      <div style="flex:1; min-width:200px;">
+        <label class="sf-label" style="font-size:0.78rem;">選手</label>
+        <select id="ind-player-select" class="sf-input" onchange="onIndPlayerChange()" disabled>
+          <option value="">-- 選手を選択 --</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 選手未選択時 ═══ -->
+  <div id="ind-empty" style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+    <div style="font-size:2rem; margin-bottom:8px;">👤</div>
+    <p style="font-size:0.92rem;">チームと選手を選択すると、個別プランが表示されます</p>
+  </div>
+
+  <!-- ═══ 選手選択後の全コンテンツ ═══ -->
+  <div id="ind-main" style="display:none;">
+
+    <!-- ── 選手情報ヘッダー（タイプ・スコア） ── -->
+    <div id="ind-player-header"></div>
+
+    <!-- ═══ セクション1: 個別課題プラン（タイプ別） ═══ -->
+    <div class="sf-card" style="border-left:4px solid #7c3aed; margin-bottom:24px;">
+      <div class="sf-card-title" style="color:#7c3aed;">🧠 個別課題プラン</div>
+      <p id="ind-plan-desc" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;"></p>
+
+      <!-- プランカード一覧 -->
+      <div id="ep-plan-cards"></div>
+    </div>
+
+    <!-- ═══ プラン詳細表示エリア ═══ -->
+    <div id="ep-plan-detail" style="display:none;"></div>
+
+    <!-- ═══ セクション2: 選手別カスタムメニュー ═══ -->
+    <div class="sf-card" style="margin-top:24px;">
+      <div class="sf-card-title">📋 カスタムメニュー</div>
 
       <!-- カテゴリタブ -->
       <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
@@ -135,38 +131,6 @@
       </div>
       <div style="text-align:right; margin-top:12px;">
         <button class="sf-btn sf-btn-primary" onclick="saveNewIndMenu()">追加</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 新規選手モーダル -->
-<div id="ind-new-player-modal" class="sf-modal-overlay" style="display:none;">
-  <div class="sf-modal" style="max-width:420px;">
-    <div class="sf-modal-header">
-      <span>新規選手登録</span>
-      <button onclick="document.getElementById('ind-new-player-modal').style.display='none'" style="background:none;border:none;font-size:1.3rem;cursor:pointer;">×</button>
-    </div>
-    <div style="padding:16px;">
-      <div class="sf-form-row">
-        <label class="sf-label">選手名</label>
-        <input type="text" id="ind-np-name" class="sf-input" placeholder="例：田中太郎">
-      </div>
-      <div class="sf-form-row">
-        <label class="sf-label">ポジション</label>
-        <select id="ind-np-position" class="sf-input">
-          <option value="GK">GK</option>
-          <option value="DF">DF</option>
-          <option value="MF" selected>MF</option>
-          <option value="FW">FW</option>
-        </select>
-      </div>
-      <div class="sf-form-row">
-        <label class="sf-label">メモ（怪我・特記事項）</label>
-        <textarea id="ind-np-notes" class="sf-input" rows="2" placeholder="例：右膝前十字靭帯 術後3ヶ月"></textarea>
-      </div>
-      <div style="text-align:right; margin-top:12px;">
-        <button class="sf-btn sf-btn-primary" onclick="saveNewPlayer()">登録</button>
       </div>
     </div>
   </div>

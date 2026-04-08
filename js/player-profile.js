@@ -8,12 +8,16 @@ let _ppSelectedPlayerId = '';
 
 // ── エラータイプ定義（individual-plans.jsのerror_typeに対応）──
 const ERROR_TYPE_MAP = {
-  reaction_delay:       { label: '反応遅れ型',   icon: '⏱️', color: '#dc2626', planId: 'IND-001' },
-  information_overload: { label: '情報混乱型',   icon: '🌀', color: '#ea580c', planId: 'IND-002' },
-  correction_confusion: { label: '修正迷子型',   icon: '🔄', color: '#7c3aed', planId: 'IND-003' },
-  change_freeze:        { label: '変化フリーズ型', icon: '🧊', color: '#2563eb', planId: 'IND-004' },
-  emotional_drag:       { label: '感情引きずり型', icon: '💔', color: '#be185d', planId: 'IND-005' },
-  unclassified:         { label: '未分類',       icon: '❓', color: '#6b7280', planId: null },
+  motor_prediction:     { label: '運動予測ズレ',       icon: '🎯', color: '#dc2626', planId: 'IND-001' },
+  sensory_dependence:   { label: '感覚依存',           icon: '👁️', color: '#ea580c', planId: 'IND-002' },
+  reaction_speed:       { label: '反応スピード不足',   icon: '⏱️', color: '#d97706', planId: 'IND-003' },
+  correction_confusion: { label: '修正迷子',           icon: '🔄', color: '#7c3aed', planId: 'IND-004' },
+  information_overload: { label: '情報混乱',           icon: '🌀', color: '#0891b2', planId: 'IND-005' },
+  rigid_thinking:       { label: '固執',               icon: '🧊', color: '#2563eb', planId: 'IND-006' },
+  low_motivation:       { label: 'やりたくない',       icon: '😤', color: '#ca8a04', planId: 'IND-007' },
+  emotional_control:    { label: '感情コントロール',   icon: '💔', color: '#059669', planId: 'IND-008' },
+  poor_communication:   { label: '相互理解不足',       icon: '🤝', color: '#6b7280', planId: 'IND-009' },
+  unclassified:         { label: '未分類',             icon: '❓', color: '#9ca3af', planId: null },
 };
 
 function initPlayerProfilePage() {

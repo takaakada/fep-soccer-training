@@ -2,6 +2,44 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     /* ══════════════════════════════════════════════════
+       PAGE NAV BAR (top navigation: back / home / logout)
+    ══════════════════════════════════════════════════ */
+    .page-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .page-nav-btn:hover {
+      background: #f0f4ff;
+      color: #1e40af;
+      border-color: #93c5fd;
+    }
+    .page-nav-home:hover {
+      background: #f0fdf4;
+      color: #065f46;
+      border-color: #86efac;
+    }
+    .page-nav-logout {
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+    .page-nav-logout:hover {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #f87171;
+    }
+
+    /* ══════════════════════════════════════════════════
        SIDEBAR LAYOUT
     ══════════════════════════════════════════════════ */
     .sidebar {

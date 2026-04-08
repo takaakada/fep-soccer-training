@@ -245,6 +245,7 @@ function _normalizeIndivPlan(row) {
       { title: row.step1_title || '', desc: row.step1_desc || '', layer: row.step1_layer || 'L1', duration: parseInt(row.step1_duration) || 10 },
       { title: row.step2_title || '', desc: row.step2_desc || '', layer: row.step2_layer || 'L2', duration: parseInt(row.step2_duration) || 15 },
       { title: row.step3_title || '', desc: row.step3_desc || '', layer: row.step3_layer || 'L3', duration: parseInt(row.step3_duration) || 15 },
+      { title: row.step4_title || '', desc: row.step4_desc || '', layer: row.step4_layer || 'L2', duration: parseInt(row.step4_duration) || 10 },
     ].filter(s => s.title),  // タイトルが空のステップは除外
     eval_points: [
       row.eval_point_1, row.eval_point_2, row.eval_point_3, row.eval_point_4

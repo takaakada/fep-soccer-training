@@ -23,6 +23,27 @@ const COACH_ONLY_PAGES = new Set([
   'session-result', 'player-profile', 'eval', 'about', 'kadai'
 ]);
 
+// ── ページ履歴管理 ───────────────────────────────────────
+let currentPage = 'home';
+const pageHistory = [];   // ページ遷移履歴（戻るボタン用）
+
+// ページ名の日本語表示マップ
+const PAGE_LABELS = {
+  'home': '🏠 ホーム',
+  'session-pre-check': '📋 前チェック',
+  'session-record': '▶️ セッション記録',
+  'session-efe': '📅 EFE月次記録',
+  'menu': '📋 全体トレーニング',
+  'position': '⚽ ポジション別',
+  'individual': '🏃 個別トレーニング',
+  'session-coach-record': '📝 コーチ記録',
+  'session-result': '📊 結果・提案',
+  'player-profile': '👤 選手プロフィール',
+  'eval': '📄 評価シート',
+  'about': '📚 指導理論',
+  'kadai': '🎯 課題チャレンジ',
+};
+
 // ユーザーID取得（コーチ or 選手）
 function getActiveUserId() {
   if (currentRole === 'coach' && currentUser) return currentUser.id;
@@ -366,14 +387,29 @@ async function showPage(id, btn) {
     return;
   }
 
+  // ── 履歴管理（戻るボタン用）────────────────────────
+  if (_isNavigatingBack) {
+    // 戻る操作中は履歴に追加しない
+    _isNavigatingBack = false;
+  } else if (currentPage && currentPage !== id) {
+    pageHistory.push(currentPage);
+    if (pageHistory.length > 20) pageHistory.shift();
+  }
+  currentPage = id;
+
   // Update sidebar active state
   document.querySelectorAll('.sidebar-nav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // btnが渡されなかった場合、data-pageで自動検索
+  if (!btn) {
+    const autoBtn = document.querySelector(`.sidebar-nav-btn[data-page="${id}"]`);
+    if (autoBtn) autoBtn.classList.add('active');
+  }
 
   // Kadai page: special handling (React app already in DOM)
   const kadaiEl = document.getElementById('page-kadai');
   const containerEl = document.getElementById('page-container');
-  
+
   if (id === 'kadai') {
     if (containerEl) containerEl.style.display = 'none';
     if (kadaiEl) kadaiEl.style.display = 'block';
@@ -391,8 +427,9 @@ async function showPage(id, btn) {
     const res = await fetch(`pages/${id}.html?v=${Date.now()}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
-    containerEl.innerHTML = html;
-    
+    // ナビバーを先頭に挿入 + ページHTML
+    containerEl.innerHTML = _buildPageNavBar(id) + html;
+
     // Run page-specific init functions
     if (id === 'eval' && typeof initEvalPage === 'function') {
       initEvalPage();
@@ -423,6 +460,51 @@ async function showPage(id, btn) {
 
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── ページ上部ナビゲーションバー ─────────────────────────
+function _buildPageNavBar(pageId) {
+  // ホーム画面では表示しない
+  if (pageId === 'home') return '';
+
+  const hasPrev = pageHistory.length > 0;
+  const prevLabel = hasPrev ? (PAGE_LABELS[pageHistory[pageHistory.length - 1]] || '前のページ') : '';
+
+  return `
+    <div class="page-nav-bar" style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:16px; padding:8px 12px; background:var(--bg); border-radius:10px; border:1px solid var(--border); flex-wrap:wrap;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        ${hasPrev ? `
+          <button onclick="goBack()" class="page-nav-btn" title="${prevLabel}">
+            ← 戻る
+          </button>
+        ` : ''}
+        <button onclick="goHome()" class="page-nav-btn page-nav-home" title="ホーム画面へ">
+          🏠 ホーム
+        </button>
+      </div>
+      <button onclick="logout()" class="page-nav-btn page-nav-logout" title="ログアウト">
+        🚪 ログアウト
+      </button>
+    </div>
+  `;
+}
+
+// ── 戻るボタン ──────────────────────────────────────────
+let _isNavigatingBack = false;
+
+function goBack() {
+  if (pageHistory.length === 0) {
+    goHome();
+    return;
+  }
+  const prevPage = pageHistory.pop();
+  _isNavigatingBack = true;
+  currentPage = prevPage;
+  showPage(prevPage);
+}
+
+function goHome() {
+  showPage('home');
 }
 
 // ══════════════════════════════════════════════════════════
