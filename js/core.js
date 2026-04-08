@@ -76,12 +76,15 @@ function showLoginScreen() {
       sb.auth.getSession().then(({ data: { session } }) => {
         currentUser = session ? session.user : null;
         if (currentUser) {
-          currentRole = 'coach';
-          showApp();
-          renderAuthBadge(currentUser);
-          applySidebarVisibility();
-          const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
-          if (homeBtn) showPage('home', homeBtn);
+          // 既にコーチとしてログイン済みならページ遷移しない
+          if (currentRole !== 'coach') {
+            currentRole = 'coach';
+            showApp();
+            renderAuthBadge(currentUser);
+            applySidebarVisibility();
+            const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+            if (homeBtn) showPage('home', homeBtn);
+          }
         } else {
           // 選手セッション復元を試行
           restorePlayerSession();
@@ -92,12 +95,18 @@ function showLoginScreen() {
       sb.auth.onAuthStateChange(async (event, session) => {
         currentUser = session ? session.user : null;
         if (event === 'SIGNED_IN' && currentUser) {
-          currentRole = 'coach';
-          showApp();
-          renderAuthBadge(currentUser);
-          applySidebarVisibility();
-          const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
-          if (homeBtn) showPage('home', homeBtn);
+          // 初回ログイン時のみホームに遷移（既にログイン済みならスキップ）
+          if (currentRole !== 'coach') {
+            currentRole = 'coach';
+            showApp();
+            renderAuthBadge(currentUser);
+            applySidebarVisibility();
+            const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+            if (homeBtn) showPage('home', homeBtn);
+          }
+        } else if (event === 'TOKEN_REFRESHED') {
+          // トークン更新時はユーザー情報だけ更新（ページ遷移しない）
+          currentUser = session ? session.user : null;
         } else if (event === 'SIGNED_OUT') {
           currentRole = null;
           currentPlayer = null;
@@ -475,6 +484,13 @@ async function showPage(id, btn) {
         <p style="font-size:0.85rem;margin-top:8px;">ローカルサーバー (python3 -m http.server) で起動してください</p>
       </div>`;
     }
+  }
+
+  // ── ホームページ時は body 背景を青に切り替え ─────────────
+  if (id === 'home') {
+    document.body.classList.add('home-active');
+  } else {
+    document.body.classList.remove('home-active');
   }
 
   closeSidebar();

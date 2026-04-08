@@ -32,151 +32,138 @@
     </div>
   </div>
 
-  <div class="sf-grid-2">
-    <!-- ══ 左列：VFE入力 ══ -->
-    <div>
-      <div class="sf-card">
-        <div class="sf-card-title">
-          📊 VFE 入力
-          <span class="sf-theory-tag tag-vfe">VFE</span>
-        </div>
+  <!-- ══ VFE 入力（質問形式） ══ -->
+  <div class="sf-card">
+    <div class="sf-card-title">
+      📊 VFE 入力
+      <span class="sf-theory-tag tag-vfe">VFE</span>
+    </div>
 
-        <!-- メニュー名（参照用） -->
-        <div class="sf-form-row">
-          <label class="sf-label">メニュー名（参照）</label>
-          <input type="text" id="sr-menu-name" class="sf-input"
-                 placeholder="例：3v3ポゼッション" readonly
-                 style="background:var(--bg); cursor:pointer;"
-                 onclick="openMenuPicker()">
-          <p class="sf-note">コーチ記録ページで詳細を入力できます</p>
-        </div>
+    <!-- メニュー名（参照用） -->
+    <div class="sf-form-row">
+      <label class="sf-label">メニュー名（参照）</label>
+      <input type="text" id="sr-menu-name" class="sf-input"
+             placeholder="例：3v3ポゼッション" readonly
+             style="background:var(--bg); cursor:pointer;"
+             onclick="openMenuPicker()">
+      <p class="sf-note">コーチ記録ページで詳細を入力できます</p>
+    </div>
 
-        <div class="sf-separator"></div>
+    <div class="sf-separator"></div>
 
-        <!-- 難易度 (complexity) -->
-        <div class="sf-form-row">
-          <label class="sf-label">課題の難易度</label>
-          <p class="sf-note">選手にとっての主観的な難しさ</p>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-complexity" min="0" max="10" value="5"
-                   oninput="this.nextElementSibling.textContent=this.value; recordSliderChanged()">
-            <span class="sf-slider-val">5</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>とても簡単 (0)</span><span>とても難しい (10)</span>
-          </div>
-        </div>
+    <!-- Q1: 難易度 (complexity) -->
+    <div class="sf-form-row">
+      <label class="sf-label"><strong>Q1. 今日の練習について</strong></label>
+      <select id="sr-complexity" class="sf-select" onchange="recordSelectChanged()">
+        <option value="10">複雑で難しい・うまくできない</option>
+        <option value="7">練習強度や課題は少し難しく感じる</option>
+        <option value="5" selected>チャレンジのレベルは最適だと思う</option>
+        <option value="3">取り組みやすいが、やや単調に感じる</option>
+        <option value="0">最低限の単純なパターンだった</option>
+      </select>
+    </div>
 
-        <div class="sf-separator"></div>
+    <div class="sf-separator"></div>
 
-        <!-- 成功率 (accuracy) -->
-        <div class="sf-form-row">
-          <label class="sf-label">成功率（観察値）</label>
-          <p class="sf-note">練習中の成功率を推定</p>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-accuracy" min="0" max="100" value="50" step="5"
-                   oninput="this.nextElementSibling.textContent=this.value+'%'; recordSliderChanged()">
-            <span class="sf-slider-val">50%</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>0%</span><span>100%</span>
-          </div>
-        </div>
+    <!-- Q2: 成功率 (accuracy) -->
+    <div class="sf-form-row">
+      <label class="sf-label"><strong>Q2. 練習・競技中の身体の動きについて</strong></label>
+      <select id="sr-accuracy" class="sf-select" onchange="recordSelectChanged()">
+        <option value="10">必要な強度に対応できず、調子が悪い</option>
+        <option value="7">普段よりうまくいかず、なんとなく調子が悪い</option>
+        <option value="5" selected>普段通り、調子はまずまず</option>
+        <option value="3">概ね良好にコントロールできる</option>
+        <option value="0">完璧に調整できておりイメージ通り</option>
+      </select>
+    </div>
 
-        <div class="sf-separator"></div>
+    <div class="sf-separator"></div>
 
-        <!-- 重みバイアス (weightValue) -->
-        <div class="sf-form-row">
-          <label class="sf-label">処理バイアス</label>
-          <p class="sf-note">難易度と成功率のどちらを重視するか</p>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-weight" min="-20" max="20" value="0"
-                   oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1); recordSliderChanged()">
-            <span class="sf-slider-val">0.0</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>成功率重視 (-2)</span><span>難易度重視 (+2)</span>
-          </div>
-        </div>
+    <!-- Q3: 重みバイアス (weight) -->
+    <div class="sf-form-row">
+      <label class="sf-label"><strong>Q3. 動作イメージと身体感覚について</strong></label>
+      <select id="sr-weight" class="sf-select" onchange="recordSelectChanged()">
+        <option value="2">やりたい動きをイメージできるかが全て</option>
+        <option value="1">イメージの方が大事で感覚はそれほど重要ではない</option>
+        <option value="0" selected>動作イメージと動いた時の感覚が合うことが重要</option>
+        <option value="-1">感覚に合わせてイメージを変えることが重要</option>
+        <option value="-2">体の感覚が全て（動いてみないとわからない）</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ══ F' コンポーネント入力（スライダー） ══ -->
+  <div class="sf-card">
+    <div class="sf-card-title">
+      🧠 振り返り（F' コンポーネント）
+      <span class="sf-theory-tag tag-fprime">F'</span>
+    </div>
+
+    <!-- dr: 成長実感 -->
+    <div class="sf-form-row">
+      <label class="sf-label">成長実感 (dr)</label>
+      <p class="sf-note">今日の練習で成長を感じましたか？</p>
+      <div class="sf-slider-row">
+        <input type="range" id="sr-dr" min="0" max="10" value="5"
+               oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
+        <span class="sf-slider-val">5</span>
+      </div>
+      <div class="sf-scale-ends">
+        <span>全く感じない (0)</span><span>とても感じる (10)</span>
       </div>
     </div>
 
-    <!-- ══ 右列：F' コンポーネント + VFEプレビュー ══ -->
-    <div>
-      <!-- F' コンポーネント入力 -->
-      <div class="sf-card">
-        <div class="sf-card-title">
-          🧠 振り返り（F' コンポーネント）
-          <span class="sf-theory-tag tag-fprime">F'</span>
-        </div>
+    <div class="sf-separator"></div>
 
-        <!-- dr: 成長実感 -->
-        <div class="sf-form-row">
-          <label class="sf-label">成長実感 (dr)</label>
-          <p class="sf-note">今日の練習で成長を感じましたか？</p>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-dr" min="0" max="10" value="5"
-                   oninput="this.nextElementSibling.textContent=this.value; updateFPrimePreview()">
-            <span class="sf-slider-val">5</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>全く感じない (0)</span><span>とても感じる (10)</span>
-          </div>
-        </div>
-
-        <div class="sf-separator"></div>
-
-        <!-- uh: 満足感 -->
-        <div class="sf-form-row">
-          <label class="sf-label">満足感 (uh)</label>
-          <p class="sf-note">練習の結果に満足していますか？</p>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-uh" min="0" max="10" value="5"
-                   oninput="this.nextElementSibling.textContent=this.value; updateFPrimePreview()">
-            <span class="sf-slider-val">5</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>不満 (0)</span><span>とても満足 (10)</span>
-          </div>
-        </div>
-
-        <div class="sf-separator"></div>
-
-        <!-- fh: 次回への期待 -->
-        <div class="sf-form-row">
-          <label class="sf-label">次回への期待 (fh)</label>
-          <p class="sf-note">次の練習が楽しみですか？</p>
-          <div class="sf-slider-row">
-            <input type="range" id="sr-fh" min="0" max="10" value="5"
-                   oninput="this.nextElementSibling.textContent=this.value; updateFPrimePreview()">
-            <span class="sf-slider-val">5</span>
-          </div>
-          <div class="sf-scale-ends">
-            <span>不安・消極的 (0)</span><span>とても楽しみ (10)</span>
-          </div>
-        </div>
+    <!-- uh: 満足感 -->
+    <div class="sf-form-row">
+      <label class="sf-label">満足感 (uh)</label>
+      <p class="sf-note">練習の結果に満足していますか？</p>
+      <div class="sf-slider-row">
+        <input type="range" id="sr-uh" min="0" max="10" value="5"
+               oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
+        <span class="sf-slider-val">5</span>
       </div>
+      <div class="sf-scale-ends">
+        <span>不満 (0)</span><span>とても満足 (10)</span>
+      </div>
+    </div>
 
-      <!-- VFE + F' リアルタイムプレビュー -->
-      <div class="sf-card sf-preview-card">
-        <div class="sf-card-title">📐 リアルタイムプレビュー</div>
-        <div class="sf-preview-grid">
-          <div class="sf-preview-item">
-            <div class="sf-preview-label">VFE</div>
-            <div class="sf-preview-val" id="pv-vfe">--</div>
-            <div class="sf-preview-sub">変分自由エネルギー</div>
-          </div>
-          <div class="sf-preview-item">
-            <div class="sf-preview-label">バンド</div>
-            <div class="sf-preview-val" id="pv-band">--</div>
-            <div class="sf-preview-sub">VFEゾーン</div>
-          </div>
-          <div class="sf-preview-item">
-            <div class="sf-preview-label">F'概算</div>
-            <div class="sf-preview-val" id="pv-fprime">--</div>
-            <div class="sf-preview-sub">dr/uh/fhから</div>
-          </div>
-        </div>
+    <div class="sf-separator"></div>
+
+    <!-- fh: 次回への期待 -->
+    <div class="sf-form-row">
+      <label class="sf-label">次回への期待 (fh)</label>
+      <p class="sf-note">次の練習が楽しみですか？</p>
+      <div class="sf-slider-row">
+        <input type="range" id="sr-fh" min="0" max="10" value="5"
+               oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
+        <span class="sf-slider-val">5</span>
+      </div>
+      <div class="sf-scale-ends">
+        <span>不安・消極的 (0)</span><span>とても楽しみ (10)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VFE + F' リアルタイムプレビュー ══ -->
+  <div class="sf-card sf-preview-card">
+    <div class="sf-card-title">📐 リアルタイムプレビュー</div>
+    <div class="sf-preview-grid">
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">VFE</div>
+        <div class="sf-preview-val" id="pv-vfe">--</div>
+        <div class="sf-preview-sub">変分自由エネルギー</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">バンド</div>
+        <div class="sf-preview-val" id="pv-band">--</div>
+        <div class="sf-preview-sub">VFEゾーン</div>
+      </div>
+      <div class="sf-preview-item">
+        <div class="sf-preview-label">F'概算</div>
+        <div class="sf-preview-val" id="pv-fprime">--</div>
+        <div class="sf-preview-sub">dr/uh/fhから</div>
       </div>
     </div>
   </div>
@@ -214,8 +201,8 @@ function initRecordPage() {
   const progEl = document.getElementById('sf-progress-bar');
   if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(1);
   showPreCheckSummary();
-  recordSliderChanged();
-  updateFPrimePreview();
+  recordSelectChanged();
+  updateFPrimeSelect();
 
   // inherit menu name from SessionFlow state
   const state = SessionFlow.getState();
@@ -251,15 +238,14 @@ function showPreCheckSummary() {
     ${efe ? `EFE=${efe.efe_display.toFixed(1)}（α=${efe.alpha.toFixed(2)}, β=${efe.beta.toFixed(2)}）` : 'EFE=未計算'}`;
 }
 
-function recordSliderChanged() {
+function recordSelectChanged() {
   const complexity = parseInt(document.getElementById('sr-complexity')?.value ?? 5);
-  const accuracy   = parseInt(document.getElementById('sr-accuracy')?.value ?? 50);
-  const weightRaw  = parseInt(document.getElementById('sr-weight')?.value ?? 0);
-  const weightValue = weightRaw / 10;
+  const accuracy   = parseInt(document.getElementById('sr-accuracy')?.value ?? 5);
+  const weightValue = parseInt(document.getElementById('sr-weight')?.value ?? 0);
 
-  SessionFlow.updateRecord({ complexity, accuracy, weightValue });
+  SessionFlow.updateRecord({ complexity, accuracy: accuracy * 10, weightValue });
 
-  const accuracyScale = accuracy / 10;
+  const accuracyScale = accuracy;  // select値は0-10なのでそのまま使用
   const vfe = FepCalc.calcVFE(complexity, accuracyScale, weightValue);
 
   const vfeEl = document.getElementById('pv-vfe');
@@ -278,12 +264,15 @@ function recordSliderChanged() {
   }
 }
 
-function updateFPrimePreview() {
+// 後方互換: スライダー版の関数名でも呼べるようにする
+function recordSliderChanged() { recordSelectChanged(); }
+
+function updateFPrimeSelect() {
   const dr = parseInt(document.getElementById('sr-dr')?.value ?? 5);
   const uh = parseInt(document.getElementById('sr-uh')?.value ?? 5);
   const fh = parseInt(document.getElementById('sr-fh')?.value ?? 5);
 
-  // Simple F' estimate from dr/uh/fh: map 0-10 to -2..+2, average
+  // F' estimate from dr/uh/fh: map 0-10 to -2..+2, average
   const drBipolar = (dr - 5) / 2.5;
   const uhBipolar = (uh - 5) / 2.5;
   const fhBipolar = (fh - 5) / 2.5;
@@ -298,6 +287,9 @@ function updateFPrimePreview() {
 
   SessionFlow.updatePostEval({ dr, uh, fh });
 }
+
+// 後方互換
+function updateFPrimePreview() { updateFPrimeSelect(); }
 
 // ── メニューピッカー ──
 function openMenuPicker() {
@@ -354,8 +346,8 @@ function backToPreCheck() {
 }
 
 function completeRecord() {
-  recordSliderChanged();
-  updateFPrimePreview();
+  recordSelectChanged();
+  updateFPrimeSelect();
 
   const state = SessionFlow.getState();
   const vfe = state.computed.vfe;
