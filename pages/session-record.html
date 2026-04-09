@@ -46,10 +46,10 @@
         <div class="sf-form-row">
           <label class="sf-label"><strong>Q1. 今日の練習について</strong></label>
           <select id="sr-complexity" class="sf-select" onchange="recordSelectChanged()">
-            <option value="10">複雑で難しい・うまくできない</option>
-            <option value="7">練習強度や課題は少し難しく感じる</option>
-            <option value="5" selected>チャレンジのレベルは最適だと思う</option>
-            <option value="3">取り組みやすいが、やや単調に感じる</option>
+            <option value="10">複雑で難しい・うまくできなかった</option>
+            <option value="7">練習強度や課題は少し難しく感じた</option>
+            <option value="5" selected>チャレンジのレベルは最適だった</option>
+            <option value="3">取り組みやすいが、やや単調に感じた</option>
             <option value="0">最低限の単純なパターンだった</option>
           </select>
         </div>
@@ -61,10 +61,10 @@
           <label class="sf-label"><strong>Q2. 練習・競技中の身体の動きについて</strong></label>
           <select id="sr-accuracy" class="sf-select" onchange="recordSelectChanged()">
             <option value="10">必要な強度に対応できず、調子が悪い</option>
-            <option value="7">普段よりうまくいかず、なんとなく調子が悪い</option>
-            <option value="5" selected>普段通り、調子はまずまず</option>
-            <option value="3">概ね良好にコントロールできる</option>
-            <option value="0">完璧に調整できておりイメージ通り</option>
+            <option value="7">普段よりうまくいかず、なんとなく調子が悪かった</option>
+            <option value="5" selected>普段通り、調子はまずまずだった</option>
+            <option value="3">概ね良好にコントロールできた</option>
+            <option value="0">完璧に調整できておりイメージ通りだった</option>
           </select>
         </div>
 
@@ -94,7 +94,7 @@
 
         <!-- dr: 成長実感 -->
         <div class="sf-form-row">
-          <label class="sf-label">成長実感 (dr)</label>
+          <label class="sf-label">成長の実感 (dr)</label>
           <p class="sf-note">今日の練習で成長を感じましたか？</p>
           <div class="sf-slider-row">
             <input type="range" id="sr-dr" min="0" max="10" value="5"
@@ -111,7 +111,7 @@
         <!-- uh: 満足感 -->
         <div class="sf-form-row">
           <label class="sf-label">満足感 (uh)</label>
-          <p class="sf-note">練習の結果に満足していますか？</p>
+          <p class="sf-note">今日の練習に満足していますか？</p>
           <div class="sf-slider-row">
             <input type="range" id="sr-uh" min="0" max="10" value="5"
                    oninput="this.nextElementSibling.textContent=this.value; updateFPrimeSelect()">
