@@ -9,6 +9,9 @@
     <p class="sf-page-sub">練習メニューの詳細とコーチング環境を記録します</p>
   </div>
 
+  <!-- グループセレクター -->
+  <div id="coach-group-selector"></div>
+
   <div class="sf-alert sf-alert-blue">
     <span class="sf-alert-icon">ℹ️</span>
     <div>このページはコーチ側の記録用です。選手のVFE記録とは別に、練習の設計情報を保存します。</div>
@@ -198,7 +201,10 @@
 </div>
 
 <script>
-function initCoachRecordPage() {
+async function initCoachRecordPage() {
+  // グループセレクターを描画
+  await GroupContext.renderGroupSelector('coach-group-selector');
+
   // Inherit menu name from SessionFlow if available
   const state = SessionFlow.getState();
   if (state.record.menuName) {

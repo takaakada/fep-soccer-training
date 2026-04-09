@@ -10,6 +10,9 @@
     <p class="sf-page-sub">月1回、将来への見通しと動きやすさ（Expected Free Energy）を評価します</p>
   </div>
 
+  <!-- グループ情報バナー -->
+  <div id="efe-group-banner"></div>
+
   <div class="sf-alert sf-alert-blue">
     <span class="sf-alert-icon">ℹ️</span>
     <div>EFEは「将来に向けた見通しの悪さ＋動きにくさ」の指標です。低いほど良い状態（明確で前向き）、高いほど課題がある状態です。認識的負荷と実行的負荷の2軸で変化を追跡します。</div>
@@ -139,6 +142,13 @@
 
 <script>
 function initEfePage() {
+  // グループバナー表示
+  if (currentRole === 'player') {
+    GroupContext.renderGroupBanner('efe-group-banner');
+  } else {
+    GroupContext.renderGroupSelector('efe-group-banner');
+  }
+
   efeSliderChanged();
   loadEfeHistory();
 }
