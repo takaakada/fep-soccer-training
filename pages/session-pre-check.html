@@ -272,7 +272,7 @@ async function loadLastSessionRecommendation() {
 
       textEl.innerHTML = `<strong>前回データから推奨：</strong><br>${advice}<br><span style="font-size:0.78rem;opacity:0.7">記録日: ${date}</span>`;
     } else {
-      textEl.innerHTML = '初回セッションです。まずは今日の状態を正直に記録しましょう。';
+      textEl.innerHTML = 'ミーティング後の状態を確認しておきましょう';
     }
   } catch (e) {
     textEl.innerHTML = '前回データの読み込みに失敗しました。そのまま進めてください。';
