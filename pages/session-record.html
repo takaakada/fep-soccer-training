@@ -160,11 +160,8 @@
 
   <!-- ボタン -->
   <div class="sf-btn-row">
-    <button class="sf-btn sf-btn-secondary" onclick="backToPreCheck()">
-      ← MTG後チェックに戻る
-    </button>
     <button class="sf-btn sf-btn-primary" onclick="completeRecord()">
-      記録完了 → 結果表示へ
+      記録を保存
     </button>
   </div>
 </div>
@@ -251,17 +248,13 @@ function updateFPrimeSelect() {
 // 後方互換
 function updateFPrimePreview() { updateFPrimeSelect(); }
 
-// ── ナビゲーション ──
-function backToPreCheck() {
-  showPage('session-pre-check', document.querySelector('.sidebar-nav-btn[data-page="session-pre-check"]'));
-}
-
-function completeRecord() {
+async function completeRecord() {
   recordSelectChanged();
   updateFPrimeSelect();
 
   const state = SessionFlow.getState();
   const vfe = state.computed.vfe;
+  const c = state.computed;
 
   if (_recordMode === 'individual') {
     const playerName = document.getElementById('sr-player-name')?.value?.trim();
@@ -270,41 +263,26 @@ function completeRecord() {
       document.getElementById('sr-player-name')?.focus();
       return;
     }
-    // Save individual record
-    const key = 'fep_individual_records';
-    let records = [];
-    try { records = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-    records.unshift({
-      playerName,
-      date: new Date().toISOString().slice(0, 10),
-      vfe_display: vfe ? vfe.vfe_display : null,
-      dr: parseInt(document.getElementById('sr-dr')?.value ?? 5),
-      uh: parseInt(document.getElementById('sr-uh')?.value ?? 5),
-      fh: parseInt(document.getElementById('sr-fh')?.value ?? 5),
-      savedAt: new Date().toISOString(),
-    });
-    if (records.length > 200) records = records.slice(0, 200);
-    localStorage.setItem(key, JSON.stringify(records));
   }
 
-  // Save team VFE history
-  if (vfe) {
-    const key = 'fep_vfe_history';
-    let history = [];
-    try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-    history.unshift({
-      date: new Date().toISOString().slice(0, 10),
-      vfe_display: vfe.vfe_display,
-      mode: _recordMode,
-      savedAt: new Date().toISOString(),
-    });
-    if (history.length > 50) history = history.slice(0, 50);
-    localStorage.setItem(key, JSON.stringify(history));
+  // Supabase に保存（FEP Soccer Training）
+  const recordData = {
+    vfe_display:  vfe ? vfe.vfe_display : null,
+    f_prime:      c.fPrime ? (c.fPrime.f_prime_effective ?? c.fPrime.f_prime ?? 0) : null,
+    sigma_mod:    c.sigmaModifier || 0,
+    lambda_mod:   c.lambdaModifier || 0,
+  };
+  const dbId = await persistRecord(recordData);
+
+  if (dbId) {
+    alert('練習後チェックを保存しました。');
+  } else {
+    alert('保存に失敗しました。ネットワークを確認してください。');
   }
 
-  // Navigate to results
-  SessionFlow.nextStep();
-  showPage('session-result', document.querySelector('.sidebar-nav-btn[data-page="session-result"]'));
+  // リセットしてホームへ
+  SessionFlow.startSession();
+  showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
 }
 
 initRecordPage();

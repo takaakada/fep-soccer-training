@@ -177,7 +177,7 @@
   <!-- ボタン -->
   <div class="sf-btn-row">
     <button class="sf-btn sf-btn-primary" onclick="saveCoachRecord()">
-      💾 コーチ記録を保存
+      記録を保存
     </button>
   </div>
 </div>
@@ -245,7 +245,7 @@ function updateLambdaPreview() {
   }
 }
 
-function saveCoachRecord() {
+async function saveCoachRecord() {
   const menuName = document.getElementById('cr-menu-name')?.value?.trim();
   if (!menuName) {
     alert('メニュー名を入力してください。');
@@ -267,27 +267,16 @@ function saveCoachRecord() {
     savedAt: new Date().toISOString(),
   };
 
-  // Save to localStorage
-  const key = 'fep_coach_records';
-  let history = [];
-  try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-  history.unshift(record);
-  if (history.length > 100) history = history.slice(0, 100);
-  localStorage.setItem(key, JSON.stringify(history));
+  // Supabase に保存（FEP Soccer Training）
+  const ok = await persistCoachRecord(record);
 
-  // Also update SessionFlow state
-  SessionFlow.updateRecord({
-    menuName: record.menuName,
-    purpose: record.purpose,
-    duration: record.duration,
-    layer: record.layer,
-    channels: record.channels,
-    constraints: record.constraints,
-    coachingType: record.coachingType,
-    feedbackFreq: record.feedbackFreq,
-  });
+  if (ok) {
+    alert('コーチ記録を保存しました。');
+  } else {
+    alert('保存に失敗しました。ネットワークを確認してください。');
+  }
 
-  alert('コーチ記録を保存しました。');
+  showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
 }
 
 // ── メニューピッカー ──

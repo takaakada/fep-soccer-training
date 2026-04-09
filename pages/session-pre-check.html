@@ -177,10 +177,7 @@
   <!-- ボタン -->
   <div class="sf-btn-row">
     <button class="sf-btn sf-btn-primary" onclick="completePreCheck()">
-      チェック完了 → 練習後チェックへ
-    </button>
-    <button class="sf-btn sf-btn-secondary" onclick="savePreCheckDraft()">
-      下書き保存
+      記録を保存
     </button>
   </div>
 </div>
@@ -279,30 +276,24 @@ async function loadLastSessionRecommendation() {
   }
 }
 
-// ── 前チェック完了 ──────────────────────────────────────────
+// ── 前チェック完了 → 保存してホームへ ──────────────────────
 async function completePreCheck() {
   // 入力値を最終確定
   preCheckSliderChanged();
 
-  // DB にセッション作成
+  // DB にセッション作成（FEP Soccer Training Supabase）
   const state = SessionFlow.getState();
   const dbId = await createFlowSession(state.preCheck);
-  if (dbId) state.dbSessionId = dbId;
 
-  // 次のステップへ (② セッション記録)
-  SessionFlow.nextStep();
-  showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page="session-record"]'));
-}
+  if (dbId) {
+    alert('ミーティング後チェックを保存しました。');
+  } else {
+    alert('保存に失敗しました。ネットワークを確認してください。');
+  }
 
-// ── 下書き保存 ──────────────────────────────────────────────
-function savePreCheckDraft() {
-  preCheckSliderChanged();
-  const state = SessionFlow.getState();
-  localStorage.setItem('fep_precheck_draft', JSON.stringify({
-    preCheck: state.preCheck,
-    savedAt: new Date().toISOString(),
-  }));
-  alert('💾 下書きを保存しました。');
+  // リセットしてホームへ
+  SessionFlow.startSession();
+  showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
 }
 
 // ── ページ初期化呼び出し

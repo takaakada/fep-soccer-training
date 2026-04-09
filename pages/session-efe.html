@@ -132,7 +132,7 @@
   <!-- ボタン -->
   <div class="sf-btn-row">
     <button class="sf-btn sf-btn-primary" onclick="saveEfeRecord()">
-      💾 EFE記録を保存
+      記録を保存
     </button>
   </div>
 </div>
@@ -193,25 +193,24 @@ async function saveEfeRecord() {
   const q4 = parseInt(document.getElementById('efe-q4')?.value ?? 5);
   const efe = FepCalc.calcEFE(q1, q2, q3, q4);
 
-  const record = {
-    date: new Date().toISOString().slice(0, 10),
+  const efeData = {
     q1, q2, q3, q4,
     efe_display: efe.efe_display,
     epi_score: efe.epi_score,
     pra_score: efe.pra_score,
     dominant: efe.dominant,
-    savedAt: new Date().toISOString(),
   };
 
-  const key = 'fep_efe_monthly';
-  let history = [];
-  try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-  history.unshift(record);
-  if (history.length > 24) history = history.slice(0, 24);
-  localStorage.setItem(key, JSON.stringify(history));
+  // Supabase に保存（FEP Soccer Training）
+  const ok = await persistEfeMonthly(efeData);
 
-  alert('EFE月次記録を保存しました。');
-  loadEfeHistory();
+  if (ok) {
+    alert('EFE月次記録を保存しました。');
+  } else {
+    alert('保存に失敗しました。ネットワークを確認してください。');
+  }
+
+  showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
 }
 
 function loadEfeHistory() {
