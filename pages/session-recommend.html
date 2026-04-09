@@ -343,7 +343,7 @@ async function completeRecommend() {
 async function saveSessionData() {
   const state = SessionFlow.getState();
   if (!state.dbSessionId) {
-    alert('セッションが開始されていません。前チェックから始めてください。');
+    alert('セッションが開始されていません。MTG後チェックから始めてください。');
     return;
   }
 

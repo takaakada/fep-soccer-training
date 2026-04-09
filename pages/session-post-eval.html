@@ -11,10 +11,10 @@
 
   <div id="sf-progress-bar"></div>
 
-  <!-- セッション記録サマリー -->
+  <!-- 練習後チェックサマリー -->
   <div id="pe-record-summary" class="sf-alert sf-alert-blue">
     <span class="sf-alert-icon">▶️</span>
-    <div id="pe-record-text">セッション記録を読み込み中…</div>
+    <div id="pe-record-text">練習後チェックを読み込み中…</div>
   </div>
 
   <div class="sf-grid-2">
@@ -113,7 +113,7 @@
         <div class="sf-form-row">
           <div class="sf-fprime-breakdown">
             <div class="sf-fprime-row">
-              <span class="sf-fprime-label">Q1 期待感（前チェック）</span>
+              <span class="sf-fprime-label">Q1 期待感（MTG後チェック）</span>
               <span class="sf-fprime-val" id="pv-fq1">—</span>
             </div>
             <div class="sf-fprime-row">
@@ -172,7 +172,7 @@
 
   <div class="sf-btn-row">
     <button class="sf-btn sf-btn-secondary" onclick="backToRecord()">
-      ← セッション記録に戻る
+      ← 練習後チェックに戻る
     </button>
     <button class="sf-btn sf-btn-primary" onclick="completePostEval()">
       評価完了 → 次回提案へ
@@ -196,12 +196,12 @@ function showRecordSummary() {
   const computed = state.computed;
 
   if (!rec.menuName) {
-    textEl.innerHTML = '⚠️ セッション記録が未入力です。<a href="#" onclick="showPage(\'session-record\', document.querySelector(\'.sidebar-nav-btn[data-page=session-record]\'))">記録を先に行う</a>';
+    textEl.innerHTML = '⚠️ 練習後チェックが未入力です。<a href="#" onclick="showPage(\'session-record\', document.querySelector(\'.sidebar-nav-btn[data-page=session-record]\'))">記録を先に行う</a>';
     return;
   }
 
   const vfeText = computed.vfe ? `VFE=${computed.vfe.vfe_display.toFixed(1)}` : 'VFE=未計算';
-  textEl.innerHTML = `<strong>セッション記録：</strong>
+  textEl.innerHTML = `<strong>練習後チェック：</strong>
     ${rec.menuName}（${rec.duration}分）、
     難易度=${rec.complexity}/10、成功率=${rec.accuracy}%、
     ${vfeText}`;

@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════
 //
 // 3ステップのセッションフローを管理:
-//   ① 前チェック → ② セッション記録（VFE + F'） → ③ 結果・提案
+//   ① MTG後チェック → ② 練習後チェック（VFE + F'） → ③ 結果・提案
 //
 // 別ページ（フロー外）:
 //   - コーチ記録（session-coach-record）
@@ -18,8 +18,8 @@ const SessionFlow = (() => {
 
   // ── ステップ定義 ──────────────────────────────────────────
   const STEPS = [
-    { id: 'pre-check',   label: '前チェック',     icon: '📋', page: 'session-pre-check' },
-    { id: 'record',      label: 'セッション記録', icon: '▶️', page: 'session-record' },
+    { id: 'pre-check',   label: 'MTG後チェック',   icon: '📋', page: 'session-pre-check' },
+    { id: 'record',      label: '練習後チェック',  icon: '▶️', page: 'session-record' },
     { id: 'result',      label: '結果・提案',     icon: '📊', page: 'session-result' },
   ];
 
@@ -32,7 +32,7 @@ const SessionFlow = (() => {
       startedAt: null,
       currentStep: 0,
 
-      // ① 前チェック
+      // ① MTG後チェック
       preCheck: {
         condition: 5,       // コンディション (0-10) → セロトニン系 → σ
         expectation: 5,     // 期待感 (0-10) → ドーパミン系 → F' Q1
@@ -114,23 +114,21 @@ const SessionFlow = (() => {
     c.sigmaModifier  = FepCalc.serotoninToSigma(s.preCheck.condition);
     c.lambdaModifier = FepCalc.oxytocinToLambda(s.record.coachingType);
 
-    // ── EFE 計算 (正式版: 技術ドキュメント §4.2) ──
-    // epiQ1 = 状態不確実性（理解度を反転: 理解度高い → 不確実性低い）
-    // epiQ2 = 情報探索欲求
-    // praQ3 = 目標の重要度（達成見通しを反転）
-    // praQ4 = 実行コスト（負担感）
+    // ── EFE 計算 (加算モデル v3) ──
+    // 全設問: 0=良い, 10=悪い に統一
+    // q1=不明確さ, q2=情報を求めなさ, q3=目標優先度の低さ, q4=取り組みにくさ
     c.efe = FepCalc.calcEFE(
-      10 - s.preCheck.epiQ1,  // Q1: 理解度→反転して不確実性
-      s.preCheck.epiQ2,       // Q2: 情報探索欲求
-      10 - s.preCheck.praQ3,  // Q3: 達成見通し→反転して目標重要度
-      s.preCheck.praQ4,       // Q4: 負担感（実行コスト）
+      s.preCheck.epiQ1,       // q1: 高い=不明確
+      s.preCheck.epiQ2,       // q2: 高い=情報を求めない
+      s.preCheck.praQ3,       // q3: 高い=目標が低い
+      s.preCheck.praQ4,       // q4: 高い=取り組みにくい
     );
 
     // ── EFE 中間値 (F' の u_state 計算に使用) ──
     const efeInter = FepCalc.calcEFEIntermediate(
-      10 - s.preCheck.epiQ1,
+      s.preCheck.epiQ1,
       s.preCheck.epiQ2,
-      10 - s.preCheck.praQ3,
+      s.preCheck.praQ3,
       s.preCheck.praQ4,
     );
 

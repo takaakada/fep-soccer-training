@@ -30,8 +30,8 @@ const pageHistory = [];   // ページ遷移履歴（戻るボタン用）
 // ページ名の日本語表示マップ
 const PAGE_LABELS = {
   'home': '🏠 ホーム',
-  'session-pre-check': '📋 前チェック',
-  'session-record': '▶️ セッション記録',
+  'session-pre-check': '📋 MTG後チェック',
+  'session-record': '▶️ 練習後チェック',
   'session-efe': '📅 EFE月次記録',
   'menu': '📋 全体トレーニング',
   'position': '⚽ ポジション別',
@@ -620,6 +620,102 @@ async function removeSession(id) {
   localStorage.setItem('fep_sessions', JSON.stringify(sessions.filter(s => s.id !== id)));
 }
 
+// ── セッションフロー用 Supabase 保存（FEP Soccer Training）───
+
+// ① MTG後チェック: sessions テーブルにレコード作成
+async function createFlowSession(preCheck) {
+  const uid = getActiveUserId();
+  if (!sbFep || !uid) return null;
+  const row = {
+    user_id:         uid,
+    session_date:    new Date().toISOString().slice(0, 10),
+    status:          'completed',
+    current_step:    0,
+    pre_condition:   preCheck.condition,
+    pre_expectation: preCheck.expectation,
+    pre_epi_q1:      preCheck.epiQ1,
+    pre_epi_q2:      preCheck.epiQ2,
+    pre_pra_q3:      preCheck.praQ3,
+    pre_pra_q4:      preCheck.praQ4,
+  };
+  const { data, error } = await sbFep.from('sessions').insert(row).select('id').single();
+  if (error) { console.error('createFlowSession:', error); return null; }
+  return data?.id || null;
+}
+
+// ② 練習後チェック: sessions テーブルに VFE + F' データを保存
+async function persistRecord(recordData) {
+  const uid = getActiveUserId();
+  if (!sbFep || !uid) return null;
+  const row = {
+    user_id:           uid,
+    session_date:      new Date().toISOString().slice(0, 10),
+    status:            'completed',
+    current_step:      1,
+    score_vfe:         recordData.vfe_display,
+    score_f_prime:     recordData.f_prime,
+    score_sigma_mod:   recordData.sigma_mod,
+    score_lambda_mod:  recordData.lambda_mod,
+  };
+  const { data, error } = await sbFep.from('sessions').insert(row).select('id').single();
+  if (error) { console.error('persistRecord:', error); return null; }
+  return data?.id || null;
+}
+
+// EFE月次記録: sessions テーブルに EFE データを保存
+async function persistEfeMonthly(efeData) {
+  const uid = getActiveUserId();
+  if (!sbFep || !uid) return null;
+  const row = {
+    user_id:       uid,
+    session_date:  new Date().toISOString().slice(0, 10),
+    status:        'completed',
+    current_step:  0,
+    pre_epi_q1:    efeData.q1,
+    pre_epi_q2:    efeData.q2,
+    pre_pra_q3:    efeData.q3,
+    pre_pra_q4:    efeData.q4,
+    score_efe:     efeData.efe_display,
+    score_alpha:   efeData.epi_score,
+    score_beta:    efeData.pra_score,
+  };
+  const { error } = await sbFep.from('sessions').insert(row);
+  if (error) { console.error('persistEfeMonthly:', error); return false; }
+  return true;
+}
+
+// コーチ記録: session_menus テーブルに保存
+async function persistCoachRecord(record) {
+  const uid = getActiveUserId();
+  if (!sbFep || !uid) return false;
+  // まず親セッションを作成
+  const sessionRow = {
+    user_id:      uid,
+    session_date: new Date().toISOString().slice(0, 10),
+    status:       'completed',
+    current_step: 1,
+  };
+  const { data: sessionData, error: sessionErr } = await sbFep.from('sessions').insert(sessionRow).select('id').single();
+  if (sessionErr) { console.error('persistCoachRecord session:', sessionErr); return false; }
+  const sessionId = sessionData?.id;
+  if (!sessionId) return false;
+
+  const menuRow = {
+    session_id:    sessionId,
+    menu_name:     record.menuName,
+    purpose:       record.purpose,
+    duration_min:  record.duration,
+    layer:         record.layer,
+    channels:      record.channels,
+    constraints:   record.constraints,
+    coaching_type: record.coachingType,
+    feedback_freq: record.feedbackFreq,
+  };
+  const { error: menuErr } = await sbFep.from('session_menus').insert(menuRow);
+  if (menuErr) { console.error('persistCoachRecord menu:', menuErr); return false; }
+  return true;
+}
+
 // ── Inflexion Index への VFE書き込み ─────────────────────
 // assessments テーブル（mode='athlete', type='vfe'）へ選手VFEを保存
 
@@ -667,11 +763,12 @@ async function persistInflexionCoachEval(payload) {
 // ── training_weeklies ────────────────────────────────────
 
 async function fetchWeeklies() {
-  if (sb && currentUser) {
-    const { data, error } = await sb
+  const uid = getActiveUserId();
+  if (sbFep && uid) {
+    const { data, error } = await sbFep
       .from('training_weeklies')
       .select('*')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', uid)
       .order('saved_at', { ascending: false });
     if (error) { console.error('fetchWeeklies:', error); return []; }
     return (data || []).map(r => ({
@@ -692,9 +789,10 @@ async function fetchWeeklies() {
 }
 
 async function persistWeekly(record) {
-  if (sb && currentUser) {
+  const uid = getActiveUserId();
+  if (sbFep && uid) {
     const row = {
-      user_id:    currentUser.id,
+      user_id:    uid,
       name:       record.name,
       week:       record.week,
       grade:      record.grade,
@@ -704,7 +802,7 @@ async function persistWeekly(record) {
       challenge:  record.challenge,
       next_theme: record.nextTheme,
     };
-    const { error } = await sb.from('training_weeklies').insert(row);
+    const { error } = await sbFep.from('training_weeklies').insert(row);
     if (error) console.error('persistWeekly:', error);
     return;
   }
@@ -714,12 +812,13 @@ async function persistWeekly(record) {
 }
 
 async function removeWeekly(id) {
-  if (sb && currentUser) {
-    const { error } = await sb
+  const uid = getActiveUserId();
+  if (sbFep && uid) {
+    const { error } = await sbFep
       .from('training_weeklies')
       .delete()
       .eq('id', id)
-      .eq('user_id', currentUser.id);
+      .eq('user_id', uid);
     if (error) console.error('removeWeekly:', error);
     return;
   }
