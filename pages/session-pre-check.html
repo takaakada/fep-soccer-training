@@ -9,6 +9,9 @@
     <p class="sf-page-sub">ミーティング後の状態を記録して、最適な練習の入り口を整えます</p>
   </div>
 
+  <!-- グループ情報バナー -->
+  <div id="precheck-group-banner"></div>
+
   <!-- プログレスバー -->
   <div id="sf-progress-bar"></div>
 
@@ -185,6 +188,13 @@
 <script>
 // ── 前チェック初期化 ────────────────────────────────────────
 function initPreCheckPage() {
+  // グループバナー表示
+  if (currentRole === 'player') {
+    GroupContext.renderGroupBanner('precheck-group-banner');
+  } else {
+    GroupContext.renderGroupSelector('precheck-group-banner');
+  }
+
   // セッション開始
   SessionFlow.startSession();
 

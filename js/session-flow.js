@@ -29,6 +29,8 @@ const SessionFlow = (() => {
   function createEmptyState() {
     return {
       id: null,
+      groupId: null,
+      memberId: null,
       startedAt: null,
       currentStep: 0,
 
@@ -190,6 +192,8 @@ const SessionFlow = (() => {
     sessionState = createEmptyState();
     sessionState.id = Date.now().toString();
     sessionState.startedAt = new Date().toISOString();
+    sessionState.groupId = typeof GroupContext !== 'undefined' ? GroupContext.getActiveGroupId() : null;
+    sessionState.memberId = typeof getActiveUserId === 'function' ? getActiveUserId() : null;
     return sessionState;
   }
 

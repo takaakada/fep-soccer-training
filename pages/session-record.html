@@ -9,6 +9,9 @@
     <p class="sf-page-sub">練習のVFEと振り返り（F'）を記録します</p>
   </div>
 
+  <!-- グループ情報バナー -->
+  <div id="record-group-banner"></div>
+
   <!-- プログレスバー -->
   <div id="sf-progress-bar"></div>
 
@@ -170,6 +173,13 @@
 let _recordMode = 'team';
 
 function initRecordPage() {
+  // グループバナー表示
+  if (currentRole === 'player') {
+    GroupContext.renderGroupBanner('record-group-banner');
+  } else {
+    GroupContext.renderGroupSelector('record-group-banner');
+  }
+
   const progEl = document.getElementById('sf-progress-bar');
   if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(1);
   showPreCheckSummary();

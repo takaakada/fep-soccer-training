@@ -237,6 +237,7 @@ async function logout() {
     currentRole = null;
     currentPlayer = null;
     sessionStorage.removeItem('fep_player_session');
+    GroupContext.clearActiveGroup();
     renderAuthBadge(null);
     showLoginScreen();
   }
@@ -257,11 +258,14 @@ function hidePlayerLoginForm() {
 }
 
 async function loginAsPlayer() {
-  const teamName   = document.getElementById('player-team-input')?.value?.trim();
-  const playerName = document.getElementById('player-name-input')?.value?.trim();
-  const position   = document.getElementById('player-position-input')?.value || 'MF';
+  const teamName    = document.getElementById('player-team-input')?.value?.trim();
+  const category    = document.getElementById('player-category-input')?.value?.trim();
+  const subcategory = document.getElementById('player-subcategory-input')?.value?.trim() || '';
+  const playerName  = document.getElementById('player-name-input')?.value?.trim();
+  const position    = document.getElementById('player-position-input')?.value || 'MF';
 
-  if (!teamName) { alert('チーム名を入力してください。'); return; }
+  if (!teamName)   { alert('チーム名を入力してください。'); return; }
+  if (!category)   { alert('カテゴリを入力してください。'); return; }
   if (!playerName) { alert('名前を入力してください。'); return; }
 
   let playerRecord = null;
@@ -293,7 +297,6 @@ async function loginAsPlayer() {
           .single();
         if (error) {
           console.error('Player insert error:', error);
-          // Supabase失敗時はローカルIDで続行
           playerRecord = { id: 'local_' + Date.now(), team_name: teamName, player_name: playerName, position };
         } else {
           playerRecord = inserted;
@@ -305,6 +308,13 @@ async function loginAsPlayer() {
     }
   } else {
     playerRecord = { id: 'local_' + Date.now(), team_name: teamName, player_name: playerName, position };
+  }
+
+  // グループを upsert して選手を紐付け
+  const group = await GroupContext.upsertGroup(teamName, category, subcategory);
+  if (group && playerRecord.id) {
+    await GroupContext.assignPlayer(group.id, playerRecord.id);
+    GroupContext.setActiveGroup(group);
   }
 
   currentRole = 'player';
@@ -324,6 +334,7 @@ function restorePlayerSession() {
     try {
       currentPlayer = JSON.parse(saved);
       currentRole = 'player';
+      // グループ情報は sessionStorage から自動復元（GroupContext.getActiveGroup）
       showApp();
       renderAuthBadge(null);
       applySidebarVisibility();
@@ -626,8 +637,11 @@ async function removeSession(id) {
 async function createFlowSession(preCheck) {
   const uid = getActiveUserId();
   if (!sbFep || !uid) return null;
+  const groupId = GroupContext.getActiveGroupId();
   const row = {
     user_id:         uid,
+    group_id:        groupId,
+    member_id:       currentRole === 'player' ? uid : null,
     session_date:    new Date().toISOString().slice(0, 10),
     status:          'completed',
     current_step:    0,
@@ -647,8 +661,11 @@ async function createFlowSession(preCheck) {
 async function persistRecord(recordData) {
   const uid = getActiveUserId();
   if (!sbFep || !uid) return null;
+  const groupId = GroupContext.getActiveGroupId();
   const row = {
     user_id:           uid,
+    group_id:          groupId,
+    member_id:         currentRole === 'player' ? uid : null,
     session_date:      new Date().toISOString().slice(0, 10),
     status:            'completed',
     current_step:      1,
@@ -666,8 +683,11 @@ async function persistRecord(recordData) {
 async function persistEfeMonthly(efeData) {
   const uid = getActiveUserId();
   if (!sbFep || !uid) return null;
+  const groupId = GroupContext.getActiveGroupId();
   const row = {
     user_id:       uid,
+    group_id:      groupId,
+    member_id:     currentRole === 'player' ? uid : null,
     session_date:  new Date().toISOString().slice(0, 10),
     status:        'completed',
     current_step:  0,
@@ -688,10 +708,13 @@ async function persistEfeMonthly(efeData) {
 async function persistCoachRecord(record) {
   const uid = getActiveUserId();
   if (!sbFep || !uid) return false;
+  const groupId = GroupContext.getActiveGroupId();
+  const today = new Date().toISOString().slice(0, 10);
   // まず親セッションを作成
   const sessionRow = {
     user_id:      uid,
-    session_date: new Date().toISOString().slice(0, 10),
+    group_id:     groupId,
+    session_date: today,
     status:       'completed',
     current_step: 1,
   };
@@ -702,6 +725,8 @@ async function persistCoachRecord(record) {
 
   const menuRow = {
     session_id:    sessionId,
+    group_id:      groupId,
+    session_date:  today,
     menu_name:     record.menuName,
     purpose:       record.purpose,
     duration_min:  record.duration,

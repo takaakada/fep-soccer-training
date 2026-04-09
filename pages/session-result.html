@@ -9,6 +9,9 @@
     <p class="sf-page-sub">統合スコアと次回トレーニングの提案</p>
   </div>
 
+  <!-- グループセレクター -->
+  <div id="result-group-selector"></div>
+
   <!-- プログレスバー -->
   <div id="sf-progress-bar"></div>
 
@@ -159,7 +162,10 @@
 </div>
 
 <script>
-function initResultPage() {
+async function initResultPage() {
+  // グループセレクターを描画
+  await GroupContext.renderGroupSelector('result-group-selector');
+
   const progEl = document.getElementById('sf-progress-bar');
   if (progEl) progEl.innerHTML = SessionFlow.renderProgressHtml(2);
 
