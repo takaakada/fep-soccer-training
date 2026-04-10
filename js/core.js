@@ -23,6 +23,11 @@ const COACH_ONLY_PAGES = new Set([
   'session-result', 'player-profile', 'eval', 'about', 'kadai'
 ]);
 
+// 選手専用ページ
+const PLAYER_ONLY_PAGES = new Set([
+  'session-pre-check', 'session-record', 'session-efe'
+]);
+
 // ── ページ履歴管理 ───────────────────────────────────────
 let currentPage = 'home';
 const pageHistory = [];   // ページ遷移履歴（戻るボタン用）
@@ -242,6 +247,14 @@ async function logout() {
     showLoginScreen();
   }
 
+function switchAccount() {
+    closeUserMenu();
+    const current = currentRole === 'coach' ? 'コーチ' : '選手';
+    const target  = currentRole === 'coach' ? '選手' : 'コーチ';
+    const ok = confirm(`現在「${current}」としてログイン中です。\n「${target}」アカウントに切り替えますか？\n\n（一度ログアウトしてから再ログインします）`);
+    if (ok) logout();
+  }
+
 // ══════════════════════════════════════════════════════════
 // PLAYER LOGIN（選手ログイン — Google OAuth不要）
 // ══════════════════════════════════════════════════════════
@@ -399,9 +412,17 @@ function closeSidebar() {
 
 // Override showPage with fetch-based version for dynamic page loading
 async function showPage(id, btn) {
-  // アクセス制御：選手がコーチ専用ページにアクセスしようとした場合はブロック
+  // アクセス制御：ロールが合わないページへのアクセス時に切り替えを誘導
   if (currentRole === 'player' && COACH_ONLY_PAGES.has(id)) {
-    console.warn(`[FEP] Player blocked from coach-only page: ${id}`);
+    const ok = confirm('これはコーチ用ページです。\nコーチアカウントに切り替えますか？\n\n（一度ログアウトしてから再ログインします）');
+    if (ok) { logout(); return; }
+    const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+    if (homeBtn) showPage('home', homeBtn);
+    return;
+  }
+  if (currentRole === 'coach' && PLAYER_ONLY_PAGES.has(id)) {
+    const ok = confirm('これは選手用記録です。\n選手アカウントに切り替えますか？\n\n（一度ログアウトしてから再ログインします）');
+    if (ok) { logout(); return; }
     const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
     if (homeBtn) showPage('home', homeBtn);
     return;
