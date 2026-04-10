@@ -259,10 +259,47 @@ function switchAccount() {
 // PLAYER LOGIN（選手ログイン — Google OAuth不要）
 // ══════════════════════════════════════════════════════════
 
-function showPlayerLoginForm() {
+async function showPlayerLoginForm() {
   document.getElementById('login-role-select').style.display = 'none';
   document.getElementById('player-login-form').style.display = 'block';
-  document.getElementById('player-name-input')?.focus();
+  document.getElementById('player-team-input')?.focus();
+
+  // グループ候補をロード
+  const groups = await GroupContext.loadGroups();
+  _loginGroups = groups;
+
+  // チーム候補を設定
+  const teams = [...new Set(groups.map(g => g.team))];
+  const dlTeams = document.getElementById('dl-teams');
+  if (dlTeams) dlTeams.innerHTML = teams.map(t => `<option value="${t}">`).join('');
+
+  // チーム入力変更時にカテゴリ候補を絞り込み
+  document.getElementById('player-team-input')?.addEventListener('input', _updateCategorySuggestions);
+  document.getElementById('player-category-input')?.addEventListener('input', _updateSubcategorySuggestions);
+}
+
+let _loginGroups = [];
+
+function _updateCategorySuggestions() {
+  const team = document.getElementById('player-team-input')?.value?.trim();
+  const categories = [...new Set(
+    _loginGroups.filter(g => g.team === team).map(g => g.category)
+  )].filter(Boolean);
+  const dl = document.getElementById('dl-categories');
+  if (dl) dl.innerHTML = categories.map(c => `<option value="${c}">`).join('');
+  // サブカテゴリもリセット
+  const dlSub = document.getElementById('dl-subcategories');
+  if (dlSub) dlSub.innerHTML = '';
+}
+
+function _updateSubcategorySuggestions() {
+  const team = document.getElementById('player-team-input')?.value?.trim();
+  const category = document.getElementById('player-category-input')?.value?.trim();
+  const subcategories = [...new Set(
+    _loginGroups.filter(g => g.team === team && g.category === category).map(g => g.subcategory)
+  )].filter(Boolean);
+  const dl = document.getElementById('dl-subcategories');
+  if (dl) dl.innerHTML = subcategories.map(s => `<option value="${s}">`).join('');
 }
 
 function hidePlayerLoginForm() {
