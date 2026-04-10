@@ -9,4 +9,32 @@
       <span>このページをシェア</span>
     </div>
   </div>
+
+  <!-- アカウント切り替え導線 -->
+  <div id="home-switch-banner" style="max-width:500px; margin:24px auto 0; padding:0 16px;"></div>
 </div>
+
+<script>
+(function renderHomeSwitchBanner() {
+  const el = document.getElementById('home-switch-banner');
+  if (!el) return;
+
+  if (currentRole === 'player') {
+    el.innerHTML = `
+      <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
+        <div style="font-size:0.85rem; color:rgba(255,255,255,0.6); margin-bottom:8px;">コーチとして記録・管理を行う場合</div>
+        <button onclick="switchAccount()" style="background:#2563eb; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:0.9rem; font-weight:600; cursor:pointer;">
+          🔄 コーチ用メニューへ切り替え
+        </button>
+      </div>`;
+  } else if (currentRole === 'coach') {
+    el.innerHTML = `
+      <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:16px; text-align:center;">
+        <div style="font-size:0.85rem; color:rgba(255,255,255,0.6); margin-bottom:8px;">選手として記録を入力する場合</div>
+        <button onclick="switchAccount()" style="background:#059669; color:white; border:none; border-radius:8px; padding:10px 24px; font-size:0.9rem; font-weight:600; cursor:pointer;">
+          🔄 選手用記録へ切り替え
+        </button>
+      </div>`;
+  }
+})();
+</script>
