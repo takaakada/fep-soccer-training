@@ -47,15 +47,18 @@
       <div class="player-form-title">選手ログイン</div>
       <div class="player-form-field">
         <label>チーム名</label>
-        <input type="text" id="player-team-input" class="player-form-input" placeholder="例：FC Active">
+        <input type="text" id="player-team-input" class="player-form-input" placeholder="例：FC Active" list="dl-teams" autocomplete="off">
+        <datalist id="dl-teams"></datalist>
       </div>
       <div class="player-form-field">
         <label>カテゴリ</label>
-        <input type="text" id="player-category-input" class="player-form-input" placeholder="例：team A">
+        <input type="text" id="player-category-input" class="player-form-input" placeholder="例：team A" list="dl-categories" autocomplete="off">
+        <datalist id="dl-categories"></datalist>
       </div>
       <div class="player-form-field">
         <label>サブカテゴリ <span style="font-size:0.78rem; color:#999;">(任意)</span></label>
-        <input type="text" id="player-subcategory-input" class="player-form-input" placeholder="例：U18">
+        <input type="text" id="player-subcategory-input" class="player-form-input" placeholder="例：U18" list="dl-subcategories" autocomplete="off">
+        <datalist id="dl-subcategories"></datalist>
       </div>
       <div class="player-form-field">
         <label>名前</label>
