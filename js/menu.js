@@ -386,5 +386,33 @@ function initMenuPage() {
     btn.classList.toggle('active', btn.dataset.val === 'all');
   });
 
-  renderPhases();
+  // グループセレクター描画 + グループ必須チェック
+  if (typeof GroupContext !== 'undefined') {
+    GroupContext.renderGroupSelector('menu-group-selector', _onMenuGroupChange);
+  }
+  _applyMenuGroupGate();
+}
+
+function _onMenuGroupChange(group) {
+  _applyMenuGroupGate();
+}
+
+function _applyMenuGroupGate() {
+  const hasGroup = typeof GroupContext !== 'undefined' && GroupContext.getActiveGroupId();
+  const noGroupEl = document.getElementById('menu-no-group');
+  const filterBar = document.getElementById('menu-filter-bar');
+  const phaseContainer = document.getElementById('phase-container');
+  const addSection = document.getElementById('menu-add-section');
+
+  if (hasGroup) {
+    if (noGroupEl) noGroupEl.style.display = 'none';
+    if (filterBar) filterBar.style.display = '';
+    if (phaseContainer) phaseContainer.style.display = '';
+    renderPhases();
+  } else {
+    if (noGroupEl) noGroupEl.style.display = 'block';
+    if (filterBar) filterBar.style.display = 'none';
+    if (phaseContainer) phaseContainer.style.display = 'none';
+    if (addSection) addSection.style.display = 'none';
+  }
 }

@@ -9,6 +9,18 @@
     <button class="edit-mode-btn" onclick="toggleEditMode()" id="edit-mode-btn">✏️ 編集</button>
   </div>
 
+  <!-- ── グループセレクター ── -->
+  <div id="menu-group-selector"></div>
+
+  <!-- ── グループ未選択メッセージ ── -->
+  <div id="menu-no-group" style="display:none;">
+    <div class="sf-card" style="text-align:center; padding:40px 20px;">
+      <div style="font-size:2rem; margin-bottom:12px;">👥</div>
+      <div style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">グループを選択してください</div>
+      <div style="font-size:0.88rem; color:var(--text-muted);">チーム・カテゴリを選択すると、メニューが表示されます</div>
+    </div>
+  </div>
+
   <!-- ── Filter Bar ── -->
   <div id="menu-filter-bar" class="menu-filter-bar">
     <div class="filter-group">
