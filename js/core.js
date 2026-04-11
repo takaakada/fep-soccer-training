@@ -553,7 +553,7 @@ async function showPage(id, btn) {
       initIndividualPage();
     }
     if (id === 'player-profile' && typeof initPlayerProfilePage === 'function') {
-      initPlayerProfilePage();
+      await initPlayerProfilePage();
     }
     // session-pre-check の初期化は pages/session-pre-check.html 内の
     // インラインスクリプトで自動実行される（initPreCheckPage()）
