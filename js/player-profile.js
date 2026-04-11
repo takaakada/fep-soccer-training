@@ -20,7 +20,17 @@ const ERROR_TYPE_MAP = {
   unclassified:         { label: '未分類',             icon: '❓', color: '#9ca3af', planId: null },
 };
 
-function initPlayerProfilePage() {
+async function initPlayerProfilePage() {
+  // グループ選択済みならそのチームの選手を自動表示
+  if (typeof GroupContext !== 'undefined') {
+    const group = GroupContext.getActiveGroup();
+    if (group && group.team) {
+      _ppSelectedTeam = group.team;
+      await loadTeamList();
+      await selectTeam(group.team);
+      return;
+    }
+  }
   loadTeamList();
 }
 
