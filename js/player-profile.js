@@ -49,8 +49,8 @@ async function loadTeamList() {
   if (!container) return;
 
   let players = await fetchAllPlayers();
-  // チーム名をユニーク抽出
-  const teams = [...new Set(players.map(p => p.team_name))].sort();
+  // チーム名をユニーク抽出（nullや空文字を除外）
+  const teams = [...new Set(players.map(p => p.team_name).filter(Boolean))].sort();
 
   if (teams.length === 0) {
     container.innerHTML = `
