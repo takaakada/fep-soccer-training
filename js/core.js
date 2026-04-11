@@ -465,6 +465,18 @@ async function showPage(id, btn) {
     return;
   }
 
+  // ── グループ未選択チェック（コーチ用メニューページ）────
+  const GROUP_REQUIRED_PAGES = new Set(['menu', 'position']);
+  if (currentRole === 'coach' && GROUP_REQUIRED_PAGES.has(id)) {
+    const hasGroup = typeof GroupContext !== 'undefined' && GroupContext.getActiveGroupId();
+    if (!hasGroup) {
+      alert('先にグループ（チーム・カテゴリ）を選択してください。\nホーム画面で選択できます。');
+      const homeBtn = document.querySelector('.sidebar-nav-btn[data-page="home"]');
+      if (homeBtn) showPage('home', homeBtn);
+      return;
+    }
+  }
+
   // ── 履歴管理（戻るボタン用）────────────────────────
   if (_isNavigatingBack) {
     // 戻る操作中は履歴に追加しない
