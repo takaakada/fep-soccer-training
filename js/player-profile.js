@@ -36,7 +36,7 @@ async function initPlayerProfilePage() {
   } catch (e) {
     console.error('initPlayerProfilePage error:', e);
     const container = document.getElementById('pp-team-list');
-    if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#dc2626;">読み込みエラー</div>';
+    if (container) container.innerHTML = `<div style="text-align:center; padding:20px; color:#dc2626;">読み込みエラー: ${e.message || e}</div>`;
   }
 }
 
@@ -89,9 +89,12 @@ async function fetchAllPlayers() {
         .select('*')
         .order('team_name', { ascending: true })
         .order('player_name', { ascending: true });
-      if (!error && data) supabasePlayers = data;
+      if (error) {
+        console.warn('fetchAllPlayers Supabase error:', error.message, error);
+      }
+      if (data) supabasePlayers = data;
     } catch(e) {
-      console.warn('fetchAllPlayers Supabase error:', e);
+      console.warn('fetchAllPlayers exception:', e);
     }
   }
 
