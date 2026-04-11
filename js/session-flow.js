@@ -29,6 +29,7 @@ const SessionFlow = (() => {
   function createEmptyState() {
     return {
       id: null,
+      dbSessionId: null,   // Supabase sessions.id（フロー全体で共有）
       groupId: null,
       memberId: null,
       startedAt: null,
@@ -70,6 +71,16 @@ const SessionFlow = (() => {
 
       // ③ 次回提案 (結果ページで計算)
       recommendation: null,
+
+      // ④ フォローアップ
+      followup: {
+        reproduced: '',       // 'yes' | 'partial' | 'no'
+        transferable: '',     // 'yes' | 'unknown' | 'no'
+        wantRepeat: '',       // 'yes' | 'no'
+        anxietyChange: '',    // 'decreased' | 'same' | 'increased'
+        painChange: '',       // 'gone' | 'same' | 'slight' | 'worse'
+        notes: '',
+      },
 
       // 計算結果キャッシュ
       computed: {
@@ -213,6 +224,18 @@ const SessionFlow = (() => {
     }).join('')}</div>`;
   }
 
+  // ── DB セッション ID 管理 ─────────────────────────────────
+
+  function setDbSessionId(id) {
+    sessionState.dbSessionId = id;
+  }
+
+  // ── フォローアップ更新 ───────────────────────────────────
+
+  function updateFollowup(data) {
+    Object.assign(sessionState.followup, data);
+  }
+
   // ── Public API ────────────────────────────────────────────
 
   return {
@@ -226,6 +249,8 @@ const SessionFlow = (() => {
     updatePreCheck,
     updateRecord,
     updatePostEval,
+    updateFollowup,
+    setDbSessionId,
     recompute,
     renderProgressHtml,
   };

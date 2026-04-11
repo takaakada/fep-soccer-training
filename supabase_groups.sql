@@ -167,6 +167,22 @@ CREATE POLICY "Anyone can update recommendations"
   ON public.recommendations FOR UPDATE USING (true);
 
 -- ────────────────────────────────────────────────────────────
+--  8b. sessions テーブルに後評価・フォローアップカラム追加
+-- ────────────────────────────────────────────────────────────
+ALTER TABLE public.sessions
+  ADD COLUMN IF NOT EXISTS post_enjoyment     INTEGER,
+  ADD COLUMN IF NOT EXISTS post_satisfaction  INTEGER,
+  ADD COLUMN IF NOT EXISTS post_ease          INTEGER,
+  ADD COLUMN IF NOT EXISTS post_difficulty    INTEGER,
+  ADD COLUMN IF NOT EXISTS recommendation_text TEXT,
+  ADD COLUMN IF NOT EXISTS fu_reproduced      TEXT,
+  ADD COLUMN IF NOT EXISTS fu_transferable    TEXT,
+  ADD COLUMN IF NOT EXISTS fu_want_repeat     TEXT,
+  ADD COLUMN IF NOT EXISTS fu_anxiety_change  TEXT,
+  ADD COLUMN IF NOT EXISTS fu_pain_change     TEXT,
+  ADD COLUMN IF NOT EXISTS fu_notes           TEXT;
+
+-- ────────────────────────────────────────────────────────────
 --  9. group_session_averages ビュー更新（標準偏差追加）
 -- ────────────────────────────────────────────────────────────
 CREATE OR REPLACE VIEW public.group_session_averages AS
