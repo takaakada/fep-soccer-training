@@ -1,6 +1,7 @@
 <!-- ══════════════════════════════════════════════════════════
      SESSION RESULT — 結果表示・次回提案
      F'/EU/VFE統合スコアと次回トレーニング推奨
+     Phase 2: グループ平均・メニュー連携・根拠付き提案・採用トラッキング
 ═══════════════════════════════════════════════════════════ -->
 
 <div class="sf-page">
@@ -15,7 +16,7 @@
   <!-- プログレスバー -->
   <div id="sf-progress-bar"></div>
 
-  <!-- ══ 統合スコア表示 ══ -->
+  <!-- ══ 統合スコア表示（個人） ══ -->
   <div class="sf-card">
     <div class="sf-card-title">🎯 統合スコア</div>
     <div class="sf-preview-grid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr));">
@@ -99,7 +100,7 @@
       </div>
     </div>
 
-    <!-- ══ 右列：次回提案 ══ -->
+    <!-- ══ 右列：次回提案（根拠付き） ══ -->
     <div>
       <div class="sf-card" style="border-left:4px solid #2563eb;">
         <div class="sf-card-title">🔮 次回トレーニング提案</div>
@@ -111,6 +112,8 @@
             <span class="sf-alert-icon">📐</span>
             <div>計算中...</div>
           </div>
+          <div id="res-rec-layer-rationale" class="sf-rationale" style="display:none;"></div>
+          <div id="res-rec-layer-actions" style="display:none;"></div>
         </div>
 
         <!-- コーチング提案 -->
@@ -120,6 +123,8 @@
             <span class="sf-alert-icon">🤝</span>
             <div>計算中...</div>
           </div>
+          <div id="res-rec-coaching-rationale" class="sf-rationale" style="display:none;"></div>
+          <div id="res-rec-coaching-actions" style="display:none;"></div>
         </div>
 
         <!-- 目的提案 -->
@@ -129,6 +134,8 @@
             <span class="sf-alert-icon">🎯</span>
             <div>計算中...</div>
           </div>
+          <div id="res-rec-purpose-rationale" class="sf-rationale" style="display:none;"></div>
+          <div id="res-rec-purpose-actions" style="display:none;"></div>
         </div>
       </div>
 
@@ -142,11 +149,82 @@
     </div>
   </div>
 
-  <!-- VFE 履歴チャート -->
+  <!-- VFE 履歴チャート（個人） -->
   <div class="sf-card">
     <div class="sf-card-title">📈 VFE 推移</div>
     <div id="res-vfe-history" style="display:flex; align-items:flex-end; gap:4px; height:120px; padding:8px 0;">
       <div style="text-align:center; width:100%; color:var(--text-muted); font-size:0.85rem;">履歴データなし</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       Phase 2: グループ分析セクション
+  ══════════════════════════════════════════════════════ -->
+
+  <!-- A. グループ平均スコア -->
+  <div id="group-avg-section" class="sf-group-section" style="display:none;">
+    <div class="sf-group-section-title">👥 グループ分析</div>
+
+    <div class="sf-card">
+      <div class="sf-card-title">
+        📊 グループ平均スコア
+        <span id="group-avg-count" style="font-size:0.78rem; font-weight:400; color:var(--text-muted);"></span>
+      </div>
+      <div id="group-avg-date" style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;"></div>
+      <div class="sf-preview-grid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr));">
+        <div class="sf-preview-item">
+          <div class="sf-preview-label">avg VFE</div>
+          <div class="sf-preview-val" id="grp-vfe">--</div>
+          <div class="sf-stddev" id="grp-vfe-sd"></div>
+          <div class="sf-delta" id="grp-vfe-delta"></div>
+        </div>
+        <div class="sf-preview-item">
+          <div class="sf-preview-label">avg EFE</div>
+          <div class="sf-preview-val" id="grp-efe">--</div>
+          <div class="sf-stddev" id="grp-efe-sd"></div>
+          <div class="sf-delta" id="grp-efe-delta"></div>
+        </div>
+        <div class="sf-preview-item">
+          <div class="sf-preview-label">avg EU</div>
+          <div class="sf-preview-val" id="grp-eu">--</div>
+          <div class="sf-stddev" id="grp-eu-sd"></div>
+          <div class="sf-delta" id="grp-eu-delta"></div>
+        </div>
+        <div class="sf-preview-item">
+          <div class="sf-preview-label">avg F'</div>
+          <div class="sf-preview-val" id="grp-fprime">--</div>
+          <div class="sf-stddev" id="grp-fprime-sd"></div>
+          <div class="sf-delta" id="grp-fprime-delta"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- F. 個人 vs グループ比較 -->
+    <div class="sf-card" id="group-compare-section" style="display:none;">
+      <div class="sf-card-title">🔄 個人 vs グループ平均</div>
+      <div id="group-compare-content"></div>
+    </div>
+
+    <!-- B. グループVFE推移チャート -->
+    <div class="sf-card">
+      <div class="sf-card-title">📈 グループVFE推移</div>
+      <div id="group-vfe-trend" style="display:flex; align-items:flex-end; gap:4px; height:120px; padding:8px 0;">
+        <div style="text-align:center; width:100%; color:var(--text-muted); font-size:0.85rem;">データなし</div>
+      </div>
+    </div>
+
+    <!-- C. 実施メニュー×スコア -->
+    <div class="sf-card" id="group-menu-section">
+      <div class="sf-card-title">📋 実施メニューとスコア</div>
+      <div id="group-menu-list">
+        <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- レイヤー×VFE 関連表示 -->
+    <div class="sf-card" id="group-layer-chart-section" style="display:none;">
+      <div class="sf-card-title">📐 レイヤー別VFE平均</div>
+      <div id="group-layer-chart" style="padding:8px 0;"></div>
     </div>
   </div>
 
@@ -162,8 +240,11 @@
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════
+//  初期化
+// ══════════════════════════════════════════════════════════
+
 async function initResultPage() {
-  // グループセレクターを描画
   await GroupContext.renderGroupSelector('result-group-selector');
 
   const progEl = document.getElementById('sf-progress-bar');
@@ -173,7 +254,7 @@ async function initResultPage() {
   SessionFlow.recompute();
   const c = state.computed;
 
-  // ── 統合スコア表示 ──
+  // ── 統合スコア表示（個人） ──
   if (c.vfe) {
     setVal('res-vfe', c.vfe.vfe_display.toFixed(1), c.vfe.vfe_display < 40 ? 'good' : c.vfe.vfe_display < 60 ? '' : 'warn');
   }
@@ -198,7 +279,6 @@ async function initResultPage() {
   setVal('res-uh', pe.uh ?? pe.enjoyment ?? '--', '');
   setVal('res-fh', pe.fh ?? pe.satisfaction ?? '--', '');
 
-  // F' interpretation
   const interpEl = document.getElementById('res-fprime-interp');
   if (interpEl && c.fPrime) {
     const fp = c.fPrime.f_prime_effective ?? c.fPrime.f_prime ?? 0;
@@ -224,11 +304,14 @@ async function initResultPage() {
     }
   }
 
-  // ── 次回提案 ──
+  // ── 次回提案（個人ベース、グループがある場合はグループベースに上書き） ──
   computeRecommendations(state, c);
 
-  // ── VFE 履歴 ──
+  // ── VFE 履歴（個人） ──
   renderVfeHistory();
+
+  // ── Phase 2: グループ分析 ──
+  await initGroupView(state, c);
 }
 
 function setVal(id, text, type) {
@@ -239,6 +322,10 @@ function setVal(id, text, type) {
   else if (type === 'warn') el.className = 'sf-preview-val val-warn';
   else el.className = 'sf-preview-val';
 }
+
+// ══════════════════════════════════════════════════════════
+//  個人ベース提案（既存ロジック）
+// ══════════════════════════════════════════════════════════
 
 function computeRecommendations(state, c) {
   const vfe = c.vfe ? c.vfe.vfe_display : 50;
@@ -309,7 +396,6 @@ function renderSuggestedMenus(vfeTarget) {
 
   let menus = [];
   if (typeof ALL_MENU_PRESETS !== 'undefined') {
-    // Find menus whose VFE target range includes current VFE
     menus = ALL_MENU_PRESETS.filter(m => {
       if (m.scope !== 'team') return false;
       const target = m.vfe_target || 50;
@@ -332,6 +418,10 @@ function renderSuggestedMenus(vfeTarget) {
     </div>
   `).join('');
 }
+
+// ══════════════════════════════════════════════════════════
+//  VFE 履歴（個人）
+// ══════════════════════════════════════════════════════════
 
 function renderVfeHistory() {
   const container = document.getElementById('res-vfe-history');
@@ -361,17 +451,390 @@ function renderVfeHistory() {
   }).join('');
 }
 
+// ══════════════════════════════════════════════════════════
+//  Phase 2: グループ分析
+// ══════════════════════════════════════════════════════════
+
+// 保存された提案IDを保持（採用/却下用）
+let _savedRecIds = {};
+
+async function initGroupView(state, c) {
+  const groupId = GroupContext.getActiveGroupId();
+  const section = document.getElementById('group-avg-section');
+  if (!groupId || !section) {
+    if (section) section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const [averages, menus, perMenu] = await Promise.all([
+      GroupAnalytics.fetchGroupAverages(groupId, today),
+      GroupAnalytics.fetchGroupMenus(groupId, today),
+      GroupAnalytics.fetchPerMenuAverages(groupId, today),
+    ]);
+
+    // A. グループ平均スコア
+    renderGroupAverages(averages);
+
+    // B. グループVFE推移チャート
+    renderGroupTrend(averages.history);
+
+    // C. 実施メニュー×スコア
+    renderGroupMenus(menus, perMenu);
+
+    // D. 根拠付きAI提案でレコメンデーションを上書き
+    if (averages.current) {
+      await renderGroupRecommendations(averages.current, menus, groupId, today);
+    }
+
+    // E. レイヤー別VFEチャート
+    renderLayerChart(perMenu);
+
+    // F. 個人 vs グループ比較
+    renderComparison(c, averages.current);
+
+    // 前回提案に今回結果を紐付け
+    GroupAnalytics.linkOutcome(groupId, today);
+
+  } catch (err) {
+    console.error('initGroupView error:', err);
+    section.innerHTML += '<div class="sf-alert sf-alert-red"><span class="sf-alert-icon">⚠️</span><div>グループデータの取得に失敗しました。</div></div>';
+  }
+}
+
+// ── A. グループ平均スコア表示 ──
+
+function renderGroupAverages(averages) {
+  const cur = averages.current;
+  const prev = averages.previous;
+
+  if (!cur) {
+    document.getElementById('grp-vfe').textContent = 'データなし';
+    document.getElementById('group-avg-date').textContent = '本日のセッションデータがありません';
+    return;
+  }
+
+  // 日付・人数
+  document.getElementById('group-avg-date').textContent = `日付: ${cur.session_date}`;
+  document.getElementById('group-avg-count').textContent = `（${cur.record_count}名）`;
+
+  // スコア表示
+  setGroupVal('grp-vfe', cur.avg_vfe, cur.avg_vfe < 40 ? 'good' : cur.avg_vfe < 60 ? '' : 'warn');
+  setGroupVal('grp-efe', cur.avg_efe, cur.avg_efe < 40 ? 'good' : cur.avg_efe < 60 ? '' : 'warn');
+  setGroupVal('grp-eu', cur.avg_eu, '');
+  setGroupVal('grp-fprime', cur.avg_f_prime, cur.avg_f_prime > 0.3 ? 'good' : cur.avg_f_prime < -0.3 ? 'warn' : '');
+
+  // 標準偏差
+  setStddev('grp-vfe-sd', cur.stddev_vfe);
+  setStddev('grp-efe-sd', cur.stddev_efe);
+  setStddev('grp-eu-sd', cur.stddev_eu);
+  setStddev('grp-fprime-sd', cur.stddev_f_prime);
+
+  // 前回比デルタ（VFE/EFEは下がるのが良い）
+  if (prev) {
+    setDelta('grp-vfe-delta', cur.avg_vfe, prev.avg_vfe, true);
+    setDelta('grp-efe-delta', cur.avg_efe, prev.avg_efe, true);
+    setDelta('grp-eu-delta', cur.avg_eu, prev.avg_eu, true);
+    setDelta('grp-fprime-delta', cur.avg_f_prime, prev.avg_f_prime, false);
+  }
+}
+
+function setGroupVal(id, val, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = val != null ? parseFloat(val).toFixed(1) : '--';
+  if (type === 'good') el.className = 'sf-preview-val val-good';
+  else if (type === 'warn') el.className = 'sf-preview-val val-warn';
+  else el.className = 'sf-preview-val';
+}
+
+function setStddev(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val != null) {
+    el.textContent = `\u00b1${parseFloat(val).toFixed(1)}`;
+    if (parseFloat(val) > 15) el.style.color = '#d97706';
+  }
+}
+
+function setDelta(id, current, previous, invertGood) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const d = GroupAnalytics.formatDelta(current, previous, invertGood);
+  el.textContent = d.text;
+  el.className = 'sf-delta ' + d.cls;
+}
+
+// ── B. グループVFE推移チャート ──
+
+function renderGroupTrend(history) {
+  const container = document.getElementById('group-vfe-trend');
+  if (!container || !history || history.length === 0) return;
+
+  const recent = history.slice().reverse(); // 古い順に
+
+  container.innerHTML = recent.map(r => {
+    const vfe = parseFloat(r.avg_vfe) || 0;
+    const h = Math.max(4, (vfe / 100) * 100);
+    const color = vfe < 30 ? '#059669' : vfe < 60 ? '#d97706' : '#dc2626';
+    return `
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;">
+        <div style="font-size:0.65rem; color:var(--text-muted);">${vfe.toFixed(0)}</div>
+        <div style="width:100%; max-width:24px; height:${h}px; background:${color}; border-radius:3px 3px 0 0;"></div>
+        <div style="font-size:0.58rem; color:var(--text-muted); writing-mode:vertical-rl; height:40px; overflow:hidden;">${(r.session_date || '').slice(5)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── C. 実施メニュー×スコア ──
+
+function renderGroupMenus(menus, perMenu) {
+  const container = document.getElementById('group-menu-list');
+  if (!container) return;
+
+  if (!menus || menus.length === 0) {
+    container.innerHTML = '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:0.85rem;">本日のメニューデータがありません</div>';
+    return;
+  }
+
+  // メニュー名で重複除去
+  const seen = new Set();
+  const uniqueMenus = menus.filter(m => {
+    if (seen.has(m.menu_name)) return false;
+    seen.add(m.menu_name);
+    return true;
+  });
+
+  container.innerHTML = uniqueMenus.map(m => {
+    const pm = perMenu[m.menu_name];
+    const avgVfe = pm ? pm.avg_vfe : null;
+    const barWidth = avgVfe != null ? Math.min(avgVfe, 100) : 0;
+    const barColor = avgVfe != null ? (avgVfe < 30 ? '#059669' : avgVfe < 60 ? '#d97706' : '#dc2626') : '#e5e7eb';
+    const layerLabel = m.layer || '?';
+    const coachLabel = { safe: '安全', explore: '探索', positive: 'ポジ', challenge: '挑戦' }[m.coaching_type] || '';
+
+    return `
+      <div class="sf-menu-row">
+        <div class="sf-menu-info">
+          <div class="sf-menu-info-name">${m.menu_name || '名称なし'}</div>
+          <div class="sf-menu-info-meta">
+            <span class="attr-badge" style="font-size:0.68rem;">${layerLabel}</span>
+            ${coachLabel ? `<span style="font-size:0.72rem; color:var(--text-muted);">${coachLabel}</span>` : ''}
+            ${pm ? `<span style="font-size:0.72rem; color:var(--text-muted);">n=${pm.count}</span>` : ''}
+          </div>
+        </div>
+        <div class="sf-menu-bar-wrap">
+          <div class="sf-menu-bar" style="width:${barWidth}%; background:${barColor};"></div>
+        </div>
+        <div class="sf-menu-vfe-val" style="color:${barColor};">${avgVfe != null ? avgVfe.toFixed(1) : '--'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── レイヤー別VFEチャート ──
+
+function renderLayerChart(perMenu) {
+  const section = document.getElementById('group-layer-chart-section');
+  const container = document.getElementById('group-layer-chart');
+  if (!section || !container) return;
+
+  const entries = Object.values(perMenu || {}).filter(m => m.layer && m.avg_vfe != null);
+  if (entries.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+
+  // レイヤーごとに集計
+  const layerAgg = {};
+  entries.forEach(m => {
+    if (!layerAgg[m.layer]) layerAgg[m.layer] = [];
+    layerAgg[m.layer].push(m.avg_vfe);
+  });
+
+  const layers = ['L1', 'L2', 'L3', 'L4'];
+  container.innerHTML = layers.map(l => {
+    const vals = layerAgg[l] || [];
+    const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    const barWidth = avg != null ? Math.min(avg, 100) : 0;
+    const barColor = avg != null ? (avg < 30 ? '#059669' : avg < 60 ? '#d97706' : '#dc2626') : '#e5e7eb';
+
+    return `
+      <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+        <div style="width:30px; font-weight:700; font-size:0.85rem; color:var(--text);">${l}</div>
+        <div style="flex:1; height:12px; background:var(--bg); border-radius:6px; overflow:hidden;">
+          <div style="height:100%; width:${barWidth}%; background:${barColor}; border-radius:6px; transition:width 0.3s;"></div>
+        </div>
+        <div style="width:40px; text-align:right; font-weight:600; font-size:0.82rem; color:${barColor};">${avg != null ? avg.toFixed(1) : '--'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── D. 根拠付きグループAI提案 ──
+
+async function renderGroupRecommendations(avg, menus, groupId, sessionDate) {
+  const recs = GroupAnalytics.generateGroupRecommendations(avg, menus);
+  if (recs.length === 0) return;
+
+  // 提案をDBに保存
+  const saved = await GroupAnalytics.saveRecommendations(recs, groupId, sessionDate);
+
+  // 提案表示を上書き
+  recs.forEach((rec, i) => {
+    const savedRec = saved[i] || {};
+    const recId = savedRec.id || null;
+
+    if (rec.rec_type === 'layer') {
+      _updateRecWithRationale('layer', rec, recId);
+    } else if (rec.rec_type === 'coaching') {
+      _updateRecWithRationale('coaching', rec, recId);
+    } else if (rec.rec_type === 'purpose') {
+      _updateRecWithRationale('purpose', rec, recId);
+    }
+  });
+}
+
+function _updateRecWithRationale(type, rec, recId) {
+  // 提案テキスト更新
+  const icons = { layer: '📐', coaching: '🤝', purpose: '🎯' };
+  const alertEl = document.getElementById(`res-rec-${type}`);
+  if (alertEl) {
+    const alertClass = _getAlertClass(rec);
+    alertEl.className = 'sf-alert ' + alertClass;
+    alertEl.innerHTML = `<span class="sf-alert-icon">${icons[type]}</span><div>${rec.content}</div>`;
+  }
+
+  // 根拠表示
+  const rationaleEl = document.getElementById(`res-rec-${type}-rationale`);
+  if (rationaleEl) {
+    rationaleEl.style.display = 'block';
+    const codeLabel = GroupAnalytics.getRationaleLabel(rec.rationale_code);
+    rationaleEl.innerHTML = `<span class="sf-rationale-code">${codeLabel}</span>${rec.rationale}`;
+  }
+
+  // 採用/却下ボタン
+  const actionsEl = document.getElementById(`res-rec-${type}-actions`);
+  if (actionsEl && recId) {
+    _savedRecIds[type] = recId;
+    actionsEl.style.display = 'block';
+    actionsEl.innerHTML = `
+      <div style="display:flex; gap:8px; margin-top:8px;" id="res-rec-${type}-btns">
+        <button class="sf-btn sf-btn-primary sf-btn-sm" onclick="acceptRec('${type}')">
+          ✅ 採用する
+        </button>
+        <button class="sf-btn sf-btn-secondary sf-btn-sm" onclick="rejectRec('${type}')">
+          ❌ 不採用
+        </button>
+      </div>
+    `;
+  }
+}
+
+function _getAlertClass(rec) {
+  if (rec.rationale_code === 'vfe_high' || rec.rationale_code === 'fprime_negative') return 'sf-alert-red';
+  if (rec.rationale_code === 'vfe_low' || rec.rationale_code === 'fprime_high') return 'sf-alert-green';
+  return 'sf-alert-blue';
+}
+
+// ── E. 採用/却下 ──
+
+async function acceptRec(type) {
+  const recId = _savedRecIds[type];
+  if (!recId) return;
+  const ok = await GroupAnalytics.updateRecommendationStatus(recId, 'accepted');
+  if (ok) {
+    _showRecStatus(type, 'accepted');
+  }
+}
+
+async function rejectRec(type) {
+  const recId = _savedRecIds[type];
+  if (!recId) return;
+  const ok = await GroupAnalytics.updateRecommendationStatus(recId, 'rejected');
+  if (ok) {
+    _showRecStatus(type, 'rejected');
+  }
+}
+
+function _showRecStatus(type, status) {
+  const btnsEl = document.getElementById(`res-rec-${type}-btns`);
+  if (!btnsEl) return;
+
+  const labels = { accepted: '採用済み', rejected: '不採用' };
+  const cls = status === 'accepted' ? 'sf-rec-accepted' : 'sf-rec-rejected';
+  btnsEl.innerHTML = `<span class="sf-rec-status ${cls}">${labels[status]}</span>`;
+}
+
+// ── F. 個人 vs グループ比較 ──
+
+function renderComparison(c, groupAvg) {
+  const section = document.getElementById('group-compare-section');
+  const container = document.getElementById('group-compare-content');
+  if (!section || !container || !groupAvg) return;
+
+  const indVfe = c.vfe ? c.vfe.vfe_display : null;
+  const indEfe = c.efe ? c.efe.efe_display : null;
+  const indFp = c.fPrime ? (c.fPrime.f_prime_effective ?? c.fPrime.f_prime ?? null) : null;
+  const indEu = c.eu ? (c.eu.eu_display ?? c.eu.EU ?? null) : null;
+
+  if (indVfe == null) return;
+
+  section.style.display = 'block';
+
+  const metrics = [
+    { label: 'VFE', ind: indVfe, grp: groupAvg.avg_vfe, fmt: 1, invertGood: true },
+    { label: 'EFE', ind: indEfe, grp: groupAvg.avg_efe, fmt: 1, invertGood: true },
+    { label: 'EU',  ind: indEu,  grp: groupAvg.avg_eu,  fmt: 1, invertGood: true },
+    { label: "F'",  ind: indFp,  grp: groupAvg.avg_f_prime, fmt: 2, invertGood: false },
+  ];
+
+  container.innerHTML = `
+    <div class="sf-compare-row" style="border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:4px;">
+      <div class="sf-compare-label"></div>
+      <div style="font-weight:600; font-size:0.78rem; text-align:center;">個人</div>
+      <div style="font-weight:600; font-size:0.78rem; text-align:center;">グループ平均</div>
+    </div>
+    ${metrics.map(m => {
+      const indVal = m.ind != null ? parseFloat(m.ind).toFixed(m.fmt) : '--';
+      const grpVal = m.grp != null ? parseFloat(m.grp).toFixed(m.fmt) : '--';
+      let diffHtml = '';
+      if (m.ind != null && m.grp != null) {
+        const diff = parseFloat(m.ind) - parseFloat(m.grp);
+        const sign = diff > 0 ? '+' : '';
+        const isGood = m.invertGood ? diff < 0 : diff > 0;
+        const cls = Math.abs(diff) < 0.5 ? 'sf-delta-same' : (isGood ? 'sf-delta-down' : 'sf-delta-up');
+        diffHtml = `<span class="sf-delta ${cls}" style="font-size:0.7rem;">(${sign}${diff.toFixed(m.fmt)})</span>`;
+      }
+      return `
+        <div class="sf-compare-row">
+          <div class="sf-compare-label">${m.label}</div>
+          <div style="text-align:center; font-weight:600;">${indVal} ${diffHtml}</div>
+          <div style="text-align:center;">${grpVal}</div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+//  セッション完了
+// ══════════════════════════════════════════════════════════
+
 function finishSession() {
-  // Save final state
   const state = SessionFlow.getState();
   const c = state.computed;
 
-  // Update VFE history (if not already saved)
   if (c.vfe) {
     const key = 'fep_vfe_history';
     let history = [];
     try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-    // Check if already saved for today
     const today = new Date().toISOString().slice(0, 10);
     if (!history.length || history[0].date !== today) {
       history.unshift({
@@ -386,7 +849,6 @@ function finishSession() {
 
   alert('セッションを完了しました。おつかれさまでした！');
 
-  // Reset and go home
   SessionFlow.startSession();
   showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
 }

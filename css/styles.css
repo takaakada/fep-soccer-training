@@ -3324,6 +3324,154 @@
   margin-bottom: 18px;
 }
 
+/* ══════════════════════════════════════════════════════
+   Phase 2: グループ分析・提案トラッキング
+══════════════════════════════════════════════════════ */
+
+/* ── Group section divider ── */
+.sf-group-section {
+  margin-top: 24px;
+  border-top: 2px solid var(--border);
+  padding-top: 20px;
+}
+.sf-group-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Rationale box ── */
+.sf-rationale {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-left: 3px solid #60a5fa;
+  line-height: 1.5;
+}
+.sf-rationale-code {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #eff6ff;
+  color: #2563eb;
+  margin-right: 6px;
+}
+
+/* ── Recommendation status badges ── */
+.sf-rec-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.sf-rec-accepted { background: #d1fae5; color: #065f46; }
+.sf-rec-rejected { background: #fef2f2; color: #991b1b; }
+.sf-rec-pending  { background: #fef3c7; color: #92400e; }
+
+/* ── Small button variant ── */
+.sf-btn-sm {
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+/* ── Delta indicator ── */
+.sf-delta {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.sf-delta-up   { color: #dc2626; }
+.sf-delta-down { color: #059669; }
+.sf-delta-same { color: var(--text-muted); }
+
+/* ── Standard deviation ── */
+.sf-stddev {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Menu linkage row ── */
+.sf-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sf-menu-row:last-child { border-bottom: none; }
+.sf-menu-info { flex: 1; min-width: 0; }
+.sf-menu-info-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sf-menu-info-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.sf-menu-bar-wrap {
+  width: 100px;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.sf-menu-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.sf-menu-vfe-val {
+  min-width: 40px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ── Comparison row ── */
+.sf-compare-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.85rem;
+}
+.sf-compare-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* ── Preset banner ── */
+.sf-preset-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  color: #065f46;
+}
+.sf-preset-banner-icon { font-size: 1.2rem; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sf-grid-2 { grid-template-columns: 1fr; }
@@ -3333,4 +3481,6 @@
   .sf-btn { width: 100%; text-align: center; }
   .menu-filter-bar, .pos-filter-bar { flex-direction: column; gap: 10px; }
   .phase-cards { grid-template-columns: 1fr; }
+  .sf-menu-bar-wrap { width: 60px; }
+  .sf-compare-row { grid-template-columns: 60px 1fr 1fr; font-size: 0.78rem; }
 }
