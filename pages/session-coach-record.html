@@ -12,6 +12,12 @@
   <!-- グループセレクター -->
   <div id="coach-group-selector"></div>
 
+  <!-- 提案プリセットバナー（Phase 2） -->
+  <div id="cr-preset-banner" class="sf-preset-banner" style="display:none;">
+    <span class="sf-preset-banner-icon">💡</span>
+    <div id="cr-preset-text">前回の提案を反映しました</div>
+  </div>
+
   <div class="sf-alert sf-alert-blue">
     <span class="sf-alert-icon">ℹ️</span>
     <div>このページはコーチ側の記録用です。選手のVFE記録とは別に、練習の設計情報を保存します。</div>
@@ -220,6 +226,64 @@ async function initCoachRecordPage() {
   document.querySelectorAll('input[name="cr-coaching"]').forEach(r => {
     r.addEventListener('change', updateLambdaPreview);
   });
+
+  // Phase 2: 採用済み提案のプリセット反映
+  await applyAcceptedPresets();
+}
+
+async function applyAcceptedPresets() {
+  const groupId = GroupContext.getActiveGroupId();
+  if (!groupId || typeof GroupAnalytics === 'undefined') return;
+
+  try {
+    const presets = await GroupAnalytics.fetchAcceptedPresets(groupId);
+    if (!presets) return;
+
+    const applied = [];
+
+    // レイヤー自動選択
+    if (presets.layer) {
+      const radio = document.querySelector(`input[name="cr-layer"][value="${presets.layer}"]`);
+      if (radio) {
+        radio.checked = true;
+        applied.push(`レイヤー: ${presets.layer}`);
+      }
+    }
+
+    // コーチングタイプ自動選択
+    if (presets.coachingType) {
+      const radio = document.querySelector(`input[name="cr-coaching"][value="${presets.coachingType}"]`);
+      if (radio) {
+        radio.checked = true;
+        updateLambdaPreview();
+        const labels = { safe: '安全重視', explore: '探索促進', positive: 'ポジティブ', challenge: 'チャレンジ' };
+        applied.push(`コーチング: ${labels[presets.coachingType] || presets.coachingType}`);
+      }
+    }
+
+    // 目的チップ自動選択
+    if (presets.purpose && presets.purpose.length > 0) {
+      const chips = document.querySelectorAll('#cr-purpose .sf-chip');
+      chips.forEach(chip => {
+        if (presets.purpose.includes(chip.dataset.value)) {
+          chip.classList.add('active');
+          applied.push(chip.dataset.value);
+        }
+      });
+    }
+
+    // バナー表示
+    if (applied.length > 0) {
+      const banner = document.getElementById('cr-preset-banner');
+      const text = document.getElementById('cr-preset-text');
+      if (banner && text) {
+        text.textContent = `前回の提案を反映しました（${applied.join('、')}）`;
+        banner.style.display = 'flex';
+      }
+    }
+  } catch (err) {
+    console.error('applyAcceptedPresets:', err);
+  }
 }
 
 function toggleCoachChip(btn) {
