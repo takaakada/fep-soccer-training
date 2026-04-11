@@ -10,12 +10,21 @@
     </div>
   </div>
 
+  <!-- コーチ用グループセレクター -->
+  <div id="home-group-selector" style="max-width:500px; margin:24px auto 0; padding:0 16px;"></div>
+
   <!-- アカウント切り替え導線 -->
   <div id="home-switch-banner" style="max-width:500px; margin:24px auto 0; padding:0 16px;"></div>
 </div>
 
 <script>
-(function renderHomeSwitchBanner() {
+(function initHomePage() {
+  // コーチ用グループセレクター
+  if (currentRole === 'coach' && typeof GroupContext !== 'undefined') {
+    GroupContext.renderGroupSelector('home-group-selector');
+  }
+
+  // アカウント切り替えバナー
   const el = document.getElementById('home-switch-banner');
   if (!el) return;
 

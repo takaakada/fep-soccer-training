@@ -8,6 +8,18 @@
     <button class="pos-edit-btn" onclick="togglePosEditMode()" id="pos-edit-btn">✏️ 編集</button>
   </div>
 
+  <!-- ── グループセレクター ── -->
+  <div id="pos-group-selector"></div>
+
+  <!-- ── グループ未選択メッセージ ── -->
+  <div id="pos-no-group" style="display:none;">
+    <div class="sf-card" style="text-align:center; padding:40px 20px;">
+      <div style="font-size:2rem; margin-bottom:12px;">👥</div>
+      <div style="font-size:1.1rem; font-weight:700; margin-bottom:8px;">グループを選択してください</div>
+      <div style="font-size:0.88rem; color:var(--text-muted);">チーム・カテゴリを選択すると、ポジション別メニューが表示されます</div>
+    </div>
+  </div>
+
   <div class="pos-tabs" id="pos-tabs">
     <button class="pos-tab-btn active" onclick="switchPosTab('gk', this)">
       <span class="pos-icon">🧤</span>GK

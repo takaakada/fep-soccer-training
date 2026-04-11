@@ -13,6 +13,7 @@ const GroupContext = (() => {
 
   const STORAGE_KEY = 'fep_active_group';
   let _cachedGroups = null;
+  let _onGroupChangeCallback = null;
 
   // ── グループ一覧取得 ────────────────────────────────────
   async function loadGroups() {
@@ -156,7 +157,8 @@ const GroupContext = (() => {
   }
 
   // ── カスケードドロップダウン（コーチ用）────────────────
-  async function renderGroupSelector(containerId) {
+  async function renderGroupSelector(containerId, onChangeCallback) {
+    _onGroupChangeCallback = onChangeCallback || null;
     const el = document.getElementById(containerId);
     if (!el) return;
 
@@ -230,6 +232,7 @@ const GroupContext = (() => {
       if (subSel) { subSel.innerHTML = '<option value="">-- 選択 --</option>'; subSel.disabled = true; }
       if (display) display.textContent = '';
       setActiveGroup(null);
+      if (_onGroupChangeCallback) _onGroupChangeCallback(null);
       return;
     }
 
@@ -301,6 +304,8 @@ const GroupContext = (() => {
       const parts = [team, category, subcategory].filter(Boolean);
       if (display) display.innerHTML = `<span style="color:#d97706;">⚡ ${parts.join(' / ')}（新規グループ）</span>`;
     }
+    // コールバック通知
+    if (_onGroupChangeCallback) _onGroupChangeCallback(getActiveGroup());
   }
 
   // ── Public API ────────────────────────────────────────────

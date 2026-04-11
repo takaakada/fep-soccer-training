@@ -359,7 +359,36 @@ function initPositionPage() {
     b.classList.toggle('active', b.dataset.val === 'all');
   });
 
-  // Render
-  const firstBtn = document.querySelector('#pos-tabs .pos-tab-btn');
-  if (firstBtn) switchPosTab('gk', firstBtn);
+  // グループセレクター描画 + グループ必須チェック
+  if (typeof GroupContext !== 'undefined') {
+    GroupContext.renderGroupSelector('pos-group-selector', _onPosGroupChange);
+  }
+  _applyPosGroupGate();
+}
+
+function _onPosGroupChange(group) {
+  _applyPosGroupGate();
+}
+
+function _applyPosGroupGate() {
+  const hasGroup = typeof GroupContext !== 'undefined' && GroupContext.getActiveGroupId();
+  const noGroupEl = document.getElementById('pos-no-group');
+  const tabs = document.getElementById('pos-tabs');
+  const filterBar = document.getElementById('pos-filter-bar');
+  const contents = document.querySelectorAll('.pos-content');
+
+  if (hasGroup) {
+    if (noGroupEl) noGroupEl.style.display = 'none';
+    if (tabs) tabs.style.display = '';
+    if (filterBar) filterBar.style.display = '';
+    contents.forEach(c => c.style.display = '');
+    // Render
+    const firstBtn = document.querySelector('#pos-tabs .pos-tab-btn');
+    if (firstBtn) switchPosTab('gk', firstBtn);
+  } else {
+    if (noGroupEl) noGroupEl.style.display = 'block';
+    if (tabs) tabs.style.display = 'none';
+    if (filterBar) filterBar.style.display = 'none';
+    contents.forEach(c => c.style.display = 'none');
+  }
 }
