@@ -21,17 +21,23 @@ const ERROR_TYPE_MAP = {
 };
 
 async function initPlayerProfilePage() {
-  // グループ選択済みならそのチームの選手を自動表示
-  if (typeof GroupContext !== 'undefined') {
-    const group = GroupContext.getActiveGroup();
-    if (group && group.team) {
-      _ppSelectedTeam = group.team;
-      await loadTeamList();
-      await selectTeam(group.team);
-      return;
+  try {
+    // グループ選択済みならそのチームの選手を自動表示
+    if (typeof GroupContext !== 'undefined') {
+      const group = GroupContext.getActiveGroup();
+      if (group && group.team) {
+        _ppSelectedTeam = group.team;
+        await loadTeamList();
+        await selectTeam(group.team);
+        return;
+      }
     }
+    await loadTeamList();
+  } catch (e) {
+    console.error('initPlayerProfilePage error:', e);
+    const container = document.getElementById('pp-team-list');
+    if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:#dc2626;">読み込みエラー</div>';
   }
-  loadTeamList();
 }
 
 // ══════════════════════════════════════════════════════════
