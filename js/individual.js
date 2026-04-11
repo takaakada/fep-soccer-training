@@ -32,6 +32,20 @@ async function initIndividualPage() {
   _epOpenPlanId = null;
   await _loadIndPlayers();
   _populateTeamSelect();
+
+  // グループ選択済みならそのチームを自動選択
+  if (typeof GroupContext !== 'undefined') {
+    const group = GroupContext.getActiveGroup();
+    if (group && group.team) {
+      const teamSel = document.getElementById('ind-team-select');
+      if (teamSel) {
+        teamSel.value = group.team;
+        onIndTeamChange();
+        return;
+      }
+    }
+  }
+
   // リセット表示
   document.getElementById('ind-empty').style.display = 'block';
   document.getElementById('ind-main').style.display = 'none';
@@ -77,7 +91,7 @@ function _populateTeamSelect() {
   const teamSel = document.getElementById('ind-team-select');
   if (!teamSel) return;
 
-  const teams = [...new Set(_indAllPlayers.map(p => p.team_name))].sort();
+  const teams = [...new Set(_indAllPlayers.map(p => p.team_name).filter(Boolean))].sort();
   teamSel.innerHTML = '<option value="">-- チームを選択 --</option>';
   teams.forEach(t => {
     const opt = document.createElement('option');
