@@ -811,6 +811,64 @@ async function persistCoachRecord(record) {
   return true;
 }
 
+// ③ 後評価: sessions テーブルに F'/VFE/EFE/EU スコアを UPDATE
+async function updateFlowPostEval(dbSessionId, postEval, computed) {
+  if (!sbFep || !dbSessionId) return false;
+  const row = {
+    current_step:      2,
+    post_enjoyment:    postEval.enjoyment,
+    post_satisfaction: postEval.satisfaction,
+    post_ease:         postEval.dr ?? postEval.ease,
+    post_difficulty:   postEval.uh,
+  };
+  // 計算スコアがあれば更新
+  if (computed) {
+    if (computed.vfe) row.score_vfe = computed.vfe.vfe_display;
+    if (computed.efe) {
+      row.score_efe = computed.efe.efe_display;
+      row.score_alpha = computed.efe.alpha;
+      row.score_beta = computed.efe.beta;
+    }
+    if (computed.eu) row.score_eu = computed.eu.eu_display ?? computed.eu.EU;
+    if (computed.fPrime) row.score_f_prime = computed.fPrime.f_prime_effective ?? computed.fPrime.f_prime;
+    row.score_sigma_mod = computed.sigmaModifier;
+    row.score_lambda_mod = computed.lambdaModifier;
+  }
+  const { error } = await sbFep.from('sessions').update(row).eq('id', dbSessionId);
+  if (error) { console.error('updateFlowPostEval:', error); return false; }
+  return true;
+}
+
+// ④ 提案保存: sessions テーブルに推奨内容を UPDATE
+async function updateFlowRecommendation(dbSessionId, recommendation) {
+  if (!sbFep || !dbSessionId || !recommendation) return false;
+  const row = {
+    current_step: 3,
+    recommendation_text: JSON.stringify(recommendation),
+  };
+  const { error } = await sbFep.from('sessions').update(row).eq('id', dbSessionId);
+  if (error) { console.error('updateFlowRecommendation:', error); return false; }
+  return true;
+}
+
+// ⑤ フォローアップ保存 + セッション完了
+async function completeFlowSession(dbSessionId, followup) {
+  if (!sbFep || !dbSessionId) return false;
+  const row = {
+    current_step: 4,
+    status: 'completed',
+    fu_reproduced:      followup.reproduced,
+    fu_transferable:    followup.transferable,
+    fu_want_repeat:     followup.wantRepeat,
+    fu_anxiety_change:  followup.anxietyChange,
+    fu_pain_change:     followup.painChange,
+    fu_notes:           followup.notes,
+  };
+  const { error } = await sbFep.from('sessions').update(row).eq('id', dbSessionId);
+  if (error) { console.error('completeFlowSession:', error); return false; }
+  return true;
+}
+
 // ── Inflexion Index への VFE書き込み ─────────────────────
 // assessments テーブル（mode='athlete', type='vfe'）へ選手VFEを保存
 

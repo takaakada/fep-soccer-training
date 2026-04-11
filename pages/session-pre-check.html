@@ -296,14 +296,14 @@ async function completePreCheck() {
   const dbId = await createFlowSession(state.preCheck);
 
   if (dbId) {
-    alert('ミーティング後チェックを保存しました。');
+    SessionFlow.setDbSessionId(dbId);
+    alert('ミーティング後チェックを保存しました。次のステップに進みます。');
   } else {
     alert('保存に失敗しました。ネットワークを確認してください。');
   }
 
-  // リセットしてホームへ
-  SessionFlow.startSession();
-  showPage('home', document.querySelector('.sidebar-nav-btn[data-page="home"]'));
+  SessionFlow.nextStep();
+  showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page="session-record"]'));
 }
 
 // ── ページ初期化呼び出し
