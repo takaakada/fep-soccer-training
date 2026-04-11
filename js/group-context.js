@@ -49,7 +49,8 @@ const GroupContext = (() => {
 
   function getActiveGroupId() {
     const g = getActiveGroup();
-    return g ? g.id : null;
+    // id が null でも team+category が選択されていればグループ選択済みとみなす
+    return g ? (g.id || g.team || null) : null;
   }
 
   function setActiveGroup(group) {
