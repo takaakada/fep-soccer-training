@@ -20,7 +20,7 @@ let currentPlayer = null;   // { id, team_name, player_name, position }
 // コーチ専用ページ
 const COACH_ONLY_PAGES = new Set([
   'menu', 'position', 'individual', 'session-coach-record',
-  'session-result', 'player-profile', 'eval', 'about', 'kadai'
+  'session-result', 'player-profile', 'eval', 'about', 'kadai', 'bayes'
 ]);
 
 // 選手専用ページ
@@ -47,6 +47,7 @@ const PAGE_LABELS = {
   'eval': '📄 評価シート',
   'about': '📚 指導理論',
   'kadai': '🎯 課題チャレンジ',
+  'bayes': '📊 ベイズ成功率',
 };
 
 // ユーザーID取得（コーチ or 選手）

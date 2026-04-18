@@ -1,0 +1,310 @@
+<!-- ══════════════════════════════════════════════════════════
+     BAYES — ベイズ式トレーニング成功率シミュレーター
+     P(BT) / P(AT|BT) / P(AT|BF) から
+       ・全体成功率 P(AT)
+       ・成功時の動作再現確率 P(BT|AT)
+       ・目標成功率を満たすのに必要な P(BT)
+     を算出し、1万回の仮想試行を表で可視化する。
+═══════════════════════════════════════════════════════════ -->
+
+<div class="bayes-page">
+  <style>
+    .bayes-page {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #dbe3ee;
+      --accent: #2563eb;
+      --accent2: #059669;
+      --warn: #b45309;
+      --bad: #b91c1c;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .bayes-page * { box-sizing: border-box; }
+    .bayes-page h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    .bayes-page .lead { color: var(--muted); margin: 0 0 20px; font-size: 0.95rem; }
+    .bayes-page .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .bayes-page .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(31, 41, 55, 0.06);
+    }
+    .bayes-page .section-title { margin: 0 0 12px; font-size: 1.05rem; font-weight: 700; }
+    .bayes-page .control { padding: 14px 0; border-top: 1px solid var(--line); }
+    .bayes-page .control:first-of-type { border-top: none; padding-top: 0; }
+    .bayes-page .row {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; margin-bottom: 8px;
+    }
+    .bayes-page label { font-weight: 600; font-size: 0.92rem; }
+    .bayes-page .hint { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+    .bayes-page input[type="range"] { width: 100%; }
+    .bayes-page input[type="number"] {
+      width: 84px; padding: 8px 10px; border-radius: 10px;
+      border: 1px solid var(--line); font-size: 0.95rem;
+    }
+    .bayes-page .output-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .bayes-page .metric {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .bayes-page .metric-title { color: var(--muted); font-size: 0.85rem; margin-bottom: 6px; }
+    .bayes-page .metric-value { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; }
+    .bayes-page .good { color: var(--accent2); }
+    .bayes-page .accent { color: var(--accent); }
+    .bayes-page .warn { color: var(--warn); }
+    .bayes-page .bad { color: var(--bad); }
+    .bayes-page table {
+      width: 100%; border-collapse: collapse; margin-top: 10px;
+      font-size: 0.92rem; overflow: hidden; border-radius: 12px;
+    }
+    .bayes-page th, .bayes-page td {
+      border: 1px solid var(--line); padding: 9px 10px; text-align: right;
+    }
+    .bayes-page th:first-child, .bayes-page td:first-child { text-align: left; }
+    .bayes-page th { background: #eff6ff; }
+    .bayes-page .formula {
+      background: #f8fafc; border: 1px solid var(--line); border-radius: 14px;
+      padding: 14px; margin-top: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.88rem; white-space: pre-wrap;
+    }
+    .bayes-page .message {
+      margin-top: 14px; padding: 14px; border-radius: 14px;
+      background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;
+      font-size: 0.92rem;
+    }
+    .bayes-page .foot { margin-top: 14px; color: var(--muted); font-size: 0.85rem; }
+    .bayes-page .pill {
+      display: inline-block; margin-left: 8px; padding: 3px 8px; border-radius: 999px;
+      background: #eef2ff; color: #4338ca; font-size: 0.75rem; font-weight: 700;
+      vertical-align: middle;
+    }
+    @media (max-width: 980px) {
+      .bayes-page .grid { grid-template-columns: 1fr; }
+      .bayes-page .output-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <h1>📊 ベイズ式トレーニング成功率シミュレーター</h1>
+  <p class="lead">
+    動作B（技術・フォーム・判断などの重要要素）の再現率と、Bあり/なしでのプレイA成功率、目標成功率を動かして、
+    全体成功率と「成功時にBができていた確率」を確認できます。
+  </p>
+
+  <div class="grid">
+    <section class="card">
+      <h2 class="section-title">入力</h2>
+
+      <div class="control">
+        <div class="row">
+          <label for="bayes_p_bt">P(BT) 動作Bができる割合</label>
+          <input id="bayes_p_bt_num" type="number" min="0" max="100" step="1" value="20">
+        </div>
+        <input id="bayes_p_bt" type="range" min="0" max="100" step="1" value="20">
+        <div class="hint">普段どれくらいの頻度で動作Bを再現できるか</div>
+      </div>
+
+      <div class="control">
+        <div class="row">
+          <label for="bayes_p_at_bt">P(AT|BT) Bができた時のA成功率</label>
+          <input id="bayes_p_at_bt_num" type="number" min="0" max="100" step="1" value="60">
+        </div>
+        <input id="bayes_p_at_bt" type="range" min="0" max="100" step="1" value="60">
+        <div class="hint">動作Bができている場面では、どのくらいAが成功するか</div>
+      </div>
+
+      <div class="control">
+        <div class="row">
+          <label for="bayes_p_at_bf">P(AT|BF) Bができない時のA成功率</label>
+          <input id="bayes_p_at_bf_num" type="number" min="0" max="100" step="1" value="30">
+        </div>
+        <input id="bayes_p_at_bf" type="range" min="0" max="100" step="1" value="30">
+        <div class="hint">動作Bがなくても成功してしまう割合</div>
+      </div>
+
+      <div class="control">
+        <div class="row">
+          <label for="bayes_target">目標の全体成功率 <span class="pill">任意</span></label>
+          <input id="bayes_target_num" type="number" min="0" max="100" step="1" value="50">
+        </div>
+        <input id="bayes_target" type="range" min="0" max="100" step="1" value="50">
+        <div class="hint">この成功率を目指すには P(BT) をどこまで上げる必要があるかを表示</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">結果</h2>
+
+      <div class="output-grid">
+        <div class="metric">
+          <div class="metric-title">全体のプレイA成功率 P(AT)</div>
+          <div class="metric-value accent" id="bayes_out_pat">36.0%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-title">成功時にBができていた確率 P(BT|AT)</div>
+          <div class="metric-value good" id="bayes_out_pbt_at">33.3%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-title">失敗時にBができていた確率 P(BT|AF)</div>
+          <div class="metric-value warn" id="bayes_out_pbt_af">12.5%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-title">目標達成に必要な P(BT)</div>
+          <div class="metric-value" id="bayes_out_req">66.7%</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>動作Bできる (BT)</th>
+            <th>動作Bできない (BF)</th>
+            <th>合計</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>プレイA成功 (AT)</td>
+            <td id="bayes_cell_at_bt">1,200</td>
+            <td id="bayes_cell_at_bf">2,400</td>
+            <td id="bayes_cell_at_total">3,600</td>
+          </tr>
+          <tr>
+            <td>プレイA失敗 (AF)</td>
+            <td id="bayes_cell_af_bt">800</td>
+            <td id="bayes_cell_af_bf">5,600</td>
+            <td id="bayes_cell_af_total">6,400</td>
+          </tr>
+          <tr>
+            <td>合計</td>
+            <td id="bayes_cell_bt_total">2,000</td>
+            <td id="bayes_cell_bf_total">8,000</td>
+            <td>10,000</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="formula" id="bayes_formula_box"></div>
+      <div class="message" id="bayes_message_box"></div>
+      <div class="foot">表は「1万回プレイしたらどう見えるか」を表示しています。四捨五入のため合計がわずかにずれることがあります。</div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  const ids = ["bayes_p_bt", "bayes_p_at_bt", "bayes_p_at_bf", "bayes_target"];
+
+  function syncPair(baseId) {
+    const range = document.getElementById(baseId);
+    const num = document.getElementById(baseId + "_num");
+    if (!range || !num) return;
+    range.addEventListener("input", () => { num.value = range.value; update(); });
+    num.addEventListener("input", () => {
+      let v = Number(num.value);
+      if (Number.isNaN(v)) v = 0;
+      v = Math.max(Number(range.min), Math.min(Number(range.max), v));
+      range.value = v;
+      num.value = v;
+      update();
+    });
+  }
+
+  const fmtPct = (x) => `${(x * 100).toFixed(1)}%`;
+  const fmtN = (x) => Math.round(x).toLocaleString("ja-JP");
+
+  function update() {
+    const pBT    = Number(document.getElementById("bayes_p_bt").value) / 100;
+    const pAT_BT = Number(document.getElementById("bayes_p_at_bt").value) / 100;
+    const pAT_BF = Number(document.getElementById("bayes_p_at_bf").value) / 100;
+    const target = Number(document.getElementById("bayes_target").value) / 100;
+    const pBF = 1 - pBT;
+
+    const pAT = pAT_BT * pBT + pAT_BF * pBF;
+    const pAF = 1 - pAT;
+    const pBT_AT = pAT > 0 ? (pAT_BT * pBT) / pAT : 0;
+    const pBT_AF = pAF > 0 ? ((1 - pAT_BT) * pBT) / pAF : 0;
+
+    const N = 10000;
+    const atBt = N * pBT * pAT_BT;
+    const afBt = N * pBT * (1 - pAT_BT);
+    const atBf = N * pBF * pAT_BF;
+    const afBf = N * pBF * (1 - pAT_BF);
+
+    document.getElementById("bayes_out_pat").textContent    = fmtPct(pAT);
+    document.getElementById("bayes_out_pbt_at").textContent = fmtPct(pBT_AT);
+    document.getElementById("bayes_out_pbt_af").textContent = fmtPct(pBT_AF);
+
+    document.getElementById("bayes_cell_at_bt").textContent    = fmtN(atBt);
+    document.getElementById("bayes_cell_at_bf").textContent    = fmtN(atBf);
+    document.getElementById("bayes_cell_at_total").textContent = fmtN(atBt + atBf);
+    document.getElementById("bayes_cell_af_bt").textContent    = fmtN(afBt);
+    document.getElementById("bayes_cell_af_bf").textContent    = fmtN(afBf);
+    document.getElementById("bayes_cell_af_total").textContent = fmtN(afBt + afBf);
+    document.getElementById("bayes_cell_bt_total").textContent = fmtN(N * pBT);
+    document.getElementById("bayes_cell_bf_total").textContent = fmtN(N * pBF);
+
+    const formula = [
+      `P(AT) = P(AT|BT)×P(BT) + P(AT|BF)×P(BF)`,
+      `      = ${pAT_BT.toFixed(2)}×${pBT.toFixed(2)} + ${pAT_BF.toFixed(2)}×${pBF.toFixed(2)}`,
+      `      = ${pAT.toFixed(4)}  (${fmtPct(pAT)})`,
+      ``,
+      `P(BT|AT) = [P(AT|BT)×P(BT)] / P(AT)`,
+      `         = [${pAT_BT.toFixed(2)}×${pBT.toFixed(2)}] / ${pAT.toFixed(4) || "0"}`,
+      `         = ${pAT > 0 ? pBT_AT.toFixed(4) : "0.0000"}  (${fmtPct(pBT_AT)})`
+    ].join("\n");
+    document.getElementById("bayes_formula_box").textContent = formula;
+
+    const denom = pAT_BT - pAT_BF;
+    const reqBox = document.getElementById("bayes_out_req");
+    const msgBox = document.getElementById("bayes_message_box");
+
+    if (Math.abs(denom) < 1e-9) {
+      if (Math.abs(target - pAT_BT) < 1e-9) {
+        reqBox.textContent = "任意";
+        reqBox.className = "metric-value accent";
+        msgBox.textContent = "Bができてもできなくても成功率が同じ設定です。この場合、目標成功率がその値と同じなら P(BT) は何%でも構いません。";
+      } else {
+        reqBox.textContent = "不可能";
+        reqBox.className = "metric-value bad";
+        msgBox.textContent = "Bの有無で成功率が変わらない設定です。このため、P(BT) を増やしても全体成功率は変わりません。";
+      }
+      return;
+    }
+
+    const requiredPBT = (target - pAT_BF) / denom;
+    if (requiredPBT < 0 || requiredPBT > 1) {
+      reqBox.textContent = "不可能";
+      reqBox.className = "metric-value bad";
+      const minP = Math.min(pAT_BT, pAT_BF);
+      const maxP = Math.max(pAT_BT, pAT_BF);
+      msgBox.textContent = `この設定では全体成功率は ${fmtPct(minP)} 〜 ${fmtPct(maxP)} の範囲にしかなりません。目標の ${fmtPct(target)} はこの範囲外なので、P(BT) だけを動かしても到達できません。`;
+    } else {
+      reqBox.textContent = fmtPct(requiredPBT);
+      reqBox.className = "metric-value good";
+      msgBox.textContent = `目標の ${fmtPct(target)} を達成するには、動作Bの再現率 P(BT) を ${fmtPct(requiredPBT)} まで上げる必要があります。現在の設定は ${fmtPct(pBT)} です。`;
+    }
+  }
+
+  ids.forEach(syncPair);
+  update();
+})();
+</script>
