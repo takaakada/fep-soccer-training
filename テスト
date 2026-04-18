@@ -17,3 +17,8 @@ git add .
 git commit -m "FEP Soccer Training App"
 git push -u origin main
 git push heroku main
+
+
+git fetch origin main
+git reset --hard origin/main
+git push heroku main --force
