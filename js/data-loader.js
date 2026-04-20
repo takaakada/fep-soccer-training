@@ -36,32 +36,203 @@ function _writeCache(data) {
   }
 }
 
-// ── Sheet データを DRILL_PRESETS / POS_PRESETS 形式に変換 ────
+// ══════════════════════════════════════════════════════════════
+// 統制語彙 → 表示ラベル
+// 新テンプレート CSV の vfe_target / efe_target / eu_target 等を
+// UI で日本語表示するためのマップ
+// ══════════════════════════════════════════════════════════════
+const MENU_LABELS = {
+  vfe_target: {
+    low_stable:    '低値安定',
+    optimal:       '最適域',
+    high_confused: '高値混乱',
+  },
+  efe_target: {
+    settled:        '定着',
+    exploratory:    '探索',
+    goal_ambiguous: '目標曖昧',
+    cost_sensitive: 'コスト高',
+  },
+  eu_target: {
+    low_fixed:      '低値固定',
+    optimal_stable: '適度安定',
+    high_anxious:   '不安型',
+  },
+  menu_status: {
+    draft:     'ドラフト',
+    tested:    '試行済',
+    validated: '検証済',
+  },
+  purpose_domain: {
+    '感覚':     '感覚',
+    '認知':     '認知',
+    '相互作用': '相互作用',
+    '長期目標': '長期目標',
+  },
+};
+
+// pipe (|) 区切りの文字列 → 配列（空要素は除外）
+function _splitList(s) {
+  if (!s) return [];
+  if (Array.isArray(s)) return s.filter(Boolean).map(x => String(x).trim());
+  return String(s).split('|').map(x => x.trim()).filter(Boolean);
+}
+
+// ── Sheet データを正規化 ─────────────────────────────────────
 function _normalizeMenu(m) {
-  // 新テンプレート（scope, name, cat, ...）と旧テンプレート（position_group, menu_name, category, ...）の両方に対応
+  // 新テンプレート検出: session_phase / sensory_channels / coaching_tone / menu_status のいずれかが存在
+  const isNew = ('session_phase' in m) ||
+                ('sensory_channels' in m) ||
+                ('coaching_tone' in m) ||
+                ('menu_status' in m) ||
+                ('target_scope' in m);
+
+  if (isNew) {
+    return _normalizeNewMenu(m);
+  }
+  return _normalizeLegacyMenu(m);
+}
+
+// 新テンプレート（training_menu_template.csv 準拠）
+function _normalizeNewMenu(m) {
+  const sessionPhase = m.session_phase || m.cat || '';
+  const targetScope  = m.target_scope  || m.scope || 'team';
+  const sensoryChRaw = m.sensory_channels || m.channels || '';
+  const coachingTone = m.coaching_tone || m.coaching || '';
+
   return {
+    // 識別子
     menu_id:     m.menu_id || '',
-    name:        m.name || m.menu_name || '',
-    cat:         m.cat || m.category || '',
-    scope:       m.scope || m.position_group || 'team',
-    age:         m.age || m.age_group || 'all',
+    menu_status: m.menu_status || 'draft',
+
+    // 基本情報
+    menu_name:   m.menu_name || m.name || '',
+    category:    m.category || '',           // grade level (中学生/U15)
+    age_group:   m.age_group || m.age || 'all',
     layer:       m.layer || '',
+
+    // 分類
+    session_phase: sessionPhase,
+    target_scope:  targetScope,
+
+    // 目的
+    purpose_domain:       m.purpose_domain || '',
+    purpose_detail:       m.purpose_detail || '',
+    purpose_detail_list:  _splitList(m.purpose_detail),
+
+    // 感覚チャネル / コーチング
+    sensory_channels:      sensoryChRaw,
+    sensory_channels_list: _splitList(sensoryChRaw),
+    coaching_tone:         coachingTone,
+
+    // FEP ターゲット
+    vfe_target: m.vfe_target || '',
+    efe_target: m.efe_target || '',
+    eu_target:  m.eu_target  || '',
+
+    // 設計パラメータ
+    difficulty_level:     m.difficulty_level ? Number(m.difficulty_level) : null,
+    success_rate_target:  m.success_rate_target ? Number(m.success_rate_target) : null,
+    group_format:         m.group_format || '',
+    time:                 parseInt(m.time || m.duration_min) || 0,
+
+    // 運用
+    equipment:        m.equipment || '',
+    equipment_list:   _splitList(m.equipment),
+    constraints:      m.constraints || '',
+    constraints_list: _splitList(m.constraints),
+
+    // 内容
+    desc:                    m.desc || m.summary || '',
+    fep:                     m.fep  || m.fep_focus || '',
+    steps:                   m.steps || '',
+    steps_list:              _splitList(m.steps),
+    coaching_points:         m.coaching_points || '',
+    coaching_points_list:    _splitList(m.coaching_points),
+    evaluation_points:       m.evaluation_points || '',
+    evaluation_points_list:  _splitList(m.evaluation_points),
+    progression:             m.progression || '',
+    progression_list:        _splitList(m.progression),
+    regression:              m.regression || '',
+    regression_list:         _splitList(m.regression),
+
+    // ── 旧コード互換エイリアス（既存画面が参照）────────
+    name:          m.menu_name || m.name || '',
+    cat:           sessionPhase,                 // 旧: warm/tech/...
+    scope:         targetScope,
+    age:           m.age_group || m.age || 'all',
+    channels:      sensoryChRaw,
+    channels_list: _splitList(sensoryChRaw),
+    coaching:      coachingTone,
+    purpose:       m.purpose_domain || m.purpose || '',
+    purpose_list:  _splitList(m.purpose_detail),
+  };
+}
+
+// 旧テンプレート（scope, name, cat, position_group 互換）
+function _normalizeLegacyMenu(m) {
+  const cat = m.cat || m.category || '';
+  const scope = m.scope || m.position_group || 'team';
+  const channels = m.channels || '';
+  const coaching = m.coaching || '';
+
+  return {
+    // 新スキーマ側のフィールドも同時に埋める
+    menu_id:     m.menu_id || '',
+    menu_status: 'draft',
+    menu_name:   m.name || m.menu_name || '',
+    category:    '',  // 旧テンプレートには grade 情報なし
+    age_group:   m.age || m.age_group || 'all',
+    layer:       m.layer || '',
+    session_phase: cat,
+    target_scope:  scope,
+
+    purpose_domain:       '',
+    purpose_detail:       m.purpose || m.purpose_group || '',
+    purpose_detail_list:  _splitList(m.purpose || m.purpose_group),
+
+    sensory_channels:      channels,
+    sensory_channels_list: _splitList(channels.replace(/,/g, '|')),
+    coaching_tone:         coaching,
+
+    vfe_target: m.vfe_target || '',
+    efe_target: '',
+    eu_target:  '',
+
+    difficulty_level: null,
+    success_rate_target: null,
+    group_format: '',
+    time: parseInt(m.time || m.duration_min) || 0,
+
+    equipment: '', equipment_list: [],
+    constraints: '', constraints_list: [],
+
+    desc: m.desc || m.summary || '',
+    fep:  m.fep  || m.fep_focus || '',
+    steps: '', steps_list: m.steps_list || [],
+    coaching_points: '', coaching_points_list: m.coaching_points_list || [],
+    evaluation_points: '', evaluation_points_list: [],
+    progression: '', progression_list: [],
+    regression: '', regression_list: [],
+
+    // 旧エイリアス
+    name:        m.name || m.menu_name || '',
+    cat:         cat,
+    scope:       scope,
+    age:         m.age || m.age_group || 'all',
+    channels:    channels,
+    channels_list: _splitList(channels.replace(/,/g, '|')),
+    coaching:    coaching,
     purpose:     m.purpose || m.purpose_group || '',
     purpose_list: m.purpose_list || [],
-    channels:    m.channels || '',
-    channels_list: m.channels_list || [],
-    coaching:    m.coaching || '',
-    vfe_target:  m.vfe_target || '',
-    time:        parseInt(m.time || m.duration_min) || 0,
-    desc:        m.desc || m.summary || '',
-    fep:         m.fep || m.fep_focus || '',
-    steps:       m.steps_list || [],
-    coaching_points: m.coaching_points_list || [],
-    // 旧テンプレート互換
     theme:       m.theme || '',
     level:       m.level || '',
   };
 }
+
+// グローバル公開（他スクリプトから参照）
+window.MENU_LABELS = MENU_LABELS;
+window._normalizeMenu = _normalizeMenu;
 
 function _applyMenuData(menus) {
   if (!menus || menus.length === 0) return;

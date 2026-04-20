@@ -182,6 +182,86 @@ ALTER TABLE public.sessions
   ADD COLUMN IF NOT EXISTS fu_pain_change     TEXT,
   ADD COLUMN IF NOT EXISTS fu_notes           TEXT;
 
+-- ============================================================
+--  Phase 3: セッション中心モデル
+--    coach_sessions  … コーチが作成する「その日のセッション」
+--    presets         … セッションに紐付く雛形
+--  既存 sessions / session_menus は coach_session_id で後付け参照
+-- ============================================================
+
+-- ────────────────────────────────────────────────────────────
+--  P3-1. presets — プリセット雛形
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.presets (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL UNIQUE,
+  description TEXT,
+  config      JSONB DEFAULT '{}'::jsonb,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.presets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read presets"
+  ON public.presets FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert presets"
+  ON public.presets FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update presets"
+  ON public.presets FOR UPDATE USING (true);
+
+-- 初期シード（4件）
+INSERT INTO public.presets (name)
+VALUES ('Preset 1'), ('Preset 2'), ('Preset 3'), ('Preset 4')
+ON CONFLICT (name) DO NOTHING;
+
+-- ────────────────────────────────────────────────────────────
+--  P3-2. coach_sessions — コーチが作るその日のセッション
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.coach_sessions (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  group_id     UUID NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
+  session_date DATE NOT NULL,
+  label        TEXT,
+  preset_id    INTEGER REFERENCES public.presets(id) ON DELETE SET NULL,
+  created_by   UUID,
+  created_at   TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_coach_sessions_group_date
+  ON public.coach_sessions(group_id, session_date DESC);
+
+ALTER TABLE public.coach_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read coach_sessions"
+  ON public.coach_sessions FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert coach_sessions"
+  ON public.coach_sessions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update coach_sessions"
+  ON public.coach_sessions FOR UPDATE USING (true);
+
+-- ────────────────────────────────────────────────────────────
+--  P3-3. 既存テーブルへ coach_session_id FK を追加（非破壊）
+-- ────────────────────────────────────────────────────────────
+ALTER TABLE public.sessions
+  ADD COLUMN IF NOT EXISTS coach_session_id UUID
+    REFERENCES public.coach_sessions(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_sessions_coach_session_id
+  ON public.sessions(coach_session_id);
+
+ALTER TABLE public.session_menus
+  ADD COLUMN IF NOT EXISTS coach_session_id UUID
+    REFERENCES public.coach_sessions(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_session_menus_coach_session_id
+  ON public.session_menus(coach_session_id);
+
+-- ────────────────────────────────────────────────────────────
+--  P3-4. session_menus に purpose 分離列を追加
+--  purpose (TEXT[]) は既存維持、ドメイン/詳細を新規列で保持
+-- ────────────────────────────────────────────────────────────
+ALTER TABLE public.session_menus
+  ADD COLUMN IF NOT EXISTS purpose_domain TEXT,   -- '感覚' | '認知' | '相互作用' | '長期目標'
+  ADD COLUMN IF NOT EXISTS purpose_detail TEXT;   -- パイプ区切りテキスト
+
 -- ────────────────────────────────────────────────────────────
 --  9. group_session_averages ビュー更新（標準偏差追加）
 -- ────────────────────────────────────────────────────────────

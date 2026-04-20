@@ -20,7 +20,7 @@ let currentPlayer = null;   // { id, team_name, player_name, position }
 // コーチ専用ページ
 const COACH_ONLY_PAGES = new Set([
   'menu', 'position', 'individual', 'session-coach-record',
-  'session-result', 'player-profile', 'eval', 'about', 'kadai', 'bayes'
+  'player-profile', 'about', 'kadai', 'bayes'
 ]);
 
 // 選手専用ページ
@@ -44,7 +44,7 @@ const PAGE_LABELS = {
   'session-coach-record': '📝 コーチ記録',
   'session-result': '📊 結果・提案',
   'player-profile': '👤 選手プロフィール',
-  'eval': '📄 評価シート',
+  'session-followup': '💬 振り返り',
   'about': '📚 指導理論',
   'kadai': '🎯 課題チャレンジ',
   'bayes': '📊 ベイズ成功率',
@@ -541,9 +541,6 @@ async function showPage(id, btn) {
     });
 
     // Run page-specific init functions
-    if (id === 'eval' && typeof initEvalPage === 'function') {
-      initEvalPage();
-    }
     if (id === 'menu' && typeof initMenuPage === 'function') {
       initMenuPage();
     }
@@ -704,6 +701,14 @@ async function removeSession(id) {
 
 // ── セッションフロー用 Supabase 保存（FEP Soccer Training）───
 
+// 現在選択中の coach_session_id を取得（未選択なら null）
+function _getActiveCoachSessionId() {
+  if (typeof SessionPresets === 'undefined') return null;
+  const id = SessionPresets.getCurrentCoachSessionId();
+  // local- プレフィックスのIDはSupabase FKに入れないのでnullを返す
+  return id && !String(id).startsWith('local-') ? id : null;
+}
+
 // ① MTG後チェック: sessions テーブルにレコード作成
 async function createFlowSession(preCheck) {
   const uid = getActiveUserId();
@@ -716,6 +721,7 @@ async function createFlowSession(preCheck) {
     session_date:    new Date().toISOString().slice(0, 10),
     status:          'completed',
     current_step:    0,
+    coach_session_id: _getActiveCoachSessionId(),
     pre_condition:   preCheck.condition,
     pre_expectation: preCheck.expectation,
     pre_epi_q1:      preCheck.epiQ1,
@@ -740,6 +746,7 @@ async function persistRecord(recordData) {
     session_date:      new Date().toISOString().slice(0, 10),
     status:            'completed',
     current_step:      1,
+    coach_session_id:  _getActiveCoachSessionId(),
     score_vfe:         recordData.vfe_display,
     score_f_prime:     recordData.f_prime,
     score_sigma_mod:   recordData.sigma_mod,
@@ -756,19 +763,20 @@ async function persistEfeMonthly(efeData) {
   if (!sbFep || !uid) return null;
   const groupId = GroupContext.getActiveGroupId();
   const row = {
-    user_id:       uid,
-    group_id:      groupId,
-    member_id:     currentRole === 'player' ? uid : null,
-    session_date:  new Date().toISOString().slice(0, 10),
-    status:        'completed',
-    current_step:  0,
-    pre_epi_q1:    efeData.q1,
-    pre_epi_q2:    efeData.q2,
-    pre_pra_q3:    efeData.q3,
-    pre_pra_q4:    efeData.q4,
-    score_efe:     efeData.efe_display,
-    score_alpha:   efeData.epi_score,
-    score_beta:    efeData.pra_score,
+    user_id:          uid,
+    group_id:         groupId,
+    member_id:        currentRole === 'player' ? uid : null,
+    session_date:     new Date().toISOString().slice(0, 10),
+    status:           'completed',
+    current_step:     0,
+    coach_session_id: _getActiveCoachSessionId(),
+    pre_epi_q1:       efeData.q1,
+    pre_epi_q2:       efeData.q2,
+    pre_pra_q3:       efeData.q3,
+    pre_pra_q4:       efeData.q4,
+    score_efe:        efeData.efe_display,
+    score_alpha:      efeData.epi_score,
+    score_beta:       efeData.pra_score,
   };
   const { error } = await sbFep.from('sessions').insert(row);
   if (error) { console.error('persistEfeMonthly:', error); return false; }
@@ -781,13 +789,15 @@ async function persistCoachRecord(record) {
   if (!sbFep || !uid) return false;
   const groupId = GroupContext.getActiveGroupId();
   const today = new Date().toISOString().slice(0, 10);
+  const coachSessionId = _getActiveCoachSessionId();
   // まず親セッションを作成
   const sessionRow = {
-    user_id:      uid,
-    group_id:     groupId,
-    session_date: today,
-    status:       'completed',
-    current_step: 1,
+    user_id:          uid,
+    group_id:         groupId,
+    session_date:     today,
+    status:           'completed',
+    current_step:     1,
+    coach_session_id: coachSessionId,
   };
   const { data: sessionData, error: sessionErr } = await sbFep.from('sessions').insert(sessionRow).select('id').single();
   if (sessionErr) { console.error('persistCoachRecord session:', sessionErr); return false; }
@@ -795,19 +805,31 @@ async function persistCoachRecord(record) {
   if (!sessionId) return false;
 
   const menuRow = {
-    session_id:    sessionId,
-    group_id:      groupId,
-    session_date:  today,
-    menu_name:     record.menuName,
-    purpose:       record.purpose,
-    duration_min:  record.duration,
-    layer:         record.layer,
-    channels:      record.channels,
-    constraints:   record.constraints,
-    coaching_type: record.coachingType,
-    feedback_freq: record.feedbackFreq,
+    session_id:       sessionId,
+    group_id:         groupId,
+    session_date:     today,
+    coach_session_id: coachSessionId,
+    menu_name:        record.menuName,
+    purpose:          record.purpose,           // TEXT[]（既存列）
+    purpose_domain:   record.purpose_domain || null,  // TEXT（SQL 適用後）
+    purpose_detail:   record.purpose_detail || null,  // TEXT（SQL 適用後）
+    duration_min:     record.duration,
+    layer:            record.layer,
+    channels:         record.channels,
+    constraints:      record.constraints,
+    coaching_type:    record.coachingType,
+    feedback_freq:    record.feedbackFreq,
   };
-  const { error: menuErr } = await sbFep.from('session_menus').insert(menuRow);
+  let { error: menuErr } = await sbFep.from('session_menus').insert(menuRow);
+  // SQL 未適用時（列不足）のフォールバック: 新規列を外して再試行
+  if (menuErr && /column .*(purpose_domain|purpose_detail|coach_session_id).* does not exist/i.test(menuErr.message || '')) {
+    const retryRow = { ...menuRow };
+    delete retryRow.purpose_domain;
+    delete retryRow.purpose_detail;
+    delete retryRow.coach_session_id;
+    console.warn('[persistCoachRecord] new columns not found, retrying without them');
+    ({ error: menuErr } = await sbFep.from('session_menus').insert(retryRow));
+  }
   if (menuErr) { console.error('persistCoachRecord menu:', menuErr); return false; }
   return true;
 }
