@@ -12,6 +12,29 @@
   <!-- グループセレクター -->
   <div id="coach-group-selector"></div>
 
+  <!-- Session × Preset 選択 -->
+  <div class="sf-card" style="margin-bottom:16px;">
+    <div class="sf-card-title">📅 今日のセッション</div>
+    <div class="sf-grid-2" style="gap:12px;">
+      <div class="sf-form-row" style="margin:0;">
+        <label class="sf-label">セッション</label>
+        <div style="display:flex; gap:8px;">
+          <select id="cr-session-select" class="sf-input" style="flex:1;" onchange="onCoachSessionChange(this.value)">
+            <option value="">— 選択 —</option>
+          </select>
+          <button type="button" class="sf-btn sf-btn-secondary" style="white-space:nowrap;" onclick="createNewCoachSession()">+ 新規</button>
+        </div>
+      </div>
+      <div class="sf-form-row" style="margin:0;">
+        <label class="sf-label">プリセット（任意）</label>
+        <select id="cr-preset-select" class="sf-input" onchange="onCoachPresetChange(this.value)">
+          <option value="">— 未選択 —</option>
+        </select>
+      </div>
+    </div>
+    <div id="cr-session-summary" style="margin-top:8px; font-size:0.85rem; color:rgba(255,255,255,0.7);"></div>
+  </div>
+
   <!-- 提案プリセットバナー（Phase 2） -->
   <div id="cr-preset-banner" class="sf-preset-banner" style="display:none;">
     <span class="sf-preset-banner-icon">💡</span>
@@ -39,14 +62,20 @@
         </div>
 
         <div class="sf-form-row">
-          <label class="sf-label">練習の目的（複数選択可）</label>
-          <div class="sf-chip-group" id="cr-purpose">
-            <button class="sf-chip" data-value="安定化" onclick="toggleCoachChip(this)">安定化</button>
-            <button class="sf-chip" data-value="探索" onclick="toggleCoachChip(this)">探索</button>
-            <button class="sf-chip" data-value="修正" onclick="toggleCoachChip(this)">修正</button>
-            <button class="sf-chip" data-value="強化" onclick="toggleCoachChip(this)">強化</button>
-            <button class="sf-chip" data-value="統合" onclick="toggleCoachChip(this)">統合</button>
+          <label class="sf-label">目的ドメイン</label>
+          <p class="sf-note">何を鍛えるか（1つ選択）</p>
+          <div class="sf-chip-group" id="cr-purpose-domain">
+            <button class="sf-chip" data-value="感覚" onclick="selectPurposeDomain(this)">👐 感覚</button>
+            <button class="sf-chip" data-value="認知" onclick="selectPurposeDomain(this)">🧠 認知</button>
+            <button class="sf-chip" data-value="相互作用" onclick="selectPurposeDomain(this)">🤝 相互作用</button>
+            <button class="sf-chip" data-value="長期目標" onclick="selectPurposeDomain(this)">🎯 長期目標</button>
           </div>
+        </div>
+
+        <div class="sf-form-row">
+          <label class="sf-label">目的詳細（任意）</label>
+          <input type="text" id="cr-purpose-detail" class="sf-input"
+                 placeholder="例: 視覚|空間認知|予測精度（パイプ区切り）">
         </div>
 
         <div class="sf-form-row">
@@ -208,8 +237,11 @@
 
 <script>
 async function initCoachRecordPage() {
-  // グループセレクターを描画
-  await GroupContext.renderGroupSelector('coach-group-selector');
+  // グループセレクターを描画（変更時に coach_sessions を再ロード）
+  await GroupContext.renderGroupSelector('coach-group-selector', () => reloadCoachSessions());
+
+  // Session × Preset 選択を初期化
+  await reloadCoachSessions();
 
   // Inherit menu name from SessionFlow if available
   const state = SessionFlow.getState();
@@ -229,6 +261,94 @@ async function initCoachRecordPage() {
 
   // Phase 2: 採用済み提案のプリセット反映
   await applyAcceptedPresets();
+}
+
+async function reloadCoachSessions() {
+  if (typeof SessionPresets === 'undefined') return;
+  const groupId = typeof GroupContext !== 'undefined' ? GroupContext.getActiveGroupId() : null;
+  await SessionPresets.loadForGroup(groupId);
+  renderSessionPresetSelects();
+}
+
+function renderSessionPresetSelects() {
+  const sessionSel = document.getElementById('cr-session-select');
+  const presetSel = document.getElementById('cr-preset-select');
+  if (!sessionSel || !presetSel) return;
+
+  const sessions = SessionPresets.listCoachSessions();
+  const presets = SessionPresets.listPresets();
+  const currentId = SessionPresets.getCurrentCoachSessionId();
+
+  // 現在選択中が一覧に無ければクリア
+  const validCurrent = sessions.some(s => s.id === currentId) ? currentId : null;
+  if (validCurrent !== currentId) SessionPresets.setCurrentCoachSessionId(null);
+
+  sessionSel.innerHTML = '<option value="">— 選択 —</option>' + sessions.map(s => {
+    const dateTag = s.session_date ? ` (${s.session_date.slice(5)})` : '';
+    const label = (s.label || 'Session') + dateTag;
+    return `<option value="${s.id}"${s.id === validCurrent ? ' selected' : ''}>${label}</option>`;
+  }).join('');
+
+  const current = validCurrent ? SessionPresets.getCoachSessionById(validCurrent) : null;
+  const presetId = current && current.preset_id != null ? current.preset_id : null;
+
+  presetSel.innerHTML = '<option value="">— 未選択 —</option>' + presets.map(p =>
+    `<option value="${p.id}"${String(p.id) === String(presetId) ? ' selected' : ''}>${p.name}</option>`
+  ).join('');
+
+  updateSessionSummary();
+}
+
+function updateSessionSummary() {
+  const sel = document.getElementById('cr-session-summary');
+  if (!sel) return;
+  const sid = SessionPresets.getCurrentCoachSessionId();
+  const session = sid ? SessionPresets.getCoachSessionById(sid) : null;
+  if (!session) {
+    sel.textContent = 'セッションを選ぶか「+ 新規」で作成してください';
+    return;
+  }
+  const preset = session.preset_id != null ? SessionPresets.getPresetById(session.preset_id) : null;
+  const dateStr = session.session_date || '';
+  sel.textContent = `「${session.label || 'Session'}」${dateStr ? `(${dateStr})` : ''}` +
+    (preset ? ` × 「${preset.name}」` : '（プリセット未選択）') + ' を記録対象にしています';
+}
+
+function onCoachSessionChange(id) {
+  SessionPresets.setCurrentCoachSessionId(id || null);
+  // preset select を選択中セッションの preset_id に合わせる
+  const presetSel = document.getElementById('cr-preset-select');
+  const session = id ? SessionPresets.getCoachSessionById(id) : null;
+  if (presetSel) presetSel.value = session && session.preset_id != null ? String(session.preset_id) : '';
+  updateSessionSummary();
+}
+
+async function onCoachPresetChange(pid) {
+  const sid = SessionPresets.getCurrentCoachSessionId();
+  if (!sid) {
+    alert('先にセッションを選択（または作成）してください');
+    return;
+  }
+  await SessionPresets.setPresetForCoachSession(sid, pid === '' ? null : pid);
+  updateSessionSummary();
+}
+
+async function createNewCoachSession() {
+  const groupId = typeof GroupContext !== 'undefined' ? GroupContext.getActiveGroupId() : null;
+  if (!groupId) {
+    alert('先にグループ（チーム・カテゴリ）を選択してください');
+    return;
+  }
+  const existing = SessionPresets.listCoachSessions();
+  const nextNum = existing.length + 1;
+  const label = `Session ${nextNum}`;
+  const created = await SessionPresets.createCoachSession({ groupId, label });
+  if (!created) {
+    alert('セッションの作成に失敗しました');
+    return;
+  }
+  SessionPresets.setCurrentCoachSessionId(created.id);
+  renderSessionPresetSelects();
 }
 
 async function applyAcceptedPresets() {
@@ -261,15 +381,18 @@ async function applyAcceptedPresets() {
       }
     }
 
-    // 目的チップ自動選択
+    // 目的ドメイン自動選択（提案 1 件目を単一選択）
     if (presets.purpose && presets.purpose.length > 0) {
-      const chips = document.querySelectorAll('#cr-purpose .sf-chip');
-      chips.forEach(chip => {
+      const chips = document.querySelectorAll('#cr-purpose-domain .sf-chip');
+      // 提案内の最初に一致するドメイン値を採用
+      for (const chip of chips) {
         if (presets.purpose.includes(chip.dataset.value)) {
+          chips.forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
-          applied.push(chip.dataset.value);
+          applied.push(`目的: ${chip.dataset.value}`);
+          break;
         }
-      });
+      }
     }
 
     // バナー表示
@@ -288,6 +411,25 @@ async function applyAcceptedPresets() {
 
 function toggleCoachChip(btn) {
   btn.classList.toggle('active');
+}
+
+// 目的ドメインは単一選択（チップ1つだけ active）
+function selectPurposeDomain(btn) {
+  const group = btn.parentElement;
+  if (!group) return;
+  const wasActive = btn.classList.contains('active');
+  group.querySelectorAll('.sf-chip').forEach(c => c.classList.remove('active'));
+  if (!wasActive) btn.classList.add('active');  // トグル解除も可能
+}
+
+function getPurposeDomain() {
+  const btn = document.querySelector('#cr-purpose-domain .sf-chip.active');
+  return btn ? btn.dataset.value : '';
+}
+
+function getPurposeDetail() {
+  const el = document.getElementById('cr-purpose-detail');
+  return el ? el.value.trim() : '';
 }
 
 function getCoachChips(groupId) {
@@ -323,10 +465,15 @@ async function saveCoachRecord() {
     return;
   }
 
+  const purposeDomain = getPurposeDomain();
+  const purposeDetail = getPurposeDetail();
   const record = {
     date: new Date().toISOString().slice(0, 10),
     menuName,
-    purpose: getCoachChips('cr-purpose'),
+    // DB の purpose TEXT[] 列に合わせ、ドメインを配列1件で送る
+    purpose: purposeDomain ? [purposeDomain] : [],
+    purpose_domain: purposeDomain,
+    purpose_detail: purposeDetail,
     duration: parseInt(document.getElementById('cr-duration')?.value ?? 20),
     layer: document.querySelector('input[name="cr-layer"]:checked')?.value || '',
     channels: getCoachChips('cr-channels'),
@@ -362,7 +509,7 @@ function populateCoachMenuPicker() {
   if (!list) return;
   let menus = [];
   if (typeof ALL_MENU_PRESETS !== 'undefined') {
-    menus = ALL_MENU_PRESETS.filter(m => m.scope === 'team');
+    menus = ALL_MENU_PRESETS.filter(m => (m.target_scope || m.scope) === 'team');
   }
   renderCoachPickerList(list, menus);
 }
@@ -371,11 +518,11 @@ function filterCoachMenuPicker(query) {
   if (!list) return;
   let menus = [];
   if (typeof ALL_MENU_PRESETS !== 'undefined') {
-    menus = ALL_MENU_PRESETS.filter(m => m.scope === 'team');
+    menus = ALL_MENU_PRESETS.filter(m => (m.target_scope || m.scope) === 'team');
   }
   if (query.trim()) {
     const q = query.trim().toLowerCase();
-    menus = menus.filter(m => m.name.toLowerCase().includes(q));
+    menus = menus.filter(m => (m.menu_name || m.name || '').toLowerCase().includes(q));
   }
   renderCoachPickerList(list, menus);
 }
@@ -384,13 +531,34 @@ function renderCoachPickerList(container, menus) {
     container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">メニューが見つかりません</div>';
     return;
   }
-  container.innerHTML = menus.map(m => `
-    <div style="padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer;"
-         onclick="selectCoachMenu('${m.name.replace(/'/g, "\\'")}', '${m.layer || ''}', '${m.category || ''}')">
-      <div style="font-weight:600;">${m.name}</div>
-      <div style="font-size:0.78rem; color:var(--text-muted);">${m.layer || ''} ${m.category || ''}</div>
-    </div>
-  `).join('');
+  const labels = window.MENU_LABELS || {};
+  const statusStyle = {
+    draft:     { bg: '#e5e7eb', color: '#555' },
+    tested:    { bg: '#dbeafe', color: '#1e40af' },
+    validated: { bg: '#dcfce7', color: '#166534' },
+  };
+
+  container.innerHTML = menus.map(m => {
+    const status = m.menu_status || 'draft';
+    const st = statusStyle[status] || statusStyle.draft;
+    const statusLabel = (labels.menu_status && labels.menu_status[status]) || status;
+    const vfe = (labels.vfe_target && labels.vfe_target[m.vfe_target]) || '';
+    const phase = m.session_phase || '';
+    const grade = m.category || '';
+    const meta = [m.layer, phase, grade].filter(Boolean).join(' · ');
+    return `
+      <div style="padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer;"
+           onclick="selectCoachMenu('${m.menu_name.replace(/'/g, "\\'")}', '${m.layer || ''}', '${phase}')">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="font-weight:600;">${m.menu_name}</span>
+          <span style="background:${st.bg}; color:${st.color}; border-radius:4px; padding:1px 6px; font-size:0.72rem;">${statusLabel}</span>
+          ${vfe ? `<span style="color:var(--text-muted); font-size:0.72rem;">VFE: ${vfe}</span>` : ''}
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${meta}</div>
+        ${m.desc ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px; line-height:1.4;">${m.desc}</div>` : ''}
+      </div>
+    `;
+  }).join('');
 }
 function selectCoachMenu(name, layer, category) {
   document.getElementById('cr-menu-name').value = name;

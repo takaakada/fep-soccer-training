@@ -117,6 +117,49 @@
       margin-top: 8px;
     }
 
+    /* Collapsible nav group (details / summary) */
+    .sidebar-nav-group {
+      display: block;
+    }
+    .sidebar-nav-group > summary.sidebar-group-header {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-nav-group > summary.sidebar-group-header::-webkit-details-marker {
+      display: none;
+    }
+    .sidebar-nav-group > summary.sidebar-group-header::after {
+      content: "▸";
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.55);
+      transition: transform 0.15s;
+      margin-left: 8px;
+    }
+    .sidebar-nav-group[open] > summary.sidebar-group-header::after {
+      transform: rotate(90deg);
+    }
+    .sidebar-nav-subnav {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 4px 0 4px 14px;
+      margin-left: 6px;
+      border-left: 1px solid rgba(255,255,255,0.15);
+    }
+    .sidebar-nav-btn.sidebar-sub {
+      padding: 8px 12px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.72);
+    }
+    .sidebar-nav-btn.sidebar-sub.active {
+      background: rgba(255,255,255,0.18);
+      color: white;
+    }
+
     /* Overlay for mobile */
     .sidebar-overlay {
       display: none;
