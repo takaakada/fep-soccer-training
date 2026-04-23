@@ -572,6 +572,9 @@ async function showPage(id, btn) {
     document.body.classList.remove('home-active');
   }
 
+  // ── 現在のページIDを body に伝える（ページ別背景用）──────
+  document.body.dataset.page = id;
+
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
