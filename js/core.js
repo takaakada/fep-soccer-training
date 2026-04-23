@@ -234,7 +234,7 @@ async function loginWithGoogle() {
     if (error) alert('ログインエラー: ' + error.message);
   }
 
-async function logout() {
+async function logout(targetRole = null) {
     closeUserMenu();
     if (currentRole === 'coach' && sb) {
       await sb.auth.signOut();
@@ -246,14 +246,21 @@ async function logout() {
     GroupContext.clearActiveGroup();
     renderAuthBadge(null);
     showLoginScreen();
+    // ログイン画面のビューをターゲットに合わせて初期化
+    if (targetRole === 'player') {
+      showPlayerLoginForm();
+    } else {
+      hidePlayerLoginForm();
+    }
   }
 
 function switchAccount() {
     closeUserMenu();
     const current = currentRole === 'coach' ? 'コーチ' : '選手';
     const target  = currentRole === 'coach' ? '選手' : 'コーチ';
+    const targetRole = currentRole === 'coach' ? 'player' : 'coach';
     const ok = confirm(`現在「${current}」としてログイン中です。\n「${target}」アカウントに切り替えますか？\n\n（一度ログアウトしてから再ログインします）`);
-    if (ok) logout();
+    if (ok) logout(targetRole);
   }
 
 // ══════════════════════════════════════════════════════════
