@@ -104,8 +104,7 @@
 
   <h1>📊 ベイズ式トレーニング成功率シミュレーター</h1>
   <p class="lead">
-    動作B（技術・フォーム・判断などの重要要素）の再現率と、Bあり/なしでのプレイA成功率、目標成功率を動かして、
-    全体成功率と「成功時にBができていた確率」を確認できます。
+    目的とするプレイ内容を"A"として、それに必要な練習動作"B"（技術・フォーム・判断などの重要要素）を設定した時に、その練習動作が「できている」・「できていない」でのプレイ成功率、目標成功率を確認できます。
   </p>
 
   <div class="grid">
@@ -114,29 +113,29 @@
 
       <div class="control">
         <div class="row">
-          <label for="bayes_p_bt">P(BT) 動作Bができる割合</label>
+          <label for="bayes_p_bt">確率:P(BT) = 練習動作が再現できる割合</label>
           <input id="bayes_p_bt_num" type="number" min="0" max="100" step="1" value="20">
         </div>
         <input id="bayes_p_bt" type="range" min="0" max="100" step="1" value="20">
-        <div class="hint">普段どれくらいの頻度で動作Bを再現できるか</div>
+        <div class="hint">普段どれくらいの頻度で練習動作を再現できるか</div>
       </div>
 
       <div class="control">
         <div class="row">
-          <label for="bayes_p_at_bt">P(AT|BT) Bができた時のA成功率</label>
+          <label for="bayes_p_at_bt">確率：P(AT|BT) = 練習動作ができた時のプレイ成功率</label>
           <input id="bayes_p_at_bt_num" type="number" min="0" max="100" step="1" value="60">
         </div>
         <input id="bayes_p_at_bt" type="range" min="0" max="100" step="1" value="60">
-        <div class="hint">動作Bができている場面では、どのくらいAが成功するか</div>
+        <div class="hint">練習動作ができている場面では、どのくらいプレイが成功するか</div>
       </div>
 
       <div class="control">
         <div class="row">
-          <label for="bayes_p_at_bf">P(AT|BF) Bができない時のA成功率</label>
+          <label for="bayes_p_at_bf">P(AT|BF) 練習動作ができない時のプレイ成功率</label>
           <input id="bayes_p_at_bf_num" type="number" min="0" max="100" step="1" value="30">
         </div>
         <input id="bayes_p_at_bf" type="range" min="0" max="100" step="1" value="30">
-        <div class="hint">動作Bがなくても成功してしまう割合</div>
+        <div class="hint">練習動作がなくても成功してしまう割合</div>
       </div>
 
       <div class="control">
@@ -154,19 +153,19 @@
 
       <div class="output-grid">
         <div class="metric">
-          <div class="metric-title">全体のプレイA成功率 P(AT)</div>
+          <div class="metric-title">全体のプレイ成功率 P(AT)</div>
           <div class="metric-value accent" id="bayes_out_pat">36.0%</div>
         </div>
         <div class="metric">
-          <div class="metric-title">成功時にBができていた確率 P(BT|AT)</div>
+          <div class="metric-title">成功時に練習動作ができていた確率 P(BT|AT)</div>
           <div class="metric-value good" id="bayes_out_pbt_at">33.3%</div>
         </div>
         <div class="metric">
-          <div class="metric-title">失敗時にBができていた確率 P(BT|AF)</div>
+          <div class="metric-title">失敗時に練習動作ができていた確率 P(BT|AF)</div>
           <div class="metric-value warn" id="bayes_out_pbt_af">12.5%</div>
         </div>
         <div class="metric">
-          <div class="metric-title">目標達成に必要な P(BT)</div>
+          <div class="metric-title">目標達成に必要な練習動作の再現率 P(BT)</div>
           <div class="metric-value" id="bayes_out_req">66.7%</div>
         </div>
       </div>
@@ -175,20 +174,20 @@
         <thead>
           <tr>
             <th></th>
-            <th>動作Bできる (BT)</th>
-            <th>動作Bできない (BF)</th>
+            <th>練習動作できる (BT)</th>
+            <th>練習動作できない (BF)</th>
             <th>合計</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>プレイA成功 (AT)</td>
+            <td>プレイ成功 (AT)</td>
             <td id="bayes_cell_at_bt">1,200</td>
             <td id="bayes_cell_at_bf">2,400</td>
             <td id="bayes_cell_at_total">3,600</td>
           </tr>
           <tr>
-            <td>プレイA失敗 (AF)</td>
+            <td>プレイ失敗 (AF)</td>
             <td id="bayes_cell_af_bt">800</td>
             <td id="bayes_cell_af_bf">5,600</td>
             <td id="bayes_cell_af_total">6,400</td>
@@ -300,7 +299,7 @@
     } else {
       reqBox.textContent = fmtPct(requiredPBT);
       reqBox.className = "metric-value good";
-      msgBox.textContent = `目標の ${fmtPct(target)} を達成するには、動作Bの再現率 P(BT) を ${fmtPct(requiredPBT)} まで上げる必要があります。現在の設定は ${fmtPct(pBT)} です。`;
+      msgBox.textContent = `目標の ${fmtPct(target)} を達成するには、練習動作の再現率 P(BT) を ${fmtPct(requiredPBT)} まで上げる必要があります。現在の設定は ${fmtPct(pBT)} です。`;
     }
   }
 

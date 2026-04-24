@@ -9,7 +9,7 @@
     <img src="statics/result.png" alt="セッション結果" class="sf-hero-img">
     <div class="sf-hero-overlay">
       <div class="sf-hero-eyebrow">RESULT · HISTORY</div>
-      <h1 class="sf-hero-title">📊 セッション結果</h1>
+      <h1 class="sf-hero-title">セッション結果</h1>
       <p class="sf-hero-sub">統合スコアと次回トレーニングの提案</p>
     </div>
   </div>
@@ -22,7 +22,7 @@
 
   <!-- ══ 統合スコア表示（個人） ══ -->
   <div class="sf-card">
-    <div class="sf-card-title">🎯 統合スコア</div>
+    <div class="sf-card-title">統合スコア</div>
     <div class="sf-preview-grid" style="grid-template-columns:repeat(auto-fit,minmax(100px,1fr));">
       <div class="sf-preview-item">
         <div class="sf-preview-label">VFE</div>
@@ -63,7 +63,7 @@
       <!-- F' 詳細 -->
       <div class="sf-card">
         <div class="sf-card-title">
-          🧠 F' 詳細
+          F' 詳細
           <span class="sf-theory-tag tag-fprime">F'</span>
         </div>
         <div class="sf-preview-grid" style="grid-template-columns:repeat(3,1fr);">
@@ -87,7 +87,7 @@
 
       <!-- VFE バンド表示 -->
       <div class="sf-card">
-        <div class="sf-card-title">📊 VFE バンド</div>
+        <div class="sf-card-title">VFE バンド</div>
         <div id="res-vfe-band-display" style="padding:8px 0;">
           <div style="position:relative; height:28px; background:linear-gradient(90deg, #059669 0%, #059669 30%, #d97706 30%, #d97706 60%, #dc2626 60%, #dc2626 100%); border-radius:14px; overflow:hidden;">
             <div id="res-vfe-marker" style="position:absolute; top:2px; width:24px; height:24px; background:white; border-radius:50%; border:3px solid #1e293b; left:50%; transform:translateX(-50%); transition:left 0.3s;"></div>
@@ -107,7 +107,7 @@
     <!-- ══ 右列：次回提案（根拠付き） ══ -->
     <div>
       <div class="sf-card" style="border-left:4px solid #2563eb;">
-        <div class="sf-card-title">🔮 次回トレーニング提案</div>
+        <div class="sf-card-title">次回トレーニング提案</div>
 
         <!-- レイヤー提案 -->
         <div class="sf-form-row">
@@ -145,7 +145,7 @@
 
       <!-- おすすめメニュー -->
       <div class="sf-card">
-        <div class="sf-card-title">📋 おすすめメニュー</div>
+        <div class="sf-card-title">おすすめメニュー</div>
         <div id="res-suggested-menus" style="max-height:250px; overflow-y:auto;">
           <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.88rem;">計算中...</div>
         </div>
@@ -155,7 +155,7 @@
 
   <!-- VFE 履歴チャート（個人） -->
   <div class="sf-card">
-    <div class="sf-card-title">📈 VFE 推移</div>
+    <div class="sf-card-title">VFE 推移</div>
     <div id="res-vfe-history" style="display:flex; align-items:flex-end; gap:4px; height:120px; padding:8px 0;">
       <div style="text-align:center; width:100%; color:var(--text-muted); font-size:0.85rem;">履歴データなし</div>
     </div>
@@ -167,11 +167,11 @@
 
   <!-- A. グループ平均スコア -->
   <div id="group-avg-section" class="sf-group-section" style="display:none;">
-    <div class="sf-group-section-title">👥 グループ分析</div>
+    <div class="sf-group-section-title">グループ分析</div>
 
     <div class="sf-card">
       <div class="sf-card-title">
-        📊 グループ平均スコア
+        グループ平均スコア
         <span id="group-avg-count" style="font-size:0.78rem; font-weight:400; color:var(--text-muted);"></span>
       </div>
       <div id="group-avg-date" style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;"></div>
@@ -205,13 +205,13 @@
 
     <!-- F. 個人 vs グループ比較 -->
     <div class="sf-card" id="group-compare-section" style="display:none;">
-      <div class="sf-card-title">🔄 個人 vs グループ平均</div>
+      <div class="sf-card-title">個人 vs グループ平均</div>
       <div id="group-compare-content"></div>
     </div>
 
     <!-- B. グループVFE推移チャート -->
     <div class="sf-card">
-      <div class="sf-card-title">📈 グループVFE推移</div>
+      <div class="sf-card-title">グループVFE推移</div>
       <div id="group-vfe-trend" style="display:flex; align-items:flex-end; gap:4px; height:120px; padding:8px 0;">
         <div style="text-align:center; width:100%; color:var(--text-muted); font-size:0.85rem;">データなし</div>
       </div>
@@ -219,7 +219,7 @@
 
     <!-- C. 実施メニュー×スコア -->
     <div class="sf-card" id="group-menu-section">
-      <div class="sf-card-title">📋 実施メニューとスコア</div>
+      <div class="sf-card-title">実施メニューとスコア</div>
       <div id="group-menu-list">
         <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">読み込み中...</div>
       </div>
@@ -227,7 +227,7 @@
 
     <!-- レイヤー×VFE 関連表示 -->
     <div class="sf-card" id="group-layer-chart-section" style="display:none;">
-      <div class="sf-card-title">📐 レイヤー別VFE平均</div>
+      <div class="sf-card-title">レイヤー別VFE平均</div>
       <div id="group-layer-chart" style="padding:8px 0;"></div>
     </div>
   </div>
