@@ -16,6 +16,9 @@
   <!-- コーチ用ナビゲーション（入力動線） -->
   <div id="home-coach-nav" style="max-width:500px; margin:16px auto 0; padding:0 16px; display:none;"></div>
 
+  <!-- 選手用ナビゲーション（入力動線） -->
+  <div id="home-player-nav" style="max-width:500px; margin:16px auto 0; padding:0 16px; display:none;"></div>
+
   <!-- EFE 月次誘導バッジ（選手向け） -->
   <div id="home-efe-badge" style="max-width:500px; margin:16px auto 0; padding:0 16px; display:none;"></div>
 
@@ -28,6 +31,36 @@
   // コーチ用グループセレクター
   if (currentRole === 'coach' && typeof GroupContext !== 'undefined') {
     GroupContext.renderGroupSelector('home-group-selector');
+  }
+
+  // 選手用ナビゲーション（入力動線）
+  if (currentRole === 'player') {
+    const pNavEl = document.getElementById('home-player-nav');
+    if (pNavEl) {
+      pNavEl.style.display = 'block';
+      pNavEl.innerHTML = `
+        <div class="home-coach-nav-card">
+          <div class="home-coach-nav-title">📝 今日のチェックイン</div>
+          <div class="home-coach-nav-grid">
+            <button class="home-coach-nav-btn" onclick="showPage('session-pre-check', document.querySelector('.sidebar-nav-btn[data-page=\\'session-pre-check\\']'))">
+              <span class="home-coach-nav-icon">📋</span>
+              <span class="home-coach-nav-label">MTG後</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('session-record', document.querySelector('.sidebar-nav-btn[data-page=\\'session-record\\']'))">
+              <span class="home-coach-nav-icon">▶️</span>
+              <span class="home-coach-nav-label">練習後</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('session-followup', document.querySelector('.sidebar-nav-btn[data-page=\\'session-followup\\']'))">
+              <span class="home-coach-nav-icon">🔁</span>
+              <span class="home-coach-nav-label">振り返り</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('session-result', document.querySelector('.sidebar-nav-btn[data-page=\\'session-result\\']'))">
+              <span class="home-coach-nav-icon">📅</span>
+              <span class="home-coach-nav-label">過去の記録</span>
+            </button>
+          </div>
+        </div>`;
+    }
   }
 
   // コーチ用ナビゲーション（入力動線）
