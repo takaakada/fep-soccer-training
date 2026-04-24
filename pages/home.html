@@ -13,6 +13,9 @@
   <!-- コーチ用グループセレクター -->
   <div id="home-group-selector" style="max-width:500px; margin:24px auto 0; padding:0 16px;"></div>
 
+  <!-- コーチ用ナビゲーション（入力動線） -->
+  <div id="home-coach-nav" style="max-width:500px; margin:16px auto 0; padding:0 16px; display:none;"></div>
+
   <!-- EFE 月次誘導バッジ（選手向け） -->
   <div id="home-efe-badge" style="max-width:500px; margin:16px auto 0; padding:0 16px; display:none;"></div>
 
@@ -25,6 +28,47 @@
   // コーチ用グループセレクター
   if (currentRole === 'coach' && typeof GroupContext !== 'undefined') {
     GroupContext.renderGroupSelector('home-group-selector');
+  }
+
+  // コーチ用ナビゲーション（入力動線）
+  if (currentRole === 'coach') {
+    const navEl = document.getElementById('home-coach-nav');
+    if (navEl) {
+      navEl.style.display = 'block';
+      navEl.innerHTML = `
+        <div class="home-coach-nav-card">
+          <div class="home-coach-nav-title">📋 今日のセッション</div>
+          <div class="home-coach-nav-grid">
+            <button class="home-coach-nav-btn" onclick="showPage('menu', document.querySelector('.sidebar-nav-btn[data-page=\\'menu\\']'))">
+              <span class="home-coach-nav-icon">🏟️</span>
+              <span class="home-coach-nav-label">全体</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('position', document.querySelector('.sidebar-nav-btn[data-page=\\'position\\']'))">
+              <span class="home-coach-nav-icon">🧤</span>
+              <span class="home-coach-nav-label">ポジション別</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('individual', document.querySelector('.sidebar-nav-btn[data-page=\\'individual\\']'))">
+              <span class="home-coach-nav-icon">🏃</span>
+              <span class="home-coach-nav-label">個別</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('session-coach-record', document.querySelector('.sidebar-nav-btn[data-page=\\'session-coach-record\\']'))">
+              <span class="home-coach-nav-icon">📝</span>
+              <span class="home-coach-nav-label">コーチ記録</span>
+            </button>
+          </div>
+          <div class="home-coach-nav-divider"></div>
+          <div class="home-coach-nav-grid">
+            <button class="home-coach-nav-btn" onclick="showPage('session-result', document.querySelector('.sidebar-nav-btn[data-page=\\'session-result\\']'))">
+              <span class="home-coach-nav-icon">📊</span>
+              <span class="home-coach-nav-label">結果を見る</span>
+            </button>
+            <button class="home-coach-nav-btn" onclick="showPage('player-profile', document.querySelector('.sidebar-nav-btn[data-page=\\'player-profile\\']'))">
+              <span class="home-coach-nav-icon">👥</span>
+              <span class="home-coach-nav-label">選手リスト</span>
+            </button>
+          </div>
+        </div>`;
+    }
   }
 
   // EFE 月次誘導バッジ（選手のみ）
