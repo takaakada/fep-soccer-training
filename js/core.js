@@ -424,6 +424,18 @@ function applySidebarVisibility() {
       el.style.display = '';
     }
   });
+
+  // ロール切替ボタンのラベルを現在のロールに合わせて更新
+  const switchBtn = document.getElementById('sidebar-switch-btn');
+  if (switchBtn) {
+    if (currentRole === 'coach') {
+      switchBtn.textContent = '🔄 選手入力へ';
+    } else if (currentRole === 'player') {
+      switchBtn.textContent = '🔄 コーチ入力へ';
+    } else {
+      switchBtn.textContent = '🔄 アカウント切替';
+    }
+  }
 }
 
 function switchAgeTab(ageId, btn) {
