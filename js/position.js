@@ -141,10 +141,10 @@ function _applyPosFilters(menus) {
   return menus.filter(m => {
     if (posFilters.layer !== 'all' && m.layer !== posFilters.layer) return false;
     if (posFilters.purpose !== 'all') {
-      const purposes = m.purpose_list && m.purpose_list.length > 0
-        ? m.purpose_list
-        : (m.purpose ? [m.purpose] : []);
-      if (!purposes.includes(posFilters.purpose)) return false;
+      // 新スキーマ: m.purpose_domain (4ドメイン)
+      // 旧スキーマ: m.purpose
+      const domain = m.purpose_domain || m.purpose || '';
+      if (domain !== posFilters.purpose) return false;
     }
     return true;
   });

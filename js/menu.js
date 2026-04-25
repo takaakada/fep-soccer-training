@@ -155,12 +155,15 @@ function _applyFilters(menus) {
   return menus.filter(m => {
     if (activeFilters.layer !== 'all' && m.layer !== activeFilters.layer) return false;
     if (activeFilters.purpose !== 'all') {
-      const purposes = m.purpose_list && m.purpose_list.length > 0
-        ? m.purpose_list
-        : (m.purpose ? [m.purpose] : []);
-      if (!purposes.includes(activeFilters.purpose)) return false;
+      // 新スキーマ: m.purpose_domain (4ドメイン)
+      // 旧スキーマ: m.purpose (旧 5 種値)
+      const domain = m.purpose_domain || m.purpose || '';
+      if (domain !== activeFilters.purpose) return false;
     }
-    if (activeFilters.coaching !== 'all' && m.coaching !== activeFilters.coaching) return false;
+    if (activeFilters.coaching !== 'all') {
+      const tone = m.coaching_tone || m.coaching || '';
+      if (tone !== activeFilters.coaching) return false;
+    }
     return true;
   });
 }
