@@ -136,25 +136,25 @@ function _normalizeNewMenu(m) {
     group_format:         m.group_format || '',
     time:                 parseInt(m.time || m.duration_min) || 0,
 
-    // 運用
-    equipment:        m.equipment || '',
-    equipment_list:   _splitList(m.equipment),
-    constraints:      m.constraints || '',
-    constraints_list: _splitList(m.constraints),
+    // 運用（list 型: 配列。_raw に元の文字列を保持）
+    equipment:         _splitList(m.equipment),
+    equipment_raw:     m.equipment || '',
+    constraints:       _splitList(m.constraints),
+    constraints_raw:   m.constraints || '',
 
     // 内容
     desc:                    m.desc || m.summary || '',
     fep:                     m.fep  || m.fep_focus || '',
-    steps:                   m.steps || '',
-    steps_list:              _splitList(m.steps),
-    coaching_points:         m.coaching_points || '',
-    coaching_points_list:    _splitList(m.coaching_points),
-    evaluation_points:       m.evaluation_points || '',
-    evaluation_points_list:  _splitList(m.evaluation_points),
-    progression:             m.progression || '',
-    progression_list:        _splitList(m.progression),
-    regression:              m.regression || '',
-    regression_list:         _splitList(m.regression),
+    steps:                   _splitList(m.steps),
+    steps_raw:               m.steps || '',
+    coaching_points:         _splitList(m.coaching_points),
+    coaching_points_raw:     m.coaching_points || '',
+    evaluation_points:       _splitList(m.evaluation_points),
+    evaluation_points_raw:   m.evaluation_points || '',
+    progression:             _splitList(m.progression),
+    progression_raw:         m.progression || '',
+    regression:              _splitList(m.regression),
+    regression_raw:          m.regression || '',
 
     // ── 旧コード互換エイリアス（既存画面が参照）────────
     name:          m.menu_name || m.name || '',
@@ -204,16 +204,18 @@ function _normalizeLegacyMenu(m) {
     group_format: '',
     time: parseInt(m.time || m.duration_min) || 0,
 
-    equipment: '', equipment_list: [],
-    constraints: '', constraints_list: [],
+    equipment: [], equipment_raw: '',
+    constraints: [], constraints_raw: '',
 
     desc: m.desc || m.summary || '',
     fep:  m.fep  || m.fep_focus || '',
-    steps: '', steps_list: m.steps_list || [],
-    coaching_points: '', coaching_points_list: m.coaching_points_list || [],
-    evaluation_points: '', evaluation_points_list: [],
-    progression: '', progression_list: [],
-    regression: '', regression_list: [],
+    steps: m.steps_list || [],
+    steps_raw: '',
+    coaching_points: m.coaching_points_list || [],
+    coaching_points_raw: '',
+    evaluation_points: [], evaluation_points_raw: '',
+    progression: [], progression_raw: '',
+    regression: [], regression_raw: '',
 
     // 旧エイリアス
     name:        m.name || m.menu_name || '',
