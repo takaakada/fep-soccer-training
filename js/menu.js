@@ -6,11 +6,11 @@
 
 // ─── Phase 定義 ─────────────────────────────────────────────
 const PHASES = [
-  { id: 'warm',   num: 1, label: 'Phase 1: ウォームアップ', color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🔥', vfeCurve: 'low',  desc: 'セロトニン活性化 / σ安定' },
-  { id: 'tech',   num: 2, label: 'Phase 2: 技術',           color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚽', vfeCurve: 'mid',  desc: '予測誤差の修正 / VFE中程度' },
-  { id: 'tactic', num: 3, label: 'Phase 3: 戦術',           color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🧩', vfeCurve: 'high', desc: '不確実性の統合 / VFEピーク' },
-  { id: 'phys',   num: 4, label: 'Phase 4: フィジカル',     color: '#dc2626', bg: 'linear-gradient(135deg,#fef2f2,#fecaca)', icon: '💪', vfeCurve: 'mid',  desc: '身体モデルの強化' },
-  { id: 'cool',   num: 5, label: 'Phase 5: クールダウン',   color: '#6366f1', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)', icon: '🧘', vfeCurve: 'low',  desc: '学習の定着 / σ回復' },
+  { id: 'warm',   num: 1, label: 'Phase 1: ウォームアップ', color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🔥', vfeCurve: 'low' },
+  { id: 'tech',   num: 2, label: 'Phase 2: 技術',           color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚽', vfeCurve: 'mid' },
+  { id: 'tactic', num: 3, label: 'Phase 3: 戦術',           color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🧩', vfeCurve: 'high' },
+  { id: 'phys',   num: 4, label: 'Phase 4: フィジカル',     color: '#dc2626', bg: 'linear-gradient(135deg,#fef2f2,#fecaca)', icon: '💪', vfeCurve: 'mid' },
+  { id: 'cool',   num: 5, label: 'Phase 5: クールダウン',   color: '#6366f1', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)', icon: '🧘', vfeCurve: 'low' },
 ];
 
 const CAT_OPTIONS = [
@@ -195,7 +195,6 @@ function renderPhases() {
             <span class="phase-icon">${phase.icon}</span>
             <div class="phase-header-info">
               <div class="phase-title" style="color:${phase.color}">${phase.label}</div>
-              <div class="phase-desc">${phase.desc}</div>
             </div>
             <span class="phase-count">${phaseMenus.length}</span>
           </div>
