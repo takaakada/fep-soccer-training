@@ -74,8 +74,9 @@ function _getPosMenus(posId) {
   let base = [];
 
   // From ALL_MENU_PRESETS
+  // target_scope = 'all' は全ページに表示される共通メニュー扱い
   if (window.ALL_MENU_PRESETS && window.ALL_MENU_PRESETS.length > 0) {
-    base = window.ALL_MENU_PRESETS.filter(m => m.scope === posId);
+    base = window.ALL_MENU_PRESETS.filter(m => m.scope === posId || m.scope === 'all');
   }
 
   // Fallback: POS_PRESETS (hardcoded, minimal data)
