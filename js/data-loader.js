@@ -69,6 +69,13 @@ const MENU_LABELS = {
     '相互作用': '相互作用',
     '長期目標': '長期目標',
   },
+  modality: {
+    prop:    '体性感覚',
+    vision:  '視覚',
+    vest:    '前庭覚',
+    respi:   '呼吸・心拍',
+    haptic:  '触覚',
+  },
 };
 
 // pipe (|) 区切りの文字列 → 配列（空要素は除外）
@@ -76,6 +83,20 @@ function _splitList(s) {
   if (!s) return [];
   if (Array.isArray(s)) return s.filter(Boolean).map(x => String(x).trim());
   return String(s).split('|').map(x => x.trim()).filter(Boolean);
+}
+
+// menu_id から layer / sub_level / modality を抽出（CSV 列が空のときの fallback）
+// 例: "L1-2-prop-001" → { layer: "L1", sub_level: 2, modality: "prop" }
+//     "L2-tech-001"   → { layer: "L2", sub_level: null, modality: null }
+function _parseMenuId(menuId) {
+  if (!menuId) return { layer: '', sub_level: null, modality: '' };
+  // 4-part: L{n}-{sub}-{modality}-{seq}
+  let m = String(menuId).match(/^L(\d+)-(\d+)-([a-z]+)-\d+$/i);
+  if (m) return { layer: 'L' + m[1], sub_level: Number(m[2]), modality: m[3].toLowerCase() };
+  // 3-part: L{n}-{anything}-{seq}
+  m = String(menuId).match(/^L(\d+)-([a-z]+)-\d+$/i);
+  if (m) return { layer: 'L' + m[1], sub_level: null, modality: '' };
+  return { layer: '', sub_level: null, modality: '' };
 }
 
 // ── Sheet データを正規化 ─────────────────────────────────────
@@ -100,6 +121,14 @@ function _normalizeNewMenu(m) {
   const sensoryChRaw = m.sensory_channels || m.channels || '';
   const coachingTone = m.coaching_tone || m.coaching || '';
 
+  // menu_id から layer / sub_level / modality を補完（CSV 列が空のとき）
+  const parsed = _parseMenuId(m.menu_id);
+  const layer = m.layer || parsed.layer || '';
+  const subLevel = (m.sub_level !== '' && m.sub_level != null)
+    ? Number(m.sub_level)
+    : parsed.sub_level;
+  const modality = m.modality || parsed.modality || '';
+
   return {
     // 識別子
     menu_id:     m.menu_id || '',
@@ -109,7 +138,9 @@ function _normalizeNewMenu(m) {
     menu_name:   m.menu_name || m.name || '',
     category:    m.category || '',           // grade level (中学生/U15)
     age_group:   m.age_group || m.age || 'all',
-    layer:       m.layer || '',
+    layer:       layer,
+    sub_level:   subLevel,                   // 1-4 or null
+    modality:    modality,                   // prop / vision / vest / etc
 
     // 分類
     session_phase: sessionPhase,
@@ -175,6 +206,7 @@ function _normalizeLegacyMenu(m) {
   const scope = m.scope || m.position_group || 'team';
   const channels = m.channels || '';
   const coaching = m.coaching || '';
+  const parsed = _parseMenuId(m.menu_id);
 
   return {
     // 新スキーマ側のフィールドも同時に埋める
@@ -183,7 +215,9 @@ function _normalizeLegacyMenu(m) {
     menu_name:   m.name || m.menu_name || '',
     category:    '',  // 旧テンプレートには grade 情報なし
     age_group:   m.age || m.age_group || 'all',
-    layer:       m.layer || '',
+    layer:       m.layer || parsed.layer || '',
+    sub_level:   parsed.sub_level,
+    modality:    parsed.modality,
     session_phase: cat,
     target_scope:  scope,
 
