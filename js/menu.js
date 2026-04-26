@@ -4,13 +4,30 @@
 // Phase-based view driven by ALL_MENU_PRESETS (from data-loader.js)
 // Coach can add/delete menus (persisted to localStorage as overlay)
 
-// ─── Phase 定義 ─────────────────────────────────────────────
+// ─── Phase 定義（旧、メニュー追加モーダルで使用）────────────
 const PHASES = [
   { id: 'warm',   num: 1, label: 'Phase 1: ウォームアップ', color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🔥', vfeCurve: 'low' },
   { id: 'tech',   num: 2, label: 'Phase 2: 技術',           color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚽', vfeCurve: 'mid' },
   { id: 'tactic', num: 3, label: 'Phase 3: 戦術',           color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🧩', vfeCurve: 'high' },
   { id: 'phys',   num: 4, label: 'Phase 4: フィジカル',     color: '#dc2626', bg: 'linear-gradient(135deg,#fef2f2,#fecaca)', icon: '💪', vfeCurve: 'mid' },
   { id: 'cool',   num: 5, label: 'Phase 5: クールダウン',   color: '#6366f1', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)', icon: '🧘', vfeCurve: 'low' },
+];
+
+// ─── Layer 定義（メイン表示軸）──────────────────────────────
+// FEP の 4 レイヤー学習設計に準拠
+const LAYERS = [
+  { id: 'L1', label: 'Layer 1', subtitle: '感覚・姿勢・基礎制御',
+    color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🌱', vfeCurve: 'low',
+    subGroupBy: 'modality' },
+  { id: 'L2', label: 'Layer 2', subtitle: '個別の動作・実技',
+    color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚽', vfeCurve: 'mid',
+    subGroupBy: null },
+  { id: 'L3', label: 'Layer 3', subtitle: '相手のコントロール',
+    color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🤝', vfeCurve: 'mid',
+    subGroupBy: null },
+  { id: 'L4', label: 'Layer 4', subtitle: '全体のコントロール',
+    color: '#7c3aed', bg: 'linear-gradient(135deg,#f5f3ff,#ede9fe)', icon: '🎯', vfeCurve: 'high',
+    subGroupBy: null },
 ];
 
 const CAT_OPTIONS = [
@@ -176,43 +193,69 @@ function setFilter(type, value, btn) {
   renderPhases();
 }
 
-// ─── Phase描画 ───────────────────────────────────────────────
+// ─── Layer描画（メイン）───────────────────────────────────
+// LAYERS を主軸に、Layer 1 のみ modality でサブグループ化する
 function renderPhases() {
   const container = document.getElementById('phase-container');
   if (!container) return;
 
   const allMenus = _getTeamMenus();
   const filtered = _applyFilters(allMenus);
+  const labels = window.MENU_LABELS || {};
 
   let html = '';
-  PHASES.forEach(phase => {
-    const phaseMenus = filtered.filter(m => m.cat === phase.id);
+  LAYERS.forEach(layer => {
+    const layerMenus = filtered.filter(m => m.layer === layer.id);
 
     html += `
-      <div class="phase-section" data-phase="${phase.id}">
-        <div class="phase-header" style="background:${phase.bg};border-left:4px solid ${phase.color};">
+      <div class="phase-section" data-layer="${layer.id}">
+        <div class="phase-header" style="background:${layer.bg};border-left:4px solid ${layer.color};">
           <div class="phase-header-top">
-            <span class="phase-icon">${phase.icon}</span>
+            <span class="phase-icon">${layer.icon}</span>
             <div class="phase-header-info">
-              <div class="phase-title" style="color:${phase.color}">${phase.label}</div>
+              <div class="phase-title" style="color:${layer.color}">${layer.label}</div>
+              <div class="phase-subtitle" style="color:${layer.color};opacity:0.85;font-size:0.82rem;">${layer.subtitle}</div>
             </div>
-            <span class="phase-count">${phaseMenus.length}</span>
+            <span class="phase-count">${layerMenus.length}</span>
           </div>
           <div class="phase-vfe-indicator">
             <div class="vfe-curve-bar">
-              <div class="vfe-curve-fill" style="width:${phase.vfeCurve === 'low' ? '25' : phase.vfeCurve === 'mid' ? '55' : '85'}%;background:${phase.color}"></div>
+              <div class="vfe-curve-fill" style="width:${layer.vfeCurve === 'low' ? '25' : layer.vfeCurve === 'mid' ? '55' : '85'}%;background:${layer.color}"></div>
             </div>
-            <span class="vfe-curve-label">VFE ${phase.vfeCurve}</span>
+            <span class="vfe-curve-label">VFE ${layer.vfeCurve}</span>
           </div>
         </div>
         <div class="phase-cards">
     `;
 
-    if (phaseMenus.length === 0) {
-      html += `<div class="phase-empty">このフェーズのメニューはありません</div>`;
+    if (layerMenus.length === 0) {
+      html += `<div class="phase-empty">このレイヤーのメニューはありません</div>`;
+    } else if (layer.subGroupBy === 'modality') {
+      // modality 別にサブグループ化（Layer 1）
+      const groups = {};
+      layerMenus.forEach(m => {
+        const key = m.modality || '_other';
+        (groups[key] = groups[key] || []).push(m);
+      });
+      // 表示順: prop / vision / vest / それ以外
+      const order = ['prop', 'vision', 'vest', 'respi', 'haptic', '_other'];
+      order.filter(k => groups[k]).forEach(modKey => {
+        const modLabel = (labels.modality && labels.modality[modKey]) || (modKey === '_other' ? 'その他' : modKey);
+        html += `
+          <div class="layer-modality-group" data-modality="${modKey}">
+            <div class="layer-modality-header" style="color:${layer.color};">
+              ${modLabel} <span style="opacity:0.6;font-weight:500;">(${groups[modKey].length})</span>
+            </div>
+            <div class="layer-modality-cards">
+              ${groups[modKey].map(menu => _renderMenuCard(menu, layer)).join('')}
+            </div>
+          </div>
+        `;
+      });
     } else {
-      phaseMenus.forEach(menu => {
-        html += _renderMenuCard(menu, phase);
+      // フラットに並べる（Layer 2 / 3 / 4）
+      layerMenus.forEach(menu => {
+        html += _renderMenuCard(menu, layer);
       });
     }
 

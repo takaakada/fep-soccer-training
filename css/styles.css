@@ -3527,6 +3527,26 @@
   border: 1.5px dashed var(--border);
 }
 
+/* ── Layer 内 modality サブグループ ── */
+.layer-modality-group {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+.layer-modality-group:first-child { margin-top: 0; }
+.layer-modality-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+}
+.layer-modality-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
 /* ── Menu Card ── */
 .menu-card {
   position: relative;
