@@ -3527,6 +3527,148 @@
   border: 1.5px dashed var(--border);
 }
 
+/* ── Layer Section (L1-L4 グルーピング) ── */
+.layer-section {
+  margin-bottom: 24px;
+}
+.layer-header {
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.layer-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.layer-icon {
+  font-size: 1.5rem;
+}
+.layer-header-info {
+  flex: 1;
+}
+.layer-title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+.layer-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.layer-count {
+  background: rgba(0,0,0,0.08);
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.layer-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.layer-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 18px 16px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+}
+
+/* ── Filter actions / clear button ── */
+.menu-filter-bar .filter-actions,
+.pos-filter-bar .filter-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.filter-clear-btn {
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-clear-btn:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+/* ── Filter empty banner（フィルター 0 件） ── */
+.filter-empty-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fef2f215;
+  border: 1.5px solid #fecaca;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  color: #991b1b;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* ── Filter detail accordion ── */
+.filter-detail-wrap {
+  margin-bottom: 18px;
+}
+.filter-detail-toggle {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.filter-detail-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.filter-detail {
+  display: none;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px 18px;
+  margin-top: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.filter-detail.is-open {
+  display: flex;
+}
+.filter-detail .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-detail .filter-group > label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  min-width: 90px;
+}
+
 /* ── Menu Card ── */
 .menu-card {
   position: relative;
@@ -3852,7 +3994,9 @@
   .sf-btn-row { flex-direction: column; }
   .sf-btn { width: 100%; text-align: center; }
   .menu-filter-bar, .pos-filter-bar { flex-direction: column; gap: 10px; }
-  .phase-cards { grid-template-columns: 1fr; }
+  .menu-filter-bar .filter-actions, .pos-filter-bar .filter-actions { margin-left: 0; }
+  .filter-detail { flex-direction: column; gap: 10px; }
+  .phase-cards, .layer-cards { grid-template-columns: 1fr; }
   .sf-menu-bar-wrap { width: 60px; }
   .sf-compare-row { grid-template-columns: 60px 1fr 1fr; font-size: 0.78rem; }
 }
