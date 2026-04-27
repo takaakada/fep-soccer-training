@@ -1,16 +1,15 @@
 // ══════════════════════════════════════════════════════════
 // TEAM TRAINING PAGE  (js/menu.js)
 // ══════════════════════════════════════════════════════════
-// Phase-based view driven by ALL_MENU_PRESETS (from data-loader.js)
-// Coach can add/delete menus (persisted to localStorage as overlay)
+// Layer-based view (L1-L4) driven by ALL_MENU_PRESETS (from data-loader.js)
+// 多軸フィルター: 同一軸内 OR / 軸間 AND / メニュー側パイプ区切りは any-match
 
-// ─── Phase 定義 ─────────────────────────────────────────────
-const PHASES = [
-  { id: 'warm',   num: 1, label: 'Phase 1: ウォームアップ', color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🔥', vfeCurve: 'low' },
-  { id: 'tech',   num: 2, label: 'Phase 2: 技術',           color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚽', vfeCurve: 'mid' },
-  { id: 'tactic', num: 3, label: 'Phase 3: 戦術',           color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🧩', vfeCurve: 'high' },
-  { id: 'phys',   num: 4, label: 'Phase 4: フィジカル',     color: '#dc2626', bg: 'linear-gradient(135deg,#fef2f2,#fecaca)', icon: '💪', vfeCurve: 'mid' },
-  { id: 'cool',   num: 5, label: 'Phase 5: クールダウン',   color: '#6366f1', bg: 'linear-gradient(135deg,#eef2ff,#e0e7ff)', icon: '🧘', vfeCurve: 'low' },
+// ─── Layer 定義 ─────────────────────────────────────────────
+const LAYERS = [
+  { id: 'L1', label: 'L1: 感覚・身体',     color: '#3b82f6', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)', icon: '🌱', desc: '感覚入力と身体図式の安定化' },
+  { id: 'L2', label: 'L2: 技術・反復',     color: '#059669', bg: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', icon: '⚙️', desc: '個人技術の反復と修正' },
+  { id: 'L3', label: 'L3: 戦術・相互作用', color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)', icon: '🤝', desc: '集団の共有モデル形成' },
+  { id: 'L4', label: 'L4: 長期・統合',     color: '#dc2626', bg: 'linear-gradient(135deg,#fef2f2,#fecaca)', icon: '🎯', desc: '目標設定と長期統合' },
 ];
 
 const CAT_OPTIONS = [
@@ -23,7 +22,23 @@ const CAT_OPTIONS = [
 
 // ─── 状態 ───────────────────────────────────────────────────
 let isEditMode = false;
-let activeFilters = { layer: 'all', purpose: 'all', coaching: 'all' };
+// 多軸フィルター（各軸は配列。空配列 = その軸は無効）
+let activeFilters = {
+  // 基本（常時表示）
+  layer:            [],
+  session_phase:    [],
+  sensory_channels: [],
+  purpose_domain:   [],
+  coaching_tone:    [],
+  // 詳細（アコーディオン内）
+  vfe_target:       [],
+  efe_target:       [],
+  eu_target:        [],
+  target_scope:     [],
+  difficulty_level: [],
+  group_format:     [],
+  time:             [],
+};
 
 // localStorage keys
 const CUSTOM_MENUS_KEY = 'fep_custom_team_menus';
@@ -61,24 +76,38 @@ function layerBadge(layer) {
 
 function purposeBadge(purpose) {
   if (!purpose) return '';
-  const colors = { '安定化': '#3b82f6', '探索': '#8b5cf6', '修正': '#d97706', '強化': '#dc2626', '統合': '#059669' };
+  const colors = { '感覚': '#3b82f6', '認知': '#8b5cf6', '相互作用': '#059669', '長期目標': '#d97706' };
   const c = colors[purpose] || '#6b7280';
   return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(purpose)}</span>`;
 }
 
 function coachingBadge(coaching) {
   if (!coaching) return '';
-  const labels = { safe: 'Safe', explore: 'Explore', challenge: 'Challenge', positive: 'Positive' };
-  const colors = { safe: '#3b82f6', explore: '#8b5cf6', challenge: '#dc2626', positive: '#059669' };
+  const labels = { safe: 'Safe', explore: 'Explore', challenge: 'Challenge', positive: 'Positive', reflective: 'Reflective' };
+  const colors = { safe: '#3b82f6', explore: '#8b5cf6', challenge: '#dc2626', positive: '#059669', reflective: '#6366f1' };
   const label = labels[coaching] || coaching;
   const c = colors[coaching] || '#6b7280';
   return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(label)}</span>`;
 }
 
+function phaseBadge(phase) {
+  if (!phase) return '';
+  const labels = { warm: 'Warm', tech: 'Tech', tactic: 'Tactic', phys: 'Phys', cool: 'Cool', main: 'Main', cool_down: 'Cool' };
+  const c = '#6b7280';
+  return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(labels[phase] || phase)}</span>`;
+}
+
 function vfeBadge(vfe) {
   if (!vfe) return '';
-  const labels = { low: 'VFE: Low', mid: 'VFE: Mid', high: 'VFE: High' };
-  const colors = { low: '#059669', mid: '#d97706', high: '#dc2626' };
+  // 旧3値 + 新統制語彙の両対応
+  const labels = {
+    low: 'VFE: Low', mid: 'VFE: Mid', high: 'VFE: High',
+    low_stable: 'VFE: 低値安定', optimal: 'VFE: 最適', high_confused: 'VFE: 高値混乱',
+  };
+  const colors = {
+    low: '#059669', mid: '#d97706', high: '#dc2626',
+    low_stable: '#059669', optimal: '#d97706', high_confused: '#dc2626',
+  };
   const label = labels[vfe] || `VFE: ${vfe}`;
   const c = colors[vfe] || '#6b7280';
   return `<span class="attr-badge" style="background:${c}15;color:${c};border:1px solid ${c}30">${escHtml(label)}</span>`;
@@ -86,7 +115,9 @@ function vfeBadge(vfe) {
 
 function channelChips(channels) {
   if (!channels) return '';
-  const list = typeof channels === 'string' ? channels.split(',').map(s => s.trim()).filter(Boolean) : channels;
+  const list = Array.isArray(channels)
+    ? channels
+    : String(channels).split(/[|,]/).map(s => s.trim()).filter(Boolean);
   return list.map(ch => `<span class="channel-chip">${escHtml(ch)}</span>`).join('');
 }
 
@@ -150,69 +181,107 @@ function _saveCustomMenus(menus) {
   localStorage.setItem(CUSTOM_MENUS_KEY, JSON.stringify(menus));
 }
 
-// ─── フィルター適用 ─────────────────────────────────────────
+// ─── フィルター判定 ─────────────────────────────────────────
+// 同一軸内: OR / 軸間: AND / メニュー側パイプ・カンマ区切り: any-match
+function _menuValueForAxis(m, axis) {
+  switch (axis) {
+    case 'layer':            return m.layer;
+    case 'session_phase':    return m.session_phase || m.cat;
+    case 'sensory_channels': return m.sensory_channels_list && m.sensory_channels_list.length
+                                  ? m.sensory_channels_list
+                                  : (m.sensory_channels || m.channels);
+    case 'purpose_domain':   return m.purpose_domain || m.purpose;
+    case 'coaching_tone':    return m.coaching_tone || m.coaching;
+    case 'vfe_target':       return m.vfe_target;
+    case 'efe_target':       return m.efe_target;
+    case 'eu_target':        return m.eu_target;
+    case 'target_scope':     return m.target_scope || m.scope;
+    case 'difficulty_level': return m.difficulty_level != null ? String(m.difficulty_level) : '';
+    case 'group_format':     return m.group_format;
+    case 'time':             return m.time != null ? String(m.time) : '';
+    default: return '';
+  }
+}
+
+function _matchAxis(menuValue, selectedValues) {
+  if (menuValue === null || menuValue === undefined || menuValue === '') return false;
+  let menuVals;
+  if (Array.isArray(menuValue)) {
+    menuVals = menuValue.map(v => String(v).trim()).filter(Boolean);
+  } else {
+    menuVals = String(menuValue).split(/[|,]/).map(s => s.trim()).filter(Boolean);
+  }
+  return selectedValues.some(sv => menuVals.includes(String(sv).trim()));
+}
+
+function _menuMatchesFilters(m) {
+  for (const axis of Object.keys(activeFilters)) {
+    const selected = activeFilters[axis];
+    if (!selected || selected.length === 0) continue;
+    if (!_matchAxis(_menuValueForAxis(m, axis), selected)) return false;
+  }
+  return true;
+}
+
 function _applyFilters(menus) {
-  return menus.filter(m => {
-    if (activeFilters.layer !== 'all' && m.layer !== activeFilters.layer) return false;
-    if (activeFilters.purpose !== 'all') {
-      // 新スキーマ: m.purpose_domain (4ドメイン)
-      // 旧スキーマ: m.purpose (旧 5 種値)
-      const domain = m.purpose_domain || m.purpose || '';
-      if (domain !== activeFilters.purpose) return false;
-    }
-    if (activeFilters.coaching !== 'all') {
-      const tone = m.coaching_tone || m.coaching || '';
-      if (tone !== activeFilters.coaching) return false;
-    }
-    return true;
-  });
+  return menus.filter(_menuMatchesFilters);
 }
 
-function setFilter(type, value, btn) {
-  activeFilters[type] = value;
-  const container = btn.closest('.filter-chips');
-  container.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderPhases();
+// チップトグル（同一軸 OR）
+function toggleFilter(type, value, btn) {
+  if (!activeFilters[type]) activeFilters[type] = [];
+  const arr = activeFilters[type];
+  const idx = arr.indexOf(value);
+  if (idx >= 0) {
+    arr.splice(idx, 1);
+    btn.classList.remove('active');
+  } else {
+    arr.push(value);
+    btn.classList.add('active');
+  }
+  renderLayers();
 }
 
-// ─── Phase描画 ───────────────────────────────────────────────
-function renderPhases() {
-  const container = document.getElementById('phase-container');
+// 全フィルタークリア
+function clearAllFilters() {
+  Object.keys(activeFilters).forEach(k => activeFilters[k] = []);
+  document.querySelectorAll('#menu-filter-bar .filter-chip, #menu-filter-detail .filter-chip')
+    .forEach(b => b.classList.remove('active'));
+  renderLayers();
+}
+
+// ─── Layer描画 ───────────────────────────────────────────────
+function renderLayers() {
+  const container = document.getElementById('layer-container');
   if (!container) return;
 
   const allMenus = _getTeamMenus();
   const filtered = _applyFilters(allMenus);
 
   let html = '';
-  PHASES.forEach(phase => {
-    const phaseMenus = filtered.filter(m => m.cat === phase.id);
+  LAYERS.forEach(layer => {
+    const layerMenus = filtered.filter(m => m.layer === layer.id);
 
     html += `
-      <div class="phase-section" data-phase="${phase.id}">
-        <div class="phase-header" style="background:${phase.bg};border-left:4px solid ${phase.color};">
-          <div class="phase-header-top">
-            <span class="phase-icon">${phase.icon}</span>
-            <div class="phase-header-info">
-              <div class="phase-title" style="color:${phase.color}">${phase.label}</div>
+      <div class="layer-section" data-layer="${layer.id}">
+        <div class="layer-header" style="background:${layer.bg};border-left:4px solid ${layer.color};">
+          <div class="layer-header-top">
+            <span class="layer-icon">${layer.icon}</span>
+            <div class="layer-header-info">
+              <div class="layer-title" style="color:${layer.color}">${layer.label}</div>
+              <div class="layer-desc">${escHtml(layer.desc)}</div>
             </div>
-            <span class="phase-count">${phaseMenus.length}</span>
-          </div>
-          <div class="phase-vfe-indicator">
-            <div class="vfe-curve-bar">
-              <div class="vfe-curve-fill" style="width:${phase.vfeCurve === 'low' ? '25' : phase.vfeCurve === 'mid' ? '55' : '85'}%;background:${phase.color}"></div>
-            </div>
-            <span class="vfe-curve-label">VFE ${phase.vfeCurve}</span>
+            <span class="layer-count">${layerMenus.length}</span>
           </div>
         </div>
-        <div class="phase-cards">
+        <div class="layer-cards">
     `;
 
-    if (phaseMenus.length === 0) {
-      html += `<div class="phase-empty">このフェーズのメニューはありません</div>`;
+    if (layerMenus.length === 0) {
+      html += `<div class="layer-empty">該当するメニューはありません</div>`;
     } else {
-      phaseMenus.forEach(menu => {
-        html += _renderMenuCard(menu, phase);
+      layerMenus.forEach(menu => {
+        html += _renderMenuCard(menu);
       });
     }
 
@@ -222,50 +291,79 @@ function renderPhases() {
     `;
   });
 
+  // 該当 0 件のとき、フィルター解除導線
+  const totalFiltered = filtered.length;
+  if (totalFiltered === 0 && _activeFilterCount() > 0) {
+    html = `
+      <div class="filter-empty-banner">
+        フィルターに一致するメニューがありません。
+        <button class="filter-clear-btn" onclick="clearAllFilters()">フィルターをクリア</button>
+      </div>
+    ` + html;
+  }
+
   container.innerHTML = html;
 }
 
-function _renderMenuCard(menu, phase) {
-  const channels = menu.channels_list && menu.channels_list.length > 0
-    ? menu.channels_list
-    : (menu.channels ? menu.channels.split(',').map(s => s.trim()).filter(Boolean) : []);
+function _activeFilterCount() {
+  return Object.values(activeFilters).reduce((n, arr) => n + (arr ? arr.length : 0), 0);
+}
+
+function _renderMenuCard(menu) {
+  const channels = (menu.sensory_channels_list && menu.sensory_channels_list.length)
+    ? menu.sensory_channels_list
+    : (menu.channels_list && menu.channels_list.length
+        ? menu.channels_list
+        : (menu.sensory_channels || menu.channels
+            ? String(menu.sensory_channels || menu.channels).split(/[|,]/).map(s => s.trim()).filter(Boolean)
+            : []));
+
+  const phase = menu.session_phase || menu.cat || '';
+  const purpose = menu.purpose_domain || menu.purpose || '';
+  const coaching = menu.coaching_tone || menu.coaching || '';
+  const name = menu.menu_name || menu.name || '';
+  const desc = menu.desc || '';
+  const fep = menu.fep || '';
+  const steps = menu.steps || [];
+  const coachingPts = menu.coaching_points || [];
 
   return `
-    <div class="menu-card" data-name="${escHtml(menu.name)}">
+    <div class="menu-card" data-name="${escHtml(name)}">
       <div class="menu-card-top">
-        <div class="menu-card-title">${escHtml(menu.name)}</div>
+        <div class="menu-card-title">${escHtml(name)}</div>
         <div class="menu-card-actions">
-          ${menu.time ? `<span class="time-badge">${menu.time}分</span>` : ''}
-          <button class="menu-card-del-btn" onclick="deleteTeamMenu('${escHtml(menu.name)}')" title="削除">✕</button>
+          ${menu.time ? `<span class="time-badge">${escHtml(menu.time)}分</span>` : ''}
+          <button class="menu-card-del-btn" onclick="deleteTeamMenu('${escHtml(name)}')" title="削除">✕</button>
         </div>
       </div>
-      ${menu.desc ? `<div class="menu-card-desc">${escHtml(menu.desc)}</div>` : ''}
+      ${desc ? `<div class="menu-card-desc">${escHtml(desc)}</div>` : ''}
       <div class="menu-card-attrs">
         ${layerBadge(menu.layer)}
-        ${purposeBadge(menu.purpose)}
-        ${coachingBadge(menu.coaching)}
+        ${phaseBadge(phase)}
+        ${purposeBadge(purpose)}
+        ${coachingBadge(coaching)}
         ${vfeBadge(menu.vfe_target)}
       </div>
       ${channels.length > 0 ? `<div class="menu-card-channels">${channelChips(channels)}</div>` : ''}
-      ${menu.fep ? `
+      ${fep ? `
         <details class="menu-card-fep">
           <summary>FEP解説</summary>
-          <div class="menu-card-fep-text">${escHtml(menu.fep)}</div>
+          <div class="menu-card-fep-text">${escHtml(fep)}</div>
         </details>
       ` : ''}
-      ${menu.steps && menu.steps.length > 0 ? `
+      ${steps.length > 0 ? `
         <details class="menu-card-steps">
-          <summary>ステップ (${menu.steps.length})</summary>
+          <summary>ステップ (${steps.length})</summary>
           <ul class="menu-card-steps-list">
-            ${menu.steps.map(s => `<li>${escHtml(s)}</li>`).join('')}
+            ${steps.map(s => `<li>${escHtml(s)}</li>`).join('')}
           </ul>
         </details>
       ` : ''}
-      ${menu.coaching_points && menu.coaching_points.length > 0 ? `
+      ${coachingPts.length > 0 ? `
         <details class="menu-card-coaching-pts">
           <summary>コーチングポイント</summary>
           <ul class="menu-card-steps-list">
-            ${menu.coaching_points.map(s => `<li>${escHtml(s)}</li>`).join('')}
+            ${coachingPts.map(s => `<li>${escHtml(s)}</li>`).join('')}
           </ul>
         </details>
       ` : ''}
@@ -309,7 +407,7 @@ function deleteTeamMenu(name) {
     _addDeletedName(name);
   }
 
-  renderPhases();
+  renderLayers();
 }
 
 // ─── メニュー追加（drill-library.js の openAddModal 経由）────
@@ -318,15 +416,15 @@ function addMenuItemFromPreset(levelId, preset) {
   const customs = _getCustomMenus();
   const newMenu = {
     menu_id: '',
-    name: preset.name || '',
-    cat: preset.cat || 'tech',
+    name: preset.name || preset.menu_name || '',
+    cat: preset.cat || preset.session_phase || 'tech',
     scope: 'team',
     layer: preset.layer || '',
-    purpose: preset.purpose || '',
+    purpose: preset.purpose || preset.purpose_domain || '',
     purpose_list: preset.purpose_list || [],
-    channels: preset.channels || '',
-    channels_list: preset.channels_list || [],
-    coaching: preset.coaching || '',
+    channels: preset.channels || preset.sensory_channels || '',
+    channels_list: preset.channels_list || preset.sensory_channels_list || [],
+    coaching: preset.coaching || preset.coaching_tone || '',
     vfe_target: preset.vfe_target || '',
     time: parseInt(preset.time) || 0,
     desc: preset.desc || '',
@@ -344,7 +442,7 @@ function addMenuItemFromPreset(levelId, preset) {
     _saveCustomMenus(customs);
   }
 
-  renderPhases();
+  renderLayers();
 }
 
 // ─── 旧互換: toggleAddMenuForm ──────────────────────────────
@@ -370,10 +468,33 @@ function deleteMenuItem(btn) {
   if (name) deleteTeamMenu(name);
 }
 
+// ─── 旧互換: 旧 setFilter（単一選択 API）── 内部で toggle に委譲
+function setFilter(type, value, btn) {
+  // 旧仕様の "all" は全クリアに変換
+  if (value === 'all') {
+    activeFilters[type] = [];
+    const container = btn.closest('.filter-chips');
+    if (container) container.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLayers();
+    return;
+  }
+  toggleFilter(type, value, btn);
+}
+
+// ─── 詳細フィルター開閉 ──────────────────────────────────────
+function toggleFilterDetail() {
+  const el = document.getElementById('menu-filter-detail');
+  const btn = document.getElementById('menu-filter-detail-toggle');
+  if (!el || !btn) return;
+  const isOpen = el.classList.toggle('is-open');
+  btn.textContent = isOpen ? '▲ 詳細フィルターを閉じる' : '▼ 詳細フィルターを開く';
+}
+
 // ─── 初期化 ─────────────────────────────────────────────────
 function initMenuPage() {
   isEditMode = false;
-  activeFilters = { layer: 'all', purpose: 'all', coaching: 'all' };
+  Object.keys(activeFilters).forEach(k => activeFilters[k] = []);
 
   // Reset edit mode UI
   const wrapper = document.getElementById('menu-page-wrapper');
@@ -383,10 +504,15 @@ function initMenuPage() {
   const addSection = document.getElementById('menu-add-section');
   if (addSection) addSection.style.display = 'none';
 
-  // Reset filter UI
-  document.querySelectorAll('.filter-chip').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.val === 'all');
-  });
+  // Reset filter UI: チップ active 解除
+  document.querySelectorAll('#menu-filter-bar .filter-chip, #menu-filter-detail .filter-chip')
+    .forEach(btn => btn.classList.remove('active'));
+
+  // 詳細フィルターは閉じた状態に
+  const detail = document.getElementById('menu-filter-detail');
+  if (detail) detail.classList.remove('is-open');
+  const detailToggle = document.getElementById('menu-filter-detail-toggle');
+  if (detailToggle) detailToggle.textContent = '▼ 詳細フィルターを開く';
 
   // グループセレクター描画 + グループ必須チェック
   if (typeof GroupContext !== 'undefined') {
@@ -403,18 +529,21 @@ function _applyMenuGroupGate() {
   const hasGroup = typeof GroupContext !== 'undefined' && GroupContext.getActiveGroupId();
   const noGroupEl = document.getElementById('menu-no-group');
   const filterBar = document.getElementById('menu-filter-bar');
-  const phaseContainer = document.getElementById('phase-container');
+  const filterDetailWrap = document.getElementById('menu-filter-detail-wrap');
+  const layerContainer = document.getElementById('layer-container');
   const addSection = document.getElementById('menu-add-section');
 
   if (hasGroup) {
     if (noGroupEl) noGroupEl.style.display = 'none';
     if (filterBar) filterBar.style.display = '';
-    if (phaseContainer) phaseContainer.style.display = '';
-    renderPhases();
+    if (filterDetailWrap) filterDetailWrap.style.display = '';
+    if (layerContainer) layerContainer.style.display = '';
+    renderLayers();
   } else {
     if (noGroupEl) noGroupEl.style.display = 'block';
     if (filterBar) filterBar.style.display = 'none';
-    if (phaseContainer) phaseContainer.style.display = 'none';
+    if (filterDetailWrap) filterDetailWrap.style.display = 'none';
+    if (layerContainer) layerContainer.style.display = 'none';
     if (addSection) addSection.style.display = 'none';
   }
 }

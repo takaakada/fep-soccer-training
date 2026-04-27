@@ -6,7 +6,7 @@
     <div class="sf-hero-overlay">
       <div class="sf-hero-eyebrow">POSITION · DRILL</div>
       <h1 class="sf-hero-title">ポジション別メニュー</h1>
-      <p class="sf-hero-sub">ポジション特化ドリルを確認・編集</p>
+      <p class="sf-hero-sub">ポジション特化ドリルを Layer × 多軸フィルターで絞り込み</p>
     </div>
     <button class="sf-hero-action pos-edit-btn" onclick="togglePosEditMode()" id="pos-edit-btn">✏️ 編集</button>
   </div>
@@ -38,26 +38,120 @@
     </button>
   </div>
 
-  <!-- ── Filter Bar ── -->
+  <!-- ── 基本フィルター（常時表示） ── -->
   <div id="pos-filter-bar" class="pos-filter-bar">
     <div class="filter-group">
-      <label>レイヤー</label>
-      <div class="filter-chips" id="pos-filter-layer">
-        <button class="filter-chip active" data-val="all" onclick="setPosFilter('layer','all',this)">全て</button>
-        <button class="filter-chip" data-val="L1" onclick="setPosFilter('layer','L1',this)">L1</button>
-        <button class="filter-chip" data-val="L2" onclick="setPosFilter('layer','L2',this)">L2</button>
-        <button class="filter-chip" data-val="L3" onclick="setPosFilter('layer','L3',this)">L3</button>
-        <button class="filter-chip" data-val="L4" onclick="setPosFilter('layer','L4',this)">L4</button>
+      <label>Layer</label>
+      <div class="filter-chips" data-axis="layer">
+        <button class="filter-chip" data-val="L1" onclick="togglePosFilter('layer','L1',this)">L1</button>
+        <button class="filter-chip" data-val="L2" onclick="togglePosFilter('layer','L2',this)">L2</button>
+        <button class="filter-chip" data-val="L3" onclick="togglePosFilter('layer','L3',this)">L3</button>
+        <button class="filter-chip" data-val="L4" onclick="togglePosFilter('layer','L4',this)">L4</button>
       </div>
     </div>
     <div class="filter-group">
-      <label>目的ドメイン</label>
-      <div class="filter-chips" id="pos-filter-purpose">
-        <button class="filter-chip active" data-val="all" onclick="setPosFilter('purpose','all',this)">全て</button>
-        <button class="filter-chip" data-val="感覚" onclick="setPosFilter('purpose','感覚',this)">👐 感覚</button>
-        <button class="filter-chip" data-val="認知" onclick="setPosFilter('purpose','認知',this)">🧠 認知</button>
-        <button class="filter-chip" data-val="相互作用" onclick="setPosFilter('purpose','相互作用',this)">🤝 相互作用</button>
-        <button class="filter-chip" data-val="長期目標" onclick="setPosFilter('purpose','長期目標',this)">🎯 長期目標</button>
+      <label>Phase</label>
+      <div class="filter-chips" data-axis="session_phase">
+        <button class="filter-chip" data-val="warm" onclick="togglePosFilter('session_phase','warm',this)">warm</button>
+        <button class="filter-chip" data-val="tech" onclick="togglePosFilter('session_phase','tech',this)">tech</button>
+        <button class="filter-chip" data-val="tactic" onclick="togglePosFilter('session_phase','tactic',this)">tactic</button>
+        <button class="filter-chip" data-val="phys" onclick="togglePosFilter('session_phase','phys',this)">phys</button>
+        <button class="filter-chip" data-val="cool" onclick="togglePosFilter('session_phase','cool',this)">cool</button>
+        <button class="filter-chip" data-val="main" onclick="togglePosFilter('session_phase','main',this)">main</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Sensory</label>
+      <div class="filter-chips" data-axis="sensory_channels">
+        <button class="filter-chip" data-val="視覚" onclick="togglePosFilter('sensory_channels','視覚',this)">視覚</button>
+        <button class="filter-chip" data-val="体性感覚" onclick="togglePosFilter('sensory_channels','体性感覚',this)">体性感覚</button>
+        <button class="filter-chip" data-val="前庭覚" onclick="togglePosFilter('sensory_channels','前庭覚',this)">前庭覚</button>
+        <button class="filter-chip" data-val="平衡感覚" onclick="togglePosFilter('sensory_channels','平衡感覚',this)">平衡感覚</button>
+        <button class="filter-chip" data-val="聴覚" onclick="togglePosFilter('sensory_channels','聴覚',this)">聴覚</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Purpose</label>
+      <div class="filter-chips" data-axis="purpose_domain">
+        <button class="filter-chip" data-val="感覚" onclick="togglePosFilter('purpose_domain','感覚',this)">👐 感覚</button>
+        <button class="filter-chip" data-val="認知" onclick="togglePosFilter('purpose_domain','認知',this)">🧠 認知</button>
+        <button class="filter-chip" data-val="相互作用" onclick="togglePosFilter('purpose_domain','相互作用',this)">🤝 相互作用</button>
+        <button class="filter-chip" data-val="長期目標" onclick="togglePosFilter('purpose_domain','長期目標',this)">🎯 長期目標</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Coaching</label>
+      <div class="filter-chips" data-axis="coaching_tone">
+        <button class="filter-chip" data-val="safe" onclick="togglePosFilter('coaching_tone','safe',this)">safe</button>
+        <button class="filter-chip" data-val="explore" onclick="togglePosFilter('coaching_tone','explore',this)">explore</button>
+        <button class="filter-chip" data-val="challenge" onclick="togglePosFilter('coaching_tone','challenge',this)">challenge</button>
+        <button class="filter-chip" data-val="positive" onclick="togglePosFilter('coaching_tone','positive',this)">positive</button>
+        <button class="filter-chip" data-val="reflective" onclick="togglePosFilter('coaching_tone','reflective',this)">reflective</button>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="filter-clear-btn" onclick="clearPosFilters()">✕ クリア</button>
+    </div>
+  </div>
+
+  <!-- ── 詳細フィルター（アコーディオン） ── -->
+  <div id="pos-filter-detail-wrap" class="filter-detail-wrap">
+    <button id="pos-filter-detail-toggle" class="filter-detail-toggle" onclick="togglePosFilterDetail()">▼ 詳細フィルターを開く</button>
+    <div id="pos-filter-detail" class="filter-detail">
+      <div class="filter-group">
+        <label>VFE target</label>
+        <div class="filter-chips" data-axis="vfe_target">
+          <button class="filter-chip" data-val="low_stable" onclick="togglePosFilter('vfe_target','low_stable',this)">low_stable</button>
+          <button class="filter-chip" data-val="optimal" onclick="togglePosFilter('vfe_target','optimal',this)">optimal</button>
+          <button class="filter-chip" data-val="high_confused" onclick="togglePosFilter('vfe_target','high_confused',this)">high_confused</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>EFE target</label>
+        <div class="filter-chips" data-axis="efe_target">
+          <button class="filter-chip" data-val="settled" onclick="togglePosFilter('efe_target','settled',this)">settled</button>
+          <button class="filter-chip" data-val="exploratory" onclick="togglePosFilter('efe_target','exploratory',this)">exploratory</button>
+          <button class="filter-chip" data-val="goal_ambiguous" onclick="togglePosFilter('efe_target','goal_ambiguous',this)">goal_ambiguous</button>
+          <button class="filter-chip" data-val="cost_sensitive" onclick="togglePosFilter('efe_target','cost_sensitive',this)">cost_sensitive</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>EU target</label>
+        <div class="filter-chips" data-axis="eu_target">
+          <button class="filter-chip" data-val="low_fixed" onclick="togglePosFilter('eu_target','low_fixed',this)">low_fixed</button>
+          <button class="filter-chip" data-val="optimal_stable" onclick="togglePosFilter('eu_target','optimal_stable',this)">optimal_stable</button>
+          <button class="filter-chip" data-val="high_anxious" onclick="togglePosFilter('eu_target','high_anxious',this)">high_anxious</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Difficulty</label>
+        <div class="filter-chips" data-axis="difficulty_level">
+          <button class="filter-chip" data-val="1" onclick="togglePosFilter('difficulty_level','1',this)">1</button>
+          <button class="filter-chip" data-val="2" onclick="togglePosFilter('difficulty_level','2',this)">2</button>
+          <button class="filter-chip" data-val="3" onclick="togglePosFilter('difficulty_level','3',this)">3</button>
+          <button class="filter-chip" data-val="4" onclick="togglePosFilter('difficulty_level','4',this)">4</button>
+          <button class="filter-chip" data-val="5" onclick="togglePosFilter('difficulty_level','5',this)">5</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Group format</label>
+        <div class="filter-chips" data-axis="group_format">
+          <button class="filter-chip" data-val="individual" onclick="togglePosFilter('group_format','individual',this)">individual</button>
+          <button class="filter-chip" data-val="pair" onclick="togglePosFilter('group_format','pair',this)">pair</button>
+          <button class="filter-chip" data-val="small_group" onclick="togglePosFilter('group_format','small_group',this)">small_group</button>
+          <button class="filter-chip" data-val="team" onclick="togglePosFilter('group_format','team',this)">team</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Time (分)</label>
+        <div class="filter-chips" data-axis="time">
+          <button class="filter-chip" data-val="5" onclick="togglePosFilter('time','5',this)">5</button>
+          <button class="filter-chip" data-val="10" onclick="togglePosFilter('time','10',this)">10</button>
+          <button class="filter-chip" data-val="15" onclick="togglePosFilter('time','15',this)">15</button>
+          <button class="filter-chip" data-val="20" onclick="togglePosFilter('time','20',this)">20</button>
+          <button class="filter-chip" data-val="25" onclick="togglePosFilter('time','25',this)">25</button>
+          <button class="filter-chip" data-val="30" onclick="togglePosFilter('time','30',this)">30</button>
+        </div>
       </div>
     </div>
   </div>
